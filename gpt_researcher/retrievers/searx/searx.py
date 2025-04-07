@@ -3,6 +3,7 @@ import json
 import requests
 from typing import List, Dict
 from urllib.parse import urljoin
+from security import safe_requests
 
 
 class SearxSearch():
@@ -53,7 +54,7 @@ class SearxSearch():
         }
 
         try:
-            response = requests.get(
+            response = safe_requests.get(
                 search_url,
                 params=params,
                 headers={'Accept': 'application/json'}

@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Optional
 import requests
 import os
+from security import safe_requests
 
 
 class CustomRetriever:
@@ -44,7 +45,7 @@ class CustomRetriever:
             ]
         """
         try:
-            response = requests.get(self.endpoint, params={**self.params, 'query': self.query})
+            response = safe_requests.get(self.endpoint, params={**self.params, 'query': self.query})
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
