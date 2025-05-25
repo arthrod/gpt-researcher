@@ -1,5 +1,4 @@
 import asyncio
-import random
 import json
 from typing import Dict, Optional
 import logging
@@ -9,6 +8,7 @@ from ..actions.query_processing import plan_research_outline, get_search_results
 from ..document import DocumentLoader, OnlineDocumentLoader, LangChainDocumentLoader
 from ..utils.enum import ReportSource, ReportType, Tone
 from ..utils.logging_config import get_json_handler, get_research_logger
+import secrets
 
 
 class ResearchConductor:
@@ -368,7 +368,7 @@ class ResearchConductor:
 
         # Get unique URLs
         new_search_urls = await self._get_new_urls(new_search_urls)
-        random.shuffle(new_search_urls)
+        secrets.SystemRandom().shuffle(new_search_urls)
 
         return new_search_urls
 

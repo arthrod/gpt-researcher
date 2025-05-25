@@ -5,7 +5,6 @@ import pickle
 from pathlib import Path
 from sys import platform
 import time
-import random
 import string
 import os
 
@@ -15,6 +14,7 @@ from .processing.scrape_skills import (scrape_pdf_with_pymupdf,
                                        scrape_pdf_with_arxiv)
 
 from urllib.parse import urljoin
+import secrets
 
 FILE_DIR = Path(__file__).parent.parent
 
@@ -160,7 +160,7 @@ class BrowserScraper:
 
     def _generate_random_string(self, length):
         """Generate a random string of specified length"""
-        return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+        return ''.join(secrets.SystemRandom().choices(string.ascii_letters + string.digits, k=length))
 
     def _get_domain(self):
         """Extract domain from URL"""
