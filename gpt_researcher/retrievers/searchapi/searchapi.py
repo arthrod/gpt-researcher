@@ -2,8 +2,8 @@
 
 # libraries
 import os
-import requests
 import urllib.parse
+from security import safe_requests
 
 
 class SearchApiSearch():
@@ -58,7 +58,7 @@ class SearchApiSearch():
         search_response = []
 
         try:
-            response = requests.get(encoded_url, headers=headers, timeout=20)
+            response = safe_requests.get(encoded_url, headers=headers, timeout=20)
             if response.status_code == 200:
                 search_results = response.json()
                 if search_results:

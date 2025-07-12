@@ -3,6 +3,7 @@ import requests
 import tempfile
 from urllib.parse import urlparse
 from langchain_community.document_loaders import PyMuPDFLoader
+from security import safe_requests
 
 
 class PyMuPDFScraper:
@@ -41,7 +42,7 @@ class PyMuPDFScraper:
         """
         try:
             if self.is_url():
-                response = requests.get(self.link, timeout=5, stream=True)
+                response = safe_requests.get(self.link, timeout=5, stream=True)
                 response.raise_for_status()
 
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
