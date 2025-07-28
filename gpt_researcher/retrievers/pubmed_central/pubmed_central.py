@@ -1,7 +1,7 @@
 import os
-import xml.etree.ElementTree as ET
 
 import requests
+import defusedxml.ElementTree
 
 
 class PubMedCentralSearch:
@@ -113,7 +113,7 @@ class PubMedCentralSearch:
         Returns:
             Boolean indicating presence of body content.
         """
-        root = ET.fromstring(xml_content)
+        root = defusedxml.ElementTree.fromstring(xml_content)
         ns = {
             "mml": "http://www.w3.org/1998/Math/MathML",
             "xlink": "http://www.w3.org/1999/xlink",
@@ -140,7 +140,7 @@ class PubMedCentralSearch:
         Returns:
             Dictionary containing title, abstract, and body text.
         """
-        root = ET.fromstring(xml_content)
+        root = defusedxml.ElementTree.fromstring(xml_content)
         ns = {
             "mml": "http://www.w3.org/1998/Math/MathML",
             "xlink": "http://www.w3.org/1999/xlink",
