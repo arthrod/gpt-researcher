@@ -29,5 +29,7 @@ class JinaAIScraper:
                     content_lines.append(line)
             content = "\n".join(content_lines).strip()
             return content, [], title
-        except Exception:
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Failed to scrape {self.link} using Jina AI Reader: {e}")
             return "", [], ""
