@@ -4,25 +4,54 @@ import logging
 import hashlib
 import re
 import bs4
-from typing import List
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import Integer, String, Text, Float
-from sqlalchemy.dialects.postgresql import ARRAY
+from typing import List, Optional
+try:
+    from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+    from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+    from sqlalchemy import Integer, String, Text
+    from sqlalchemy.dialects.postgresql import ARRAY
+    HAS_SQLA = True
+    HAS_PG = True
+except Exception:
+    HAS_SQLA = False
+    HAS_PG = False
 
-# SQLAlchemy models for persisting scraped data
+# SQLAlchemy models for persisting scraped data (optional)
+if HAS_SQLA:
+    class Base(DeclarativeBase):
+        pass
 
-class Base(DeclarativeBase):
-    pass
+    class ScrapedDocument(Base):
+        __tablename__ = "scraped_documents"
+        id: "Mapped[int]" = mapped_column(Integer, primary_key=True, autoincrement=True)
+        url: "Mapped[str]" = mapped_column(String, unique=True)
+        title: "Mapped[Optional[str]]" = mapped_column(String, nullable=True)
+        content: "Mapped[str]" = mapped_column(Text)
+        # Store embeddings as JSON/text to avoid dialect-specific ARRAY
+        embedding: "Mapped[Optional[str]]" = mapped_column(Text, nullable=True)
 
-
-class ScrapedDocument(Base):
-    __tablename__ = "scraped_documents"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    url: Mapped[str] = mapped_column(String, unique=True)
-    title: Mapped[str | None] = mapped_column(String, nullable=True)
-    content: Mapped[str] = mapped_column(Text)
-    embedding: Mapped[List[float]] = mapped_column(ARRAY(Float))
+async def save_scraped_data(records: List[dict], db_url: str, embeddings) -> None:
+    """Persist scraped data to Postgres with embeddings."""
+    if not HAS_SQLA:
+        return  # Silently no-op if SQLAlchemy isn't available
+    from sqlalchemy.ext.asyncio import AsyncSession as _AsyncSession, create_async_engine as _create_async_engine
+    engine = _create_async_engine(db_url, echo=False)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    async with _AsyncSession(engine) as session:
+        for record in records:
+            emb_vec = embeddings.embed_documents([record["raw_content"]])[0] if embeddings else None
+            emb_str = json.dumps(emb_vec) if emb_vec is not None else None
+            session.add(
+                ScrapedDocument(
+                    url=record["url"],
+                    title=record.get("title"),
+                    content=record["raw_content"],
+                    embedding=emb_str,
+                )
+            )
+        await session.commit()
+    await engine.dispose()
 
 def get_relevant_images(soup: BeautifulSoup, url: str) -> list:
     """Extract relevant images from the page"""
