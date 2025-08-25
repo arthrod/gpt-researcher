@@ -76,16 +76,39 @@ def jina_rerank(query: str, documents: list[dict], top_n: int | None = None) -> 
     if not api_key:
         return documents
     try:
+        texts = [
+            d.get("body")
+            or d.get("content")
+            or d.get("snippet")
+            or ""
+            for d in documents
+        ]
         payload = {
             "model": "jina-reranker-v1",
             "query": query,
-            "documents": [d.get("body", "") for d in documents],
+            "documents": texts,
         }
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-        resp = requests.post("https://api.jina.ai/v1/rerank", json=payload, headers=headers, timeout=10)
-        data = resp.json().get("data", [])
-        ranked = sorted(zip(documents, data), key=lambda x: x[1]["relevance_score"], reverse=True)
-        reranked = [doc for doc, _ in ranked]
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        }
+        resp = requests.post(
+            "https://api.jina.ai/v1/rerank",
+            json=payload,
+            headers=headers,
+            timeout=10,
+        )
+        resp.raise_for_status()
+        json_data = resp.json()
+        data = json_data.get("data", []) or []
+        # Pair documents with scores defensively
+        ranked = sorted(
+            zip(documents, data, strict=False),
+            key=lambda x: x[1].get("relevance_score", 0),
+            reverse=True,
+        )
+        reranked = [doc for doc, _ in ((d, s) for d, s, *_ in ranked)]
         return reranked[:top_n] if top_n else reranked
     except Exception as e:
         logger.error(f"Jina rerank failed: {e}")
