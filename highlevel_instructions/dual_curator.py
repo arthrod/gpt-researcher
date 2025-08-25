@@ -572,7 +572,7 @@ class DualCuratorManager:
         
         if hasattr(self.researcher, 'websocket') and self.researcher.websocket:
             try:
-                from ..actions.utils import stream_output
+                from gpt_researcher.actions.utils import stream_output
                 await stream_output(
                     "logs",
                     event_type,

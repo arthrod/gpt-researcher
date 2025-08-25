@@ -339,7 +339,7 @@ class BatchResearchManager:
     async def _stream_output(self, event_type: str, message: str):
         """Helper method to stream output."""
         try:
-            from ..actions.utils import stream_output
+            from gpt_researcher.actions.utils import stream_output
             await stream_output(
                 "logs",
                 event_type,
