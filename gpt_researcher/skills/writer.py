@@ -77,11 +77,16 @@ class ReportGenerator:
         report = await generate_report(**report_params, **self.researcher.kwargs)
 
         if self.researcher.cfg.append_sources and self.researcher.research_sources:
-            lines = ["\n\nSources:\n"]
-            for src in self.researcher.research_sources:
-                title = src.get("title") or src["url"]
-                lines.append(f"[{src['id']}] {title} - {src['url']}")
-            report += "\n".join(lines)
+            # Start with two leading newlines, then a single "Sources:" header line.
+            lines = ["", "", "Sources:"]
+            for idx, src in enumerate(self.researcher.research_sources, start=1):
+                sid = src.get("id", idx)
+                url = (src.get("url") or "").strip()
+                raw_title = src.get("title") or url
+                # Collapse any embedded newlines and trim whitespace
+                title = " ".join(str(raw_title).splitlines()).strip()
+                lines.append(f"[{sid}] {title} - {url}")
+            report += "\n".join(lines) + "\n"
 
         if self.researcher.verbose:
             await stream_output(
