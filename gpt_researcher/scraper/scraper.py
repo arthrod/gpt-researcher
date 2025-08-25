@@ -18,6 +18,7 @@ from . import (
     NoDriverScraper,
     TavilyExtract,
     FireCrawl,
+    JinaAIScraper,
 )
 
 
@@ -176,6 +177,7 @@ class Scraper:
             "nodriver": NoDriverScraper,
             "tavily_extract": TavilyExtract,
             "firecrawl": FireCrawl,
+            "jina": JinaAIScraper,
         }
 
         scraper_key = None

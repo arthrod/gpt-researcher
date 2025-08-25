@@ -31,6 +31,7 @@ DEFAULT_CONFIG: BaseConfig = {
     "LLM_KWARGS": {},
     "EMBEDDING_KWARGS": {},
     "VERBOSE": False,
+    "APPEND_SOURCES": False,
     # Deep research specific settings
     "DEEP_RESEARCH_BREADTH": 3,
     "DEEP_RESEARCH_DEPTH": 2,

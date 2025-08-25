@@ -4,6 +4,25 @@ import logging
 import hashlib
 import re
 import bs4
+from typing import List
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import Integer, String, Text, Float
+from sqlalchemy.dialects.postgresql import ARRAY
+
+# SQLAlchemy models for persisting scraped data
+
+class Base(DeclarativeBase):
+    pass
+
+
+class ScrapedDocument(Base):
+    __tablename__ = "scraped_documents"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    url: Mapped[str] = mapped_column(String, unique=True)
+    title: Mapped[str | None] = mapped_column(String, nullable=True)
+    content: Mapped[str] = mapped_column(Text)
+    embedding: Mapped[List[float]] = mapped_column(ARRAY(Float))
 
 def get_relevant_images(soup: BeautifulSoup, url: str) -> list:
     """Extract relevant images from the page"""
@@ -122,3 +141,29 @@ def get_text_from_soup(soup: BeautifulSoup) -> str:
     # Remove excess whitespace
     text = re.sub(r"\s{2,}", " ", text)
     return text
+
+
+async def save_scraped_data(records: List[dict], db_url: str, embeddings) -> None:
+    """Persist scraped data to Postgres with embeddings.
+
+    Args:
+        records: List of scraped records with ``url``, ``title`` and ``raw_content`` keys.
+        db_url: SQLAlchemy connection string using the ``psycopg`` async driver.
+        embeddings: Embedding function implementing ``embed_documents``.
+    """
+    engine = create_async_engine(db_url, echo=False)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    async with AsyncSession(engine) as session:
+        for record in records:
+            emb = embeddings.embed_documents([record["raw_content"]])[0] if embeddings else []
+            session.add(
+                ScrapedDocument(
+                    url=record["url"],
+                    title=record.get("title"),
+                    content=record["raw_content"],
+                    embedding=emb,
+                )
+            )
+        await session.commit()
+    await engine.dispose()
