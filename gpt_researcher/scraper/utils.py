@@ -172,7 +172,7 @@ def get_text_from_soup(soup: BeautifulSoup) -> str:
     return text
 
 
-async def save_scraped_data(records: List[dict], db_url: str, embeddings) -> None:
+async def save_scraped_data(records: list[dict], db_url: str, embeddings) -> None:
     """Persist scraped data to Postgres with embeddings.
 
     Args:
@@ -183,16 +183,39 @@ async def save_scraped_data(records: List[dict], db_url: str, embeddings) -> Non
     engine = create_async_engine(db_url, echo=False)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
     async with AsyncSession(engine) as session:
-        for record in records:
-            emb = embeddings.embed_documents([record["raw_content"]])[0] if embeddings else []
-            session.add(
-                ScrapedDocument(
-                    url=record["url"],
-                    title=record.get("title"),
-                    content=record["raw_content"],
-                    embedding=emb,
-                )
+        # Prepare raw contents for batch embedding
+        contents = [r.get("raw_content", "") for r in records]
+
+        # Batch embed off the event loop to avoid blocking
+        if embeddings and contents:
+            try:
+                import asyncio
+                emb_list = await asyncio.to_thread(embeddings.embed_documents, contents)
+            except Exception as e:
+                logging.error("Embedding failed; storing without embeddings: %s", e)
+                emb_list = [[] for _ in contents]
+        else:
+            emb_list = [[] for _ in contents]
+
+        # Upsert each record by URL
+        for rec, emb in zip(records, emb_list, strict=False):
+            stmt = insert(ScrapedDocument).values(
+                url=rec["url"],
+                title=rec.get("title"),
+                content=rec.get("raw_content", ""),
+                embedding=emb,
+            ).on_conflict_do_update(
+                index_elements=[ScrapedDocument.url],
+                set_={
+                    "title": rec.get("title"),
+                    "content": rec.get("raw_content", ""),
+                    "embedding": emb,
+                },
             )
+            await session.execute(stmt)
+
         await session.commit()
+
     await engine.dispose()
