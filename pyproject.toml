@@ -37,6 +37,7 @@ pyyaml = ">=6.0.1"
 requests = ">=2.31.0"
 SQLAlchemy = ">=2.0.28"
 psycopg = {version = ">=3", extras = ["binary"]}
+asyncpg = ">=0.29.0"
 tiktoken = ">=0.7.0"
 unstructured = ">=0.13"
 uvicorn = ">=0.24.0.post1"
@@ -157,6 +158,8 @@ dependencies = [
     "primp>=0.15.0",
     "propcache>=0.3.1",
     "psutil>=7.0.0",
+    "psycopg[binary]>=3.2.9",
+    "asyncpg>=0.29.0",
     "pycparser>=2.22",
     "pydantic>=2.11.5",
     "pydantic-core>=2.33.2",
@@ -183,7 +186,7 @@ dependencies = [
     "six>=1.17.0",
     "sniffio>=1.3.1",
     "soupsieve>=2.7",
-    "sqlalchemy>=2.0.41",
+    "sqlalchemy>=2.0.43",
     "sse-starlette>=2.3.5",
     "starlette>=0.46.2",
     "tenacity>=9.1.2",
