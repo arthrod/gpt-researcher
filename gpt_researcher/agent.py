@@ -430,12 +430,18 @@ class GPTResearcher:
         return self.research_sources
 
     def add_research_sources(self, sources: list[dict[str, Any]]) -> None:
+        normalized = []
         for src in sources:
-            src_id = self._source_id
-            src["id"] = src_id
-            src.setdefault("metadata", {})["id"] = src_id
-            self._source_id += 1
-        self.research_sources.extend(sources)
+            item = dict(src)  # shallow copy to avoid mutating caller input
+            if "id" not in item:
+                item_id = self._source_id
+                item["id"] = item_id
+                meta = dict(item.get("metadata") or {})
+                meta.setdefault("id", item_id)
+                item["metadata"] = meta
+                self._source_id += 1
+            normalized.append(item)
+        self.research_sources.extend(normalized)
 
     def add_references(self, report_markdown: str, visited_urls: set) -> str:
         return add_references(report_markdown, visited_urls)
