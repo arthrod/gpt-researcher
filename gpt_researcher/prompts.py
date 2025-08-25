@@ -188,9 +188,8 @@ eg: Author, A. A. (Year, Month Date). Title of web page. Website Name. [url webs
 """
         else:
             reference_prompt = """
-You MUST write all used source document names at the end of the report as references, each preceded by its id in square brackets, and make sure to not add duplicated sources."
+You MUST write all used source document names at the end of the report as references, each preceded by its id in square brackets. Do not add duplicated sources.
 """
-
         tone_prompt = f"Write the report in a {tone.value} tone." if tone else ""
 
         return f"""
