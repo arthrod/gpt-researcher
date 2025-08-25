@@ -1,5 +1,4 @@
 import requests
-from ..utils import extract_title
 
 class JinaAIScraper:
     """Scrape web pages using the public Jina AI reader API."""

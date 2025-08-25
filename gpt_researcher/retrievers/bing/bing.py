@@ -8,7 +8,7 @@ import logging
 from ..utils import build_domain_query
 
 
-class BingSearch():
+class BingSearch:
     """
     Bing Search Retriever
     """

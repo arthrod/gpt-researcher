@@ -6,7 +6,7 @@ from urllib.parse import urljoin
 from ..utils import build_domain_query
 
 
-class SearxSearch():
+class SearxSearch:
     """
     SearxNG API Retriever
     """
@@ -75,6 +75,6 @@ class SearxSearch():
             return search_response
 
         except requests.exceptions.RequestException as e:
-            raise Exception(f"Error querying SearxNG: {str(e)}")
+            raise Exception(f"Error querying SearxNG: {e!s}")
         except json.JSONDecodeError:
             raise Exception("Error parsing SearxNG response")

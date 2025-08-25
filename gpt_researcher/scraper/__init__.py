@@ -10,14 +10,14 @@ from .jina.jina_reader import JinaAIScraper
 from .scraper import Scraper
 
 __all__ = [
-    "BeautifulSoupScraper",
-    "WebBaseLoaderScraper",
     "ArxivScraper",
-    "PyMuPDFScraper",
+    "BeautifulSoupScraper",
     "BrowserScraper",
-    "NoDriverScraper",
-    "TavilyExtract",
-    "Scraper",
     "FireCrawl",
     "JinaAIScraper",
+    "NoDriverScraper",
+    "PyMuPDFScraper",
+    "Scraper",
+    "TavilyExtract",
+    "WebBaseLoaderScraper",
 ]
