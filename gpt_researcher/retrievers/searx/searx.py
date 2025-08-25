@@ -3,6 +3,7 @@ import json
 import requests
 from typing import List, Dict
 from urllib.parse import urljoin
+from ..utils import build_domain_query
 
 
 class SearxSearch():
@@ -16,7 +17,7 @@ class SearxSearch():
             query: Search query string
         """
         self.query = query
-        self.query_domains = query_domains or None
+        self.query_domains = query_domains or []
         self.base_url = self.get_searxng_url()
 
     def get_searxng_url(self) -> str:
@@ -45,10 +46,10 @@ class SearxSearch():
             List of dictionaries containing search results
         """
         search_url = urljoin(self.base_url, "search")
-        # TODO: Add support for query domains
+        query = build_domain_query(self.query, self.query_domains)
         params = {
-            # The search query. 
-            'q': self.query, 
+            # The search query.
+            'q': query,
             # Output format of results. Format needs to be activated in searxng config.
             'format': 'json'
         }
@@ -64,8 +65,9 @@ class SearxSearch():
 
             # Normalize results to match the expected format
             search_response = []
-            for result in results.get('results', [])[:max_results]:
+            for idx, result in enumerate(results.get('results', [])[:max_results], start=1):
                 search_response.append({
+                    "id": idx,
                     "href": result.get('url', ''),
                     "body": result.get('content', '')
                 })

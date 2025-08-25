@@ -5,14 +5,15 @@ import re
 import time
 import shutil
 import traceback
-from typing import Awaitable, Dict, List, Any
-from fastapi.responses import JSONResponse, FileResponse
-from gpt_researcher.document.document import DocumentLoader
-from gpt_researcher import GPTResearcher
-from backend.utils import write_md_to_pdf, write_md_to_word, write_text_to_md
-from pathlib import Path
 from datetime import datetime
-from fastapi import HTTPException
+from typing import Any, Awaitable, Dict
+
+from fastapi.responses import JSONResponse
+from gpt_researcher import GPTResearcher
+from gpt_researcher.actions import stream_output
+from gpt_researcher.document.document import DocumentLoader
+from backend.utils import write_md_to_pdf, write_md_to_word, write_text_to_md
+from multi_agents.main import run_research_task
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
@@ -24,7 +25,7 @@ class CustomLogsHandler:
         self.logs = []
         self.websocket = websocket
         sanitized_filename = sanitize_filename(f"task_{int(time.time())}_{task}")
-        self.log_file = os.path.join("outputs", f"{sanitized_filename}.json")
+        self.log_file: str = os.path.join("outputs", f"{sanitized_filename}.json")
         self.timestamp = datetime.now().isoformat()
         # Initialize log file with metadata
         os.makedirs("outputs", exist_ok=True)
@@ -180,7 +181,7 @@ async def handle_start_command(websocket, data: str, manager):
     report = str(report)
     file_paths = await generate_report_files(report, sanitized_filename)
     # Add JSON log path to file_paths
-    file_paths["json"] = os.path.relpath(logs_handler.log_file)
+    file_paths["json"] = str(os.path.relpath(logs_handler.log_file))
     await send_file_paths(websocket, file_paths)
 
 

@@ -3,6 +3,7 @@ import random
 import logging
 import os
 from ..actions.utils import stream_output
+from ..retrievers.utils import jina_rerank
 from ..actions.query_processing import plan_research_outline, get_search_results
 from ..document import DocumentLoader, OnlineDocumentLoader, LangChainDocumentLoader
 from ..utils.enum import ReportSource, ReportType
@@ -744,6 +745,9 @@ class ResearchConductor:
                 # Perform the search using the current retriever
                 search_results = await asyncio.to_thread(
                     retriever.search, max_results=self.researcher.cfg.max_search_results_per_query
+                )
+                search_results = await asyncio.to_thread(
+                    jina_rerank, query, search_results
                 )
 
                 # Collect new URLs from search results

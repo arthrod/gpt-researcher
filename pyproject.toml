@@ -36,6 +36,8 @@ python-multipart = ">=0.0.6"
 pyyaml = ">=6.0.1"
 requests = ">=2.31.0"
 SQLAlchemy = ">=2.0.28"
+psycopg = {version = ">=3", extras = ["binary"]}
+"langchain-jina" = "*"
 tiktoken = ">=0.7.0"
 unstructured = ">=0.13"
 uvicorn = ">=0.24.0.post1"
@@ -49,11 +51,10 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-asyncio_mode = "strict"
+asyncio_mode = "auto"
 addopts = "-v"
 testpaths = ["tests"]
 python_files = "test_*.py"
-asyncio_fixture_loop_scope = "function"
 
 [tool.uv.sources]
 gpt-researcher = { workspace = true }
@@ -239,4 +240,6 @@ dev = [
     "types-colorama>=0.4.15.20240311",
     "types-markdown>=3.8.0.20250415",
     "types-requests>=2.32.0.20250515",
+    "pytest-asyncio>=1.1.0",
+    "ty>=0.0.1",
 ]
