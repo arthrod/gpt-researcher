@@ -5,7 +5,7 @@ import os
 from ..actions.utils import stream_output
 from ..actions.query_processing import plan_research_outline, get_search_results
 from ..document import DocumentLoader, OnlineDocumentLoader, LangChainDocumentLoader
-from ..utils.enum import ReportSource
+from ..utils.enum import ReportSource, ReportType
 from ..utils.logging_config import get_json_handler
 from ..actions.agent_creator import choose_agent
 
