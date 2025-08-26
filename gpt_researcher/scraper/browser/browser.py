@@ -193,7 +193,7 @@ class BrowserScraper:
             WebDriverWait(self.driver, 20).until(
                 EC.presence_of_element_located((By.TAG_NAME, "body"))
             )
-        except TimeoutException:
+        except TimeoutException as e:
             print("Timed out waiting for page to load")
             print(f"Full stack trace:\n{traceback.format_exc()}")
             return "Page load timed out", [], ""
