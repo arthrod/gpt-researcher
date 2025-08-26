@@ -42,7 +42,12 @@ class HallucinationEvaluator:
             return {
                 "output": model_output,
                 "source": source_text,
-                "is_hallucination": judgment.score,
+                "score": float(judgment.score) if judgment.score is not None else None,
+                "is_hallucination": (
+                    judgment.is_hallucination
+                    if hasattr(judgment, "is_hallucination")
+                    else (float(judgment.score) > 0.5 if judgment.score is not None else None)
+                ),
                 "reasoning": judgment.reasoning
             }
 
