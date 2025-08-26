@@ -117,9 +117,8 @@ class Config:
             try:
                 self.validate_doc_path()
             except Exception as e:
-                print(f"Warning: Error validating doc_path: {e!s}. Using default doc_path.")
+                warnings.warn(f"Error validating doc_path: {e!s}. Using default doc_path.", stacklevel=2)
                 self.doc_path = DEFAULT_CONFIG['DOC_PATH']
-
     @classmethod
     def load_config(cls, config_path: str | None) -> Dict[str, Any]:
         """Load a configuration by name."""
