@@ -19,6 +19,19 @@ class DocumentLoader:
         self.path = path
 
     async def load(self) -> list:
+        """
+        Load documents from the configured path (a directory path or a list of file paths) using the appropriate file loaders and return extracted page contents.
+        
+        If self.path is a list, only existing files are queued. If self.path is a string/bytes/os.PathLike it is treated as a directory and scanned recursively. Each file is dispatched to the loader selected by its file extension via _load_document; results are gathered concurrently. Only pages with non-empty `page_content` are included in the result; each returned item is a dict with keys:
+        - "raw_content": the page's text content
+        - "url": the basename of the page's source metadata
+        
+        Returns:
+            list: A list of dictionaries containing loaded page contents and source basenames.
+        
+        Raises:
+            ValueError: If self.path is not a supported type (str, bytes, os.PathLike, or list thereof), or if no documents could be loaded.
+        """
         tasks = []
         if isinstance(self.path, list):
             for file_path in self.path:

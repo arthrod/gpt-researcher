@@ -33,14 +33,27 @@ class MCPResearchSkill:
 
     async def conduct_research_with_tools(self, query: str, selected_tools: List) -> List[Dict[str, str]]:
         """
-        Use LLM with bound tools to conduct intelligent research.
+        Conduct research for a query by invoking an LLM bound to the provided MCP tools and normalize tool outputs into standard search-result dictionaries.
         
-        Args:
-            query: Research query
-            selected_tools: List of selected MCP tools
-            
+        This asynchronous method:
+        - Binds the supplied tools to a configured LLM provider, generates an MCP research prompt from the query, and sends it to the LLM.
+        - Processes any tool calls returned by the LLM: locates each named tool in selected_tools, invokes it (async or sync), converts its raw output into a list of standardized result dicts via _process_tool_result, and aggregates them.
+        - Appends the LLM's own textual analysis (if present) as a result entry.
+        
+        Parameters:
+            query: The research query string to send to the LLM.
+            selected_tools: Iterable of tool objects the LLM may call. Each tool is expected to expose a name attribute and be callable via `ainvoke`, `invoke`, or as a (possibly async) callable.
+        
         Returns:
-            List[Dict[str, str]]: Research results in standard format
+            A list of dictionaries representing research results. Each dict contains at least the keys:
+              - "title": short title for the item
+              - "href": a URL or mcp:// reference
+              - "body": textual content
+        
+        Behavior notes:
+        - If selected_tools is empty, the function returns [] immediately.
+        - On any internal error the function catches the exception and returns an empty list.
+        - The function is asynchronous and must be awaited.
         """
         if not selected_tools:
             logger.warning("No tools available for research")
@@ -157,14 +170,17 @@ class MCPResearchSkill:
 
     def _process_tool_result(self, tool_name: str, result: Any) -> List[Dict[str, str]]:
         """
-        Process tool result into search result format.
+        Convert a raw tool output into a standardized list of search-result dictionaries.
         
-        Args:
-            tool_name: Name of the tool that produced the result
-            result: The tool result
-            
-        Returns:
-            List[Dict[str, str]]: Formatted search results
+        This normalizes tool outputs to a list of dicts with keys: `title` (string), `href` (string), and `body` (string).
+        Behavior:
+        - If `result` is a list: each item is processed in order.
+          - If an item is a dict containing a `title` and either `content` or `body`, those fields are used; `href` is taken from `href` or `url`, or falls back to `mcp://{tool_name}/{index}`.
+          - Otherwise the item is stringified and returned as a generic result with title `"Result from {tool_name}"` and `href` `mcp://{tool_name}/{index}`.
+        - If `result` is a dict: a single result is produced using `title` (or `"Result from {tool_name}"`), `href` from `href` or `url` (or `mcp://{tool_name}`), and `body` from `body` or `content` (or the stringified dict).
+        - For any other type: a single generic result is created with the value stringified into `body` and `href` set to `mcp://{tool_name}`.
+        
+        On error while processing, a basic fallback result (title `"Result from {tool_name}"`, `href` `mcp://{tool_name}`, and the stringified input as `body`) is returned in the list.
         """
         search_results = []
 

@@ -72,14 +72,16 @@ def get_retriever(retriever: str):
 
 def get_retrievers(headers: dict[str, str], cfg):
     """
-    Determine which retriever(s) to use based on headers, config, or default.
-
-    Args:
-        headers (dict): The headers dictionary
-        cfg: The configuration object
-
+    Select retriever classes based on request headers, configuration, or a built-in default.
+    
+    Checks headers first (supports "retrievers" as a comma-separated string or "retriever" as a single value), then the cfg object (cfg.retrievers may be a comma-separated string or an iterable, cfg.retriever as a single value). If none are provided, the default retriever name is used. Each resolved retriever name is mapped to a retriever class via get_retriever(); any unrecognized name is replaced with the default retriever class.
+    
+    Parameters:
+        headers (dict[str, str]): HTTP-like headers that may contain "retrievers" or "retriever".
+        cfg: Configuration object that may provide `retrievers` (str or iterable) or `retriever` (str).
+    
     Returns:
-        list: A list of retriever classes to be used for searching.
+        list: A list of retriever classes (not instances). Unrecognized names are substituted with the default retriever class.
     """
     # Check headers first for multiple retrievers
     if headers.get("retrievers"):

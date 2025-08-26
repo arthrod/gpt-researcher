@@ -33,15 +33,23 @@ class MCPToolSelector:
 
     async def select_relevant_tools(self, query: str, all_tools: List, max_tools: int = 3) -> List:
         """
-        Use LLM to select the most relevant tools for the research query.
+        Select the most relevant tools for a research query using an LLM, with a pattern-based fallback.
         
-        Args:
-            query: Research query
-            all_tools: List of all available tools
-            max_tools: Maximum number of tools to select (default: 3)
-            
+        Uses the configured strategic LLM to rank and pick up to `max_tools` from `all_tools`. Each element of
+        `all_tools` is expected to expose `name` and `description` attributes; the function sends indexed tool
+        metadata to the LLM and expects a JSON response containing a `selected_tools` list (each entry should
+        include an `index` referencing `all_tools`, and may include `reason` and `relevance_score`). If the
+        LLM returns no usable response or returned JSON cannot be parsed, the method falls back to a
+        deterministic pattern-based selection.
+        
+        Parameters:
+            query: The research query driving tool selection.
+            all_tools: List of available tool objects (each should provide `.name` and `.description`).
+            max_tools: Maximum number of tools to return; will be capped to len(all_tools).
+        
         Returns:
-            List: Selected tools most relevant for the query
+            List of selected tool objects (a subset of `all_tools`). If LLM selection fails or yields no
+            selections, a fallback list determined by heuristic scoring is returned.
         """
         if not all_tools:
             return []
@@ -127,13 +135,15 @@ class MCPToolSelector:
 
     async def _call_llm_for_tool_selection(self, prompt: str) -> str:
         """
-        Call the LLM using the existing create_chat_completion function for tool selection.
+        Call the configured LLM to generate a tool-selection response for the given prompt.
         
-        Args:
-            prompt (str): The prompt to send to the LLM.
-            
+        This sends the prompt as a single user message to the strategic LLM model configured on self.cfg using a deterministic temperature (0.0). If a researcher with an add_costs method is attached, that method will be used as the cost_callback for the LLM call. On failure (including missing configuration or any runtime error) the method returns an empty string.
+        
+        Parameters:
+            prompt (str): The prompt text sent to the LLM as the user message.
+        
         Returns:
-            str: The generated text response.
+            str: The LLM's text response, or an empty string on error or if no configuration is available.
         """
         if not self.cfg:
             logger.warning("No config available for LLM call")
@@ -161,14 +171,20 @@ class MCPToolSelector:
 
     def _fallback_tool_selection(self, all_tools: List, max_tools: int) -> List:
         """
-        Fallback tool selection using pattern matching if LLM selection fails.
+        Select up to max_tools using a simple pattern-based heuristic when LLM selection fails.
         
-        Args:
-            all_tools: List of all available tools
-            max_tools: Maximum number of tools to select
-            
+        This case-insensitive fallback scans each tool's name and description for research-oriented keywords
+        (e.g., "search", "fetch", "find", "query", "browse", "describe"). Matches in the tool name are
+        counted as higher relevance than matches in the description (name match weight = 3, description
+        match weight = 1). Tools with a total score of zero are ignored. Results are sorted by score
+        (descending) and the top max_tools are returned. If no tools match, an empty list is returned.
+        
+        Parameters:
+            all_tools (List): Iterable of tool objects; each must expose .name (str) and .description (optional str).
+            max_tools (int): Maximum number of tools to return.
+        
         Returns:
-            List: Selected tools
+            List: Selected tool objects (up to max_tools), ordered by descending relevance score.
         """
         # Define patterns for research-relevant tools
         research_patterns = [

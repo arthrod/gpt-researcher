@@ -47,6 +47,20 @@ class SectionRetriever(BaseRetriever):
         self, query: str, *, run_manager: CallbackManagerForRetrieverRun
     ) -> List[Document]:
 
+        """
+        Return all stored sections as LangChain Documents.
+        
+        Builds a Document for each item in self.sections using the section's
+        `written_content` as the document text and `section_title` as metadata.
+        
+        Parameters:
+            query (str): Accepted for Retriever API compatibility but ignored by this implementation.
+        
+        Returns:
+            List[Document]: Documents created from self.sections where each document's
+            page_content is the section's `written_content` and metadata contains
+            "section_title".
+        """
         docs = [
             Document(
                 page_content=page.get("written_content", ""),

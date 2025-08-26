@@ -61,57 +61,19 @@ class GPTResearcher:
         **kwargs
     ):
         """
-        Initialize a GPT Researcher instance.
+        Initialize a GPTResearcher configured to run and orchestrate research workflows, generate reports, manage context, and optionally run multi-component processing (MCP).
         
-        Args:
-            query (str): The research query or question.
-            report_type (str): Type of report to generate.
-            report_format (str): Format of the report (markdown, pdf, etc).
-            report_source (str): Source of information for the report (web, local, etc).
-            tone (Tone): Tone of the report.
-            source_urls (list[str], optional): List of specific URLs to use as sources.
-            document_urls (list[str], optional): List of document URLs to use as sources.
-            complement_source_urls (bool): Whether to complement source URLs with web search.
-            query_domains (list[str], optional): List of domains to restrict search to.
-            documents: Document objects for LangChain integration.
-            vector_store: Vector store for document retrieval.
-            vector_store_filter: Filter for vector store queries.
-            config_path: Path to configuration file.
-            websocket: WebSocket for streaming output.
-            agent: Pre-defined agent type.
-            role: Pre-defined agent role.
-            parent_query: Parent query for subtopic reports.
-            subtopics: List of subtopics to research.
-            visited_urls: Set of already visited URLs.
-            verbose (bool): Whether to output verbose logs.
-            context: Pre-loaded research context.
-            headers (dict, optional): Additional headers for requests and configuration.
-            max_subtopics (int): Maximum number of subtopics to generate.
-            log_handler: Handler for logging events.
-            prompt_family: Family of prompts to use.
-            mcp_configs (list[dict], optional): List of MCP server configurations.
-                Each dictionary can contain:
-                - name (str): Name of the MCP server
-                - command (str): Command to start the server
-                - args (list[str]): Arguments for the server command
-                - tool_name (str): Specific tool to use on the MCP server
-                - env (dict): Environment variables for the server
-                - connection_url (str): URL for WebSocket or HTTP connection
-                - connection_type (str): Connection type (stdio, websocket, http)
-                - connection_token (str): Authentication token for remote connections
-                
-                Example:
-                ```python
-                mcp_configs=[{
-                    "command": "python",
-                    "args": ["my_mcp_server.py"],
-                    "name": "search"
-                }]
-                ```
-            mcp_strategy (str, optional): MCP execution strategy. Options:
-                - "fast" (default): Run MCP once with original query for best performance
-                - "deep": Run MCP for all sub-queries for maximum thoroughness  
-                - "disabled": Skip MCP entirely, use only web retrievers
+        Detailed behavior:
+        - Stores configuration, retrievers, memory, and core components (ResearchConductor, ReportGenerator, ContextManager, BrowserManager, SourceCurator).
+        - If report_type is DeepResearch, initializes a DeepResearchSkill.
+        - Processes MCP initialization: if mcp_configs is provided, calls _process_mcp_configs to adjust retriever settings; resolves MCP execution strategy via _resolve_mcp_strategy.
+        
+        Parameters of note:
+        - mcp_configs (list[dict] | None): Optional MCP server configurations. Each dict may include keys such as "name", "command", "args", "tool_name", "env", "connection_url", "connection_type", and "connection_token". When provided, configs are validated and may cause "mcp" to be added to retriever configuration unless the RETRIEVER environment variable was explicitly set.
+        - mcp_strategy (str | None): Preferred MCP execution strategy. Accepted values: "fast", "deep", "disabled". Deprecated aliases ("optimized" -> "fast", "comprehensive" -> "deep") are mapped with a warning. If omitted, strategy may be derived from mcp_max_iterations or configuration, defaulting to "fast".
+        - mcp_max_iterations (int | None): Deprecated legacy parameter used for backward-compatible strategy mapping (0 -> "disabled", 1 -> "fast", -1 -> "deep", others -> "fast"); supplying mcp_strategy takes precedence.
+        
+        Other parameters are stored and used to configure retrieval, reporting, and research workflows (query, report_type, report_format, report_source, tone, source/document URLs, query_domains, vector_store, websocket, agent/role, context, headers, prompt_family, etc.). This initializer does not return a value.
         """
         self.kwargs = kwargs
         self.query = query
@@ -238,13 +200,12 @@ class GPTResearcher:
 
     def _process_mcp_configs(self, mcp_configs: list[dict]) -> None:
         """
-        Process MCP configurations from a list of configuration dictionaries.
+        Validate and apply MCP configurations and ensure the MCP retriever is enabled when appropriate.
         
-        This method validates the MCP configurations. It only adds MCP to retrievers
-        if no explicit retriever configuration is provided via environment variables.
+        If the RETRIEVER environment variable is not set, this will add "mcp" to the configured retrievers (or set retrievers to "mcp" when none exist). Always stores the provided MCP configuration list on self.mcp_configs for later use by the MCP retriever.
         
-        Args:
-            mcp_configs (list[dict]): List of MCP server configuration dictionaries.
+        Parameters:
+            mcp_configs (list[dict]): List of MCP server configuration dictionaries to store for MCP retrieval.
         """
         # Check if user explicitly set RETRIEVER environment variable
         user_set_retriever = os.getenv("RETRIEVER") is not None

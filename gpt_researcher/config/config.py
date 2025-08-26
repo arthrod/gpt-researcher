@@ -38,6 +38,14 @@ class Config:
             self.mcp_allowed_root_paths = self.mcp_allowed_root_paths
 
     def _set_attributes(self, config: Dict[str, Any]) -> None:
+        """
+        Set instance attributes from a configuration mapping, applying environment overrides and special handling for the RETRIEVER setting.
+        
+        For each key/value in `config`, if an environment variable with the same name is present the value is converted using the type hint from `BaseConfig` via `convert_env_value`; the resulting value is then assigned to an attribute on `self` named after the lowercase key. After processing the mapping, the RETRIEVER value is resolved from the environment or config (defaulting to "tavily"), parsed with `parse_retrievers`, and assigned to `self.retrievers`. If parsing fails, a warning is printed and `self.retrievers` is set to ["tavily"].
+        
+        Parameters:
+            config (Dict[str, Any]): Configuration mapping whose keys are configuration names (matching environment variable names).
+        """
         for key, value in config.items():
             env_value = os.getenv(key)
             if env_value is not None:
@@ -53,6 +61,15 @@ class Config:
             self.retrievers = ["tavily"]
 
     def _set_embedding_attributes(self) -> None:
+        """
+        Set the instance embedding provider and model by parsing the configured embedding string.
+        
+        Parses self.embedding via parse_embedding and assigns the resulting (provider, model)
+        tuple to self.embedding_provider and self.embedding_model respectively.
+        
+        Raises:
+            ValueError: If the embedding string is malformed or references an unsupported provider.
+        """
         self.embedding_provider, self.embedding_model = self.parse_embedding(
             self.embedding
         )
@@ -112,6 +129,14 @@ class Config:
             self.smart_llm_model = os.environ["SMART_LLM_MODEL"] or self.smart_llm_model
 
     def _set_doc_path(self, config: Dict[str, Any]) -> None:
+        """
+        Set and validate the documentation path from the given configuration.
+        
+        Reads 'DOC_PATH' from the provided config, assigns it to self.doc_path, and—if truthy—attempts to validate (and create) the directory via validate_doc_path(). If validation fails, prints a warning and falls back to the DEFAULT_CONFIG['DOC_PATH'] value.
+        
+        Parameters:
+            config (Dict[str, Any]): Configuration mapping expected to contain the 'DOC_PATH' key.
+        """
         self.doc_path = config['DOC_PATH']
         if self.doc_path:
             try:
@@ -152,7 +177,22 @@ class Config:
         return configs
 
     def parse_retrievers(self, retriever_str: str) -> List[str]:
-        """Parse the retriever string into a list of retrievers and validate them."""
+        """
+        Parse a comma-separated retriever string into a validated list of retriever names.
+        
+        The input should be a comma-separated string of retriever identifiers (e.g. "tavily,local").
+        Each name is trimmed of surrounding whitespace and must match one of the available retriever
+        names returned by get_all_retriever_names().
+        
+        Parameters:
+            retriever_str (str): Comma-separated retriever names.
+        
+        Returns:
+            List[str]: A list of validated retriever names in the same order as provided.
+        
+        Raises:
+            ValueError: If any retriever name is not among the available retrievers.
+        """
         from ..retrievers.utils import get_all_retriever_names
 
         retrievers = [retriever.strip()
@@ -260,13 +300,10 @@ class Config:
 
     def get_mcp_server_config(self, name: str) -> dict:
         """
-        Get the configuration for an MCP server.
+        Return the configuration dict for an MCP server with the given name.
         
-        Args:
-            name (str): The name of the MCP server to get the config for.
-                
-        Returns:
-            dict: The server configuration, or an empty dict if the server is not found.
+        If name is falsy, there are no configured servers, or no server with a matching
+        exact "name" key is found, an empty dict is returned.
         """
         if not name or not self.mcp_servers:
             return {}

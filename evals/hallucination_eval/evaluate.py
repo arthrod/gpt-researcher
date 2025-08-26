@@ -17,20 +17,35 @@ class HallucinationEvaluator:
     """Evaluates model outputs for hallucination using the judges library."""
 
     def __init__(self, model: str = "openai/gpt-4o"):
-        """Initialize the hallucination evaluator."""
+        """
+        Create a HallucinationEvaluator configured to judge document-summary non-factuality.
+        
+        Parameters:
+            model (str): Identifier of the underlying judge model to use (e.g., "openai/gpt-4o"). Defaults to "openai/gpt-4o".
+        """
 
         self.summary_judge = HaluEvalDocumentSummaryNonFactual(model=model)
 
     def evaluate_response(self, model_output: str, source_text: str) -> Dict:
         """
-        Evaluate a single model response for hallucination against source documents.
+        Evaluate a model-generated summary against source text for hallucination.
         
-        Args:
-            model_output: The model's response to evaluate
-            source_text: Source text to check summary against
-            
+        Performs a single judgment using the instance's summary_judge and returns a structured result.
+        
+        Parameters:
+            model_output: The model's generated text (summary) to be evaluated.
+            source_text: The source document or context to check the summary against.
+        
         Returns:
-            Dict containing evaluation results
+            dict: {
+                "output": model_output,
+                "source": source_text,
+                "is_hallucination": judgment.score,  # raw score/value returned by the judge (truthy typically indicates hallucination)
+                "reasoning": judgment.reasoning      # human-readable explanation from the judge
+            }
+        
+        Exceptions:
+            Propagates any exception raised by the underlying judge; callers should handle or allow these to bubble up.
         """
         try:
             # Use document summary evaluation
@@ -52,6 +67,13 @@ class HallucinationEvaluator:
 
 def main():
     # Example test case
+    """
+    Run a simple example demonstrating HallucinationEvaluator on a sample model output and source text.
+    
+    This function constructs a HallucinationEvaluator, evaluates a single model response against a source document,
+    and prints the evaluation results (output, source, whether it was classified as a hallucination, and the judge's reasoning).
+    Intended as a command-line/demo entry point; it has no return value and produces console output.
+    """
     model_output = "The capital of France is Paris, a city known for its rich history and culture."
     source_text = "Paris is the capital and largest city of France, located in the northern part of the country."
 

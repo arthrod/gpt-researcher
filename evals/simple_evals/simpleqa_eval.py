@@ -95,7 +95,16 @@ CHOICE_LETTER_TO_STRING = dict(zip(CHOICE_LETTERS, CHOICE_STRINGS))
 
 class SimpleQAEval:
     def __init__(self, grader_model, num_examples=1):
-        """Initialize the evaluator with a grader model and number of examples."""
+        """
+        Initialize the evaluator, load the QA test set, and sample examples.
+        
+        Loads examples from the canonical CSV test set URL, samples `num_examples` entries without replacement,
+        and stores them on self.examples. If `num_examples` exceeds the number of available examples, it
+        is reduced to the available count and a warning is printed. A short message is printed indicating
+        how many examples were selected.
+        
+        The provided grader_model is expected to implement an invoke(messages) method used later for grading.
+        """
         self.grader_model = grader_model
 
         # Load all examples from CSV
@@ -112,7 +121,23 @@ class SimpleQAEval:
         print(f"Selected {num_examples} random examples for evaluation")
 
     def evaluate_example(self, example: dict) -> dict:
-        """Evaluate a single example."""
+        """
+        Evaluate a single QA example by grading the model's prediction and producing standardized metrics and conversation context.
+        
+        The function expects `example` to be a dict containing:
+        - "problem" or "question": the prompt text (either key is accepted; "problem" preferred).
+        - "answer": the gold/correct answer.
+        - "predicted": the model's predicted answer.
+        
+        Returns a dict with:
+        - "score" (float): 1.0 if the grade is "CORRECT", otherwise 0.0.
+        - "metrics" (dict): contains "grade" with one of "CORRECT", "INCORRECT", or "NOT_ATTEMPTED".
+        - "html" (str): empty placeholder.
+        - "convo" (list): a list of three message dicts recording the evaluation context:
+            1) {"role": "evaluator", "content": problem}
+            2) {"role": "evaluator", "content": correct_answer}
+            3) {"role": "agent",     "content": predicted_answer}
+        """
         problem = example.get("problem") or example.get("question")
         correct_answer = example["answer"]
         predicted_answer = example["predicted"]
@@ -137,7 +162,23 @@ class SimpleQAEval:
         }
 
     def grade_response(self, question: str, correct_answer: str, model_answer: str) -> str:
-        """Grade a single response using the grader model."""
+        """
+        Grade a single model answer against the gold target using the configured grader model.
+        
+        Uses the module-level GRADER_TEMPLATE to build a prompt and sends it to self.grader_model.invoke(...).
+        The grader's reply is interpreted as follows:
+        - If the response is exactly one of the choice letters ("A", "B", "C"), it is mapped to the corresponding label via CHOICE_LETTER_TO_STRING.
+        - Otherwise, the function searches the response text for any of the grade strings ("CORRECT", "INCORRECT", "NOT_ATTEMPTED") and returns the first match.
+        - If no recognizable grade is found, returns "NOT_ATTEMPTED".
+        
+        Parameters:
+            question (str): The problem or question text presented to the grader.
+            correct_answer (str): The gold/reference answer to compare against.
+            model_answer (str): The model's predicted answer to be graded.
+        
+        Returns:
+            str: One of "CORRECT", "INCORRECT", or "NOT_ATTEMPTED" indicating the grader's decision.
+        """
         print("\n=== Grading Details ===")
         print(f"Question: {question}")
         print(f"Gold target: {correct_answer}")

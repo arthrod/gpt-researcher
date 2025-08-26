@@ -63,7 +63,16 @@ def get_github_mcp_config():
     ]
 
 def setup_environment():
-    """Validate required environment variables."""
+    """
+    Check that required environment variables for tests are present.
+    
+    Validates that GITHUB_PERSONAL_ACCESS_TOKEN, OPENAI_API_KEY, and TAVILY_API_KEY are set (non-empty). Prints a summary to stdout:
+    - If any are missing, lists them and prints shell export examples, then returns False.
+    - If all are present, prints a success message and returns True.
+    
+    Returns:
+        bool: True if all required environment variables are set, False otherwise.
+    """
     required_vars = {
         "GITHUB_PERSONAL_ACCESS_TOKEN": GITHUB_TOKEN,
         "OPENAI_API_KEY": OPENAI_API_KEY,
@@ -152,7 +161,18 @@ async def test_web_search_mcp():
         return False
 
 async def test_github_mcp():
-    """Test MCP integration with GitHub for code-related queries."""
+    """
+    Run an asynchronous integration test of the GitHub MCP (Model Context Protocol) for a code-related query.
+    
+    Performs the following:
+    - Instantiates GPTResearcher with a GitHub MCP configuration and a predefined code query about React's `useState`.
+    - Executes research to collect context from configured MCP servers.
+    - Generates a report from the collected context.
+    - Persists the generated report to ../test_github_mcp_report.md.
+    
+    Returns:
+        bool: True if the test completes and the report is saved successfully; False if an exception occurs (the function catches exceptions and logs them).
+    """
     print("\n🐙 Testing GitHub MCP Integration")
     print("=" * 50)
 
@@ -214,7 +234,14 @@ async def test_github_mcp():
         return False
 
 async def main():
-    """Main test function."""
+    """
+    Orchestrate MCP integration tests for GPT Researcher.
+    
+    Runs environment validation, executes the Tavily (web search) and GitHub MCP asynchronous tests,
+    prints per-test and overall summaries to stdout, and reports success/failure.
+    
+    This coroutine performs no return value; it may exit early if environment setup fails.
+    """
     print("🚀 Testing MCP Integration with GPT Researcher")
     print("=" * 50)
 
