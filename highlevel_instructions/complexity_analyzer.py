@@ -152,8 +152,13 @@ class ComplexityAnalyzer:
     ) -> dict[str, Any]:
         """Analyze primary complexity dimensions."""
         try:
+<<<<<<< HEAD
             from ..utils.llm import create_chat_completion
 
+=======
+            from gpt_researcher.utils.llm import create_chat_completion
+            
+>>>>>>> 1f1be9a8 (updating)
             analysis_prompt = self._create_enhanced_complexity_prompt(query, context)
 
             response = await create_chat_completion(
@@ -182,8 +187,13 @@ class ComplexityAnalyzer:
     async def _analyze_domain_specifics(self, query: str) -> dict[str, Any]:
         """Analyze domain-specific complexity factors."""
         try:
+<<<<<<< HEAD
             from ..utils.llm import create_chat_completion
 
+=======
+            from gpt_researcher.utils.llm import create_chat_completion
+            
+>>>>>>> 1f1be9a8 (updating)
             domain_prompt = f"""
 Identify domain-specific complexity factors for this research topic:
 
