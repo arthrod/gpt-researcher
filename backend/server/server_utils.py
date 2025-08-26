@@ -344,6 +344,7 @@ def get_config_dict(
     serpapi_api_key: str,
     serper_api_key: str,
     searx_url: str,
+    jina_api_key: str,
 ) -> dict[str, str]:
     return {
         "LANGCHAIN_API_KEY": langchain_api_key or os.getenv("LANGCHAIN_API_KEY", ""),
@@ -355,6 +356,7 @@ def get_config_dict(
         "SEARCHAPI_API_KEY": searchapi_api_key or os.getenv("SEARCHAPI_API_KEY", ""),
         "SERPAPI_API_KEY": serpapi_api_key or os.getenv("SERPAPI_API_KEY", ""),
         "SERPER_API_KEY": serper_api_key or os.getenv("SERPER_API_KEY", ""),
+        "JINA_API_KEY": jina_api_key or os.getenv("JINA_API_KEY", ""),
         "SEARX_URL": searx_url or os.getenv("SEARX_URL", ""),
         "LANGCHAIN_TRACING_V2": os.getenv("LANGCHAIN_TRACING_V2", "true"),
         "DOC_PATH": os.getenv("DOC_PATH", "./my-docs"),

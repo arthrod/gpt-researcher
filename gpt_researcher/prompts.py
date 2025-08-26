@@ -149,12 +149,14 @@ Please conduct thorough research and provide your findings. Use the tools strate
             task = question
 
         context_prompt = (
-            f"""
+            (
+                f"""
 You are a seasoned research assistant tasked with generating search queries to find relevant information for the following task: "{task}".
 Context: {context}
 
 Use this context to inform and refine your search queries. The context provides real-time web information that can help you generate more specific and relevant queries. Consider any current events, recent developments, or specific details mentioned in the context that could enhance the search queries.
 """
+            )
             if context
             else ""
         )
@@ -189,8 +191,6 @@ The response should contain ONLY the list.
         reference_prompt = ""
         if report_source == ReportSource.Web.value:
             reference_prompt = """
-You MUST write all used source urls at the end of the report as references, each preceded by its id in square brackets (e.g., [1]).
-            reference_prompt = f"""
 You MUST write all used source urls at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each.
 Every url should be hyperlinked: [url website](url)
 Additionally, you MUST include hyperlinks to the relevant URLs wherever they are referenced in the report:
@@ -199,7 +199,7 @@ eg: Author, A. A. (Year, Month Date). Title of web page. Website Name. [url webs
 """
         else:
             reference_prompt = """
-You MUST write all used source document names at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each."
+You MUST write all used source document names at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each.
 """
         tone_prompt = f"Write the report in a {tone.value} tone." if tone else ""
 

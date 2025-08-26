@@ -16,13 +16,12 @@ from .tavily.tavily_search import TavilySearch
 
 __all__ = [
     "ArxivSearch",
-    "ArxivSearch",
-    "BingSearch",
     "BingSearch",
     "CustomRetriever",
     "Duckduckgo",
     "ExaSearch",
     "GoogleSearch",
+    "JinaSearch",
     "MCPRetriever",
     "PubMedCentralSearch",
     "SearchApiSearch",
@@ -30,4 +29,5 @@ __all__ = [
     "SemanticScholarSearch",
     "SerpApiSearch",
     "SerperSearch",
+    "TavilySearch",
 ]
