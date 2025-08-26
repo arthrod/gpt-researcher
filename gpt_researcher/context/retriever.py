@@ -1,4 +1,5 @@
-from typing import Dict, List
+from typing import Any
+from pydantic import Field
 
 from langchain.callbacks.manager import CallbackManagerForRetrieverRun
 from langchain.schema import Document
