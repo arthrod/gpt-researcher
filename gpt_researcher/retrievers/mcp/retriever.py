@@ -51,15 +51,20 @@ class MCPRetriever:
         **kwargs
     ):
         """
-        Initialize the MCP Retriever.
+        Create an MCPRetriever for performing MCP-based research on a query.
         
-        Args:
-            query (str): The search query string.
-            headers (dict, optional): Headers containing MCP configuration.
-            query_domains (list, optional): List of domains to search (not used in MCP).
-            websocket: WebSocket for stream logging.
-            researcher: Researcher instance containing mcp_configs and cfg.
-            **kwargs: Additional arguments (for compatibility).
+        Initializes internal components (MCP client manager, tool selector, research skill, streamer) and caches. If no MCP server configurations are available the retriever will log/stream a critical message; if the provided researcher lacks a required configuration object this constructor raises ValueError.
+        
+        Parameters:
+            query (str): Search query to run.
+            headers (dict | None): Optional headers containing MCP-related configuration.
+            query_domains (list[str] | None): Optional list of domains (not used by MCP retrieval).
+            websocket: Optional websocket used for streaming logs.
+            researcher: Object providing researcher.mcp_configs and researcher.cfg; required to derive MCP configurations and LLM config.
+            **kwargs: Additional compatibility parameters (ignored).
+        
+        Raises:
+            ValueError: If the provided researcher is missing the required cfg attribute.
         """
         self.query = query
         self.headers = headers or {}
@@ -101,10 +106,14 @@ class MCPRetriever:
 
     def _get_config(self):
         """
-        Get configuration from the researcher instance.
+        Return the researcher's configuration object containing LLM settings.
         
-        Returns:
-            Config: Configuration object with LLM settings.
+        If the retriever was constructed with a researcher that exposes a `cfg` attribute,
+        this method returns that configuration. If no such researcher or cfg is present,
+        a ValueError is raised.
+        
+        Raises:
+            ValueError: If the researcher is missing or does not provide a `cfg` attribute.
         """
         if self.researcher and hasattr(self.researcher, 'cfg'):
             return self.researcher.cfg
@@ -115,13 +124,16 @@ class MCPRetriever:
 
     async def search_async(self, max_results: int = 10) -> List[Dict[str, str]]:
         """
-        Perform an async search using MCP tools with intelligent two-stage approach.
+        Perform an asynchronous two-stage MCP-based search for the retriever's query.
         
-        Args:
-            max_results: Maximum number of results to return.
-            
+        Performs (1) tool discovery, (2) selection of up to three relevant tools, then runs research with the selected tools.
+        Streams stage events and warnings via the retriever's streamer, and always attempts to close the MCP client on completion.
+        
+        Parameters:
+            max_results (int): Maximum number of results to return (default 10). Results are truncated to this length if more are produced.
+        
         Returns:
-            List[Dict[str, str]]: The search results.
+            List[Dict[str, str]]: A list of result dictionaries (e.g., containing keys like "title", "href", "body"). Returns an empty list on missing MCP configurations, if no tools are selected, or on error.
         """
         # Check if we have any server configurations
         if not self.mcp_configs:
@@ -200,16 +212,15 @@ class MCPRetriever:
 
     def search(self, max_results: int = 10) -> List[Dict[str, str]]:
         """
-        Perform a search using MCP tools with intelligent two-stage approach.
+        Synchronous wrapper around search_async that performs an MCP-based search for the retriever's query.
         
-        This is the synchronous interface required by GPT Researcher.
-        It wraps the async search_async method.
+        If an asyncio event loop is already running, the method runs the async search in a separate thread with its own event loop and performs thorough cleanup of pending tasks and the loop; otherwise it runs the coroutine directly. Returns an empty list if no MCP server configurations are available or if an error occurs (the method does not raise in those cases).
         
-        Args:
-            max_results: Maximum number of results to return.
-            
+        Parameters:
+            max_results (int): Maximum number of results to return (default 10).
+        
         Returns:
-            List[Dict[str, str]]: The search results.
+            List[Dict[str, str]]: Search results (possibly empty on error or missing configs).
         """
         # Check if we have any server configurations
         if not self.mcp_configs:
@@ -232,6 +243,18 @@ class MCPRetriever:
 
                 # Create a new event loop in a separate thread
                 def run_in_thread():
+                    """
+                    Run the asynchronous search in a fresh event loop created for a separate thread and return its result.
+                    
+                    Creates a new asyncio event loop, sets it as the current loop for the thread, runs self.search_async(max_results) to completion, and returns the result. After execution, performs an enhanced cleanup routine that attempts to:
+                    - cancel all pending tasks in the new loop,
+                    - wait (with a 5s timeout) for cancelled tasks to finish,
+                    - allow brief sleeps to let I/O/clients settle,
+                    - force a garbage collection pass,
+                    - and close the event loop.
+                    
+                    All cleanup errors and timeouts are intentionally suppressed so that the primary search result is returned and no exceptions from cleanup leak out.
+                    """
                     new_loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(new_loop)
                     try:
@@ -298,10 +321,12 @@ class MCPRetriever:
 
     async def _get_all_tools(self) -> List:
         """
-        Get all available tools from MCP servers.
+        Retrieve all available MCP tools, using a cached value when present.
+        
+        Asynchronously fetches tools from the MCP client manager. If a non-empty list is returned, the result is cached in self._all_tools_cache and a log is streamed. If no tools are available or an error occurs, a warning or error is streamed and an empty list is returned.
         
         Returns:
-            List: All available MCP tools
+            List: A list of MCP tool objects/dictionaries; empty list if no tools are available or on error.
         """
         if self._all_tools_cache is not None:
             return self._all_tools_cache

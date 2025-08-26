@@ -9,12 +9,18 @@ class ArxivScraper:
 
     def scrape(self):
         """
-        The function scrapes relevant documents from Arxiv based on a given link and returns the content
-        of the first document.
+        Scrape an arXiv entry from self.link and return assembled context, images list, and the document title.
+        
+        Uses the last path segment of self.link as the arXiv query, retrieves up to two documents via ArxivRetriever, and builds a context string containing the published date, authors, and the first document's page content.
         
         Returns:
-          The code is returning the page content of the first document retrieved by the ArxivRetriever
-        for a given query extracted from the link.
+            tuple:
+                context (str): "Published: {Published}; Author: {Authors}; Content: {page_content}" built from the first retrieved document.
+                image (list): Currently an empty list (placeholder for extracted images).
+                title (str): The Title metadata of the first retrieved document.
+        
+        Notes:
+            - Assumes at least one document is returned and that the first document contains 'Published', 'Authors', and 'Title' keys in metadata and a non-empty page_content. If these are missing, a KeyError or IndexError may occur.
         """
         query = self.link.split("/")[-1]
         retriever = ArxivRetriever(load_max_docs=2, doc_content_chars_max=None)

@@ -16,6 +16,21 @@ load_dotenv()
 
 def open_task():
     # Get the directory of the current script
+    """
+    Load and return the task configuration from task.json, optionally overriding the model via the STRATEGIC_LLM environment variable.
+    
+    Reads task.json from the same directory as this module and returns its contents as a dict. If the file is empty or evaluates to false, raises an Exception indicating a valid task.json is required. If the environment variable STRATEGIC_LLM is set and contains a colon, the substring after the first colon is used to override task["model"].
+    
+    Returns:
+        dict: The parsed task configuration.
+    
+    Raises:
+        Exception: If the loaded task is empty/falsey.
+    
+    Notes:
+        - The function will propagate file I/O and JSON parsing errors (e.g., FileNotFoundError, JSONDecodeError) raised by open() and json.load().
+        - Current implementation has a bug: if STRATEGIC_LLM is set but does not contain a colon, it attempts to assign an undefined variable and will raise a NameError.
+    """
     current_dir = os.path.dirname(os.path.abspath(__file__))
     # Construct the absolute path to task.json
     task_json_path = os.path.join(current_dir, 'task.json')

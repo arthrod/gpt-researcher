@@ -40,14 +40,17 @@ def extract_headers(markdown_text: str) -> List[Dict]:
 
 def extract_sections(markdown_text: str) -> List[Dict[str, str]]:
     """
-    Extract all written sections from subtopic report.
-
-    Args:
-        markdown_text (str): Subtopic report text.
-
+    Return a list of written sections found in the given Markdown text.
+    
+    Converts the Markdown to HTML, then finds each header (<h1>–<h6>) and the HTML content that follows it until the next header or end of document. HTML tags are stripped from the content and only sections with non-empty text are included.
+    
+    Parameters:
+        markdown_text (str): Markdown source to extract sections from.
+    
     Returns:
-        List[Dict[str, str]]: List of sections, each section is a dictionary containing
-        'section_title' and 'written_content'.
+        List[Dict[str, str]]: A list of mappings with keys:
+            - "section_title": header text (str)
+            - "written_content": section body with HTML tags removed and trimmed (str)
     """
     sections = []
     parsed_md = markdown.markdown(markdown_text)
@@ -67,13 +70,17 @@ def extract_sections(markdown_text: str) -> List[Dict[str, str]]:
 
 def table_of_contents(markdown_text: str) -> str:
     """
-    Generate a table of contents for the given markdown text.
-
-    Args:
-        markdown_text (str): The markdown text to process.
-
+    Build a nested Markdown table of contents from the headings in the given Markdown text.
+    
+    The function extracts headings (via extract_headers) and returns a Markdown string starting with
+    "## Table of Contents" followed by a bullet list of headers. Nested headers are represented by
+    indentation of 4 spaces per level. If an error occurs during TOC generation, the original
+    markdown_text is returned unchanged.
+    Parameters:
+        markdown_text (str): Markdown source to analyze for headings.
+    
     Returns:
-        str: The generated table of contents.
+        str: Markdown containing the generated table of contents, or the original markdown_text on error.
     """
     def generate_table_of_contents(headers, indent_level=0):
         toc = ""

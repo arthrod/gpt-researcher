@@ -6,7 +6,28 @@ import re
 import bs4
 
 def get_relevant_images(soup: BeautifulSoup, url: str) -> list:
-    """Extract relevant images from the page"""
+    """
+    Extract up to 10 relevant image URLs from the provided BeautifulSoup document, ranked by a simple relevance score.
+    
+    The function resolves each <img> src against the provided base `url`, ignores non-http(s) sources, and filters out small images when explicit width/height attributes indicate low resolution. Each returned item is a dict with keys:
+    - 'url': absolute image URL
+    - 'score': integer relevance score (higher is more relevant)
+    
+    Scoring (applied in order):
+    - 4: image has a semantic class indicating prominence (one of 'header', 'featured', 'hero', 'thumbnail', 'main', 'content')
+    - 3: width >= 2000 and height >= 1000
+    - 2: width >= 1600 or height >= 800
+    - 1: width >= 800 or height >= 500
+    - 0: width >= 500 or height >= 300
+    
+    Parameters:
+        soup (BeautifulSoup): Parsed HTML document to search for <img> tags.
+        url (str): Base URL used to resolve relative image src values.
+    
+    Returns:
+        list: At most 10 dictionaries sorted by descending 'score', each with keys 'url' and 'score'.
+        Returns an empty list on unexpected errors.
+    """
     image_urls = []
 
     try:
@@ -62,7 +83,17 @@ def extract_title(soup: BeautifulSoup) -> str:
     return soup.title.string if soup.title else ""
 
 def get_image_hash(image_url: str) -> str:
-    """Calculate a simple hash based on the image filename and essential query parameters"""
+    """
+    Generate an MD5 fingerprint for an image URL based on its filename and any CDN-style 'url' query parameter.
+    
+    The function parses the provided URL, takes the last path segment (filename) and concatenates any values of the 'url' query parameter (if present), then returns the lowercase hex MD5 of that combined identifier. This is intended as a lightweight deduplication key that focuses on the file name and common CDN passthrough parameters rather than the full URL.
+    
+    Parameters:
+        image_url (str): The image URL to fingerprint.
+    
+    Returns:
+        str | None: Lowercase MD5 hex string of the derived image identifier, or None if an error occurs while parsing or hashing.
+    """
     try:
         parsed_url = urlparse(image_url)
 

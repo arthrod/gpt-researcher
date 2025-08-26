@@ -16,15 +16,16 @@ class SourceCurator:
         max_results: int = 10,
     ) -> List:
         """
-        Rank sources based on research data and guidelines.
-
-        Args:
-            query: The research query/task
-            source_data: List of source documents to rank
-            max_results: Maximum number of top sources to return
-
+        Rank and curate a list of sources using an LLM and return the curated results.
+        
+        Calls the researcher's prompt to evaluate sources for credibility and relevance, requests the LLM to return a JSON-serializable list of curated sources (up to max_results), and parses that response. On failure (e.g., parsing or LLM error) the original source_data is returned as a fallback. When the researcher is verbose, progress messages are streamed to the researcher's websocket.
+        
+        Parameters:
+            source_data (List): List of source records/documents to be evaluated.
+            max_results (int): Maximum number of top sources to request from the LLM (default 10).
+        
         Returns:
-            str: Ranked list of source URLs with reasoning
+            List: Curated list of sources (parsed from the LLM's JSON response) or the original source_data on error.
         """
         print(f"\n\nCurating {len(source_data)} sources: {source_data}")
         if self.researcher.verbose:

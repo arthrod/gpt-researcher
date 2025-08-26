@@ -6,6 +6,11 @@ load_dotenv()
 async def main():
 
     # Example usage of get_llm function
+    """
+    Asynchronously create an LLM client with a sample configuration, print its settings, and run a quick runtime test via test_llm.
+    
+    This function demonstrates usage of get_llm by constructing an OpenAI-based client (model "gpt-3.5-turbo", temperature 0.7, max_tokens 1000), printing the chosen configuration and the returned client object, then awaiting test_llm(llm) to verify the client can produce a chat response.
+    """
     llm_provider = "openai"
     model = "gpt-3.5-turbo"
     temperature = 0.7

@@ -157,7 +157,34 @@ class DeepResearch:
         visited_urls: Set[str] = None,
         on_progress = None
     ) -> Dict[str, Any]:
-        """Conduct deep iterative research"""
+        """
+        Perform iterative, depth-limited research on a starting query by generating SERP queries, running concurrent sub-research jobs, and aggregating learnings, visited URLs, and citations.
+        
+        This method:
+        - Generates up to `breadth` SERP queries for the given `query`.
+        - Processes those queries concurrently (bounded by the instance's concurrency limit) by invoking a researcher for each query, extracting learnings, follow-up questions, and citations.
+        - If `depth > 1`, recursively performs deeper research using each result's research goal and follow-up questions, decreasing depth and reducing breadth.
+        - Aggregates and deduplicates learnings, merges citation mappings, and accumulates visited URLs.
+        
+        Parameters:
+            query: The initial query string or a composed query used for this research step.
+            breadth: Maximum number of SERP queries to generate and process in this round.
+            depth: Remaining recursion depth; when > 1, the method will spawn deeper research rounds.
+            learnings: Optional list of prior learnings to accumulate into the current run (defaults to empty).
+            citations: Optional mapping of learning -> source URL to merge with new citations (defaults to empty).
+            visited_urls: Optional set of already visited URLs to avoid revisiting (defaults to empty).
+            on_progress: Optional callback(progress: ResearchProgress) invoked with progress updates at key stages.
+        
+        Returns:
+            A dictionary with:
+              - 'learnings': deduplicated list of discovered learnings (List[str]).
+              - 'visited_urls': list of visited URLs accumulated during the run (List[str]).
+              - 'citations': merged mapping of learnings to source URLs (Dict[str, str]).
+        
+        Notes:
+        - Failed per-query processing is logged and skipped; other queries continue.
+        - Progress updates (via `on_progress`) occur at start, per-query start/completion, and during recursion.
+        """
         if learnings is None:
             learnings = []
         if citations is None:
@@ -182,6 +209,25 @@ class DeepResearch:
         semaphore = asyncio.Semaphore(self.concurrency_limit)
 
         async def process_query(serp_query: Dict[str, str]) -> Optional[Dict[str, Any]]:
+            """
+            Process a single SERP query: run a GPTResearcher on the query, analyze its context, and return extracted findings.
+            
+            Parameters:
+                serp_query (Dict[str, str]): A mapping with at least 'query' (the search query string) and 'researchGoal' (the goal associated with the query).
+            
+            Returns:
+                Optional[Dict[str, Any]]: On success, a dictionary with keys:
+                    - 'learnings' (List[str]): Extracted learnings from the query's results.
+                    - 'visited_urls' (Set[str]): URLs visited during research for this query.
+                    - 'followUpQuestions' (List[str]): Follow-up questions suggested from the results.
+                    - 'researchGoal' (str): The original research goal from the provided serp_query.
+                    - 'citations' (Dict[str, str]): Mapping of learnings to citation URLs (when available).
+                Returns None if processing fails (errors are logged).
+                
+            Side effects:
+                - Updates the shared progress object (progress.current_query and progress.completed_queries) and invokes the on_progress callback if provided.
+                - May log errors on failure.
+            """
             async with semaphore:
                 try:
                     progress.current_query = serp_query['query']

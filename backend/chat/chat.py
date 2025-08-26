@@ -26,7 +26,20 @@ class ChatAgentWithMemory:
         self.graph = self.create_agent()
 
     def create_agent(self):
-        """Create React Agent Graph"""
+        """
+        Create and configure a React Agent Graph backed by an LLM and an in-memory vector store.
+        
+        Builds an LLM provider from configuration and instantiates a React Agent Graph with a retrieval tool and memory checkpointer. If this instance has no preexisting vector store, the method will:
+        - split and embed self.report,
+        - create and store self.chat_config (with a unique thread_id),
+        - set self.embedding and self.vector_store, and
+        - index the document chunks into the in-memory vector store.
+        
+        Notes:
+        - Temperature and max_tokens are only added to the LLM init kwargs when the selected model supports temperature.
+        - Returns the created agent graph instance.
+        - Side effects: may set self.chat_config, self.embedding, and self.vector_store.
+        """
         cfg = Config()
 
         # Retrieve LLM using get_llm with settings from config
@@ -67,18 +80,41 @@ class ChatAgentWithMemory:
         return graph
 
     def vector_store_tool(self, vector_store) -> Tool:
-        """Create Vector Store Tool"""
+        """
+        Create a retrieval tool that queries the provided vector store for contextual documents.
+        
+        The returned tool is callable by the agent and accepts a single string `query`. It builds a retriever
+        from the given vector store (top-k = 4) and returns the retriever's results for the query.
+        """
         @tool
         def retrieve_info(query):
             """
-            Consult the report for relevant contexts whenever you don't know something
+            Retrieve relevant contextual documents from the vector store for a user query.
+            
+            Performs a k=4 retrieval against the enclosing vector_store and returns the retriever's result (contextual documents or snippets) for use by the agent.
+            
+            Parameters:
+                query (str): The user query or prompt to search for relevant context.
+            
+            Returns:
+                The retriever's response containing the retrieved contexts (format depends on the vector store implementation).
             """
             retriever = vector_store.as_retriever(k = 4)
             return retriever.invoke(query)
         return retrieve_info
 
     def _process_document(self, report):
-        """Split Report into Chunks"""
+        """
+        Split a long report string into smaller text chunks suitable for embedding and indexing.
+        
+        This uses a RecursiveCharacterTextSplitter configured to produce chunks of up to 1024 characters with a 20-character overlap to preserve context between chunks.
+        
+        Parameters:
+            report (str): The full report text to split.
+        
+        Returns:
+            List[str]: A list of text chunks extracted from the report.
+        """
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1024,
             chunk_overlap=20,

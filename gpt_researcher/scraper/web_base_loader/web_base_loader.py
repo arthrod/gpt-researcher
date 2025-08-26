@@ -10,13 +10,19 @@ class WebBaseLoaderScraper:
 
     def scrape(self) -> tuple:
         """
-        This Python function scrapes content from a webpage using a WebBaseLoader object and returns the
-        concatenated page content.
+        Scrape a web page's main text content, relevant image URLs, and HTML title.
+        
+        Uses a WebBaseLoader to load and concatenate document content for the given link, then performs an HTTP GET and parses the page with BeautifulSoup to extract relevant image URLs and the page title.
         
         Returns:
-          The `scrape` method is returning a string variable named `content` which contains the
-        concatenated page content from the documents loaded by the `WebBaseLoader`. If an exception
-        occurs during the process, an error message is printed and an empty string is returned.
+            tuple: (content, image_urls, title)
+                - content (str): Concatenated page text produced by WebBaseLoader (empty string on failure).
+                - image_urls (list[str]): List of relevant image URLs discovered in the page (empty list on failure).
+                - title (str): The page title extracted from the HTML (empty string on failure).
+        
+        Notes:
+            - The loader is configured to disable SSL verification for its requests.
+            - Network operations are performed; on any exception the function prints an error and returns ("", [], "").
         """
         try:
             from langchain_community.document_loaders import WebBaseLoader

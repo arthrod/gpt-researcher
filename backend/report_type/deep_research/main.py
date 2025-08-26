@@ -5,6 +5,14 @@ import asyncio
 
 async def main(task: str):
     # Progress callback
+    """
+    Run a deep research workflow for a given task and save the generated report as a PDF.
+    
+    Starts a GPTResearcher configured for "deep" research, prints progress updates (depth, breadth, queries, current query) via a progress callback while research is conducted, generates a Markdown report, saves it to "deep_research_report.pdf" (via write_md_to_pdf), and prints the final report.
+    
+    Parameters:
+        task (str): Natural-language research query or prompt to investigate.
+    """
     def on_progress(progress):
         print(f"Depth: {progress.current_depth}/{progress.total_depth}")
         print(f"Breadth: {progress.current_breadth}/{progress.total_breadth}")

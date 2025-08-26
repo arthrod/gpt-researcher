@@ -38,11 +38,20 @@ class SearxSearch:
 
     def search(self, max_results: int = 10) -> List[Dict[str, str]]:
         """
-        Searches the query using SearxNG API
-        Args:
-            max_results: Maximum number of results to return
+        Perform the search query against a SearxNG instance and return normalized results.
+        
+        Queries the SearxNG API (endpoint "{base_url}/search") requesting JSON results and returns up to max_results items normalized to dictionaries with keys "href" (result URL) and "body" (result content).
+        
+        Parameters:
+            max_results (int): Maximum number of results to return (default 10).
+        
         Returns:
-            List of dictionaries containing search results
+            List[Dict[str, str]]: A list of result dictionaries with keys:
+                - "href": URL of the result (empty string if missing).
+                - "body": Content/summary of the result (empty string if missing).
+        
+        Raises:
+            Exception: If the HTTP request fails (network/HTTP error) or if the response cannot be decoded as JSON.
         """
         search_url = urljoin(self.base_url, "search")
         # TODO: Add support for query domains
