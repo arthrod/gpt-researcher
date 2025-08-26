@@ -111,10 +111,10 @@ class BrowserScraper:
 
             # print(f"{self.selenium_web_browser.capitalize()} driver set up successfully.")
         except Exception as e:
-            print(f"Failed to set up {self.selenium_web_browser} driver: {e!s}")
-            print("Full stack trace:")
-            print(traceback.format_exc())
-            raise
+        except Exception as e:
+            from loguru import logger
+            logger.exception(f"Failed to set up {self.selenium_web_browser} driver")
+            raise RuntimeError(f"Failed to set up {self.selenium_web_browser} driver") from e
 
     def _load_saved_cookies(self):
         """Load saved cookies before visiting the target URL"""
