@@ -42,10 +42,28 @@ class MCPClientManager:
 
     def convert_configs_to_langchain_format(self) -> dict[str, dict[str, Any]]:
         """
+<<<<<<< HEAD
         Convert GPT Researcher MCP configs to langchain-mcp-adapters format.
 
+=======
+        Convert the stored GPT Researcher MCP server configurations into the format expected by langchain-mcp-adapters.
+        
+        This inspects each entry in self.mcp_configs and produces a per-server configuration mapping suitable for MultiServerMCPClient:
+        - Derives a server name from config["name"] or uses "mcp_server_{i+1}" when absent.
+        - Infers transport from connection_url:
+          - ws/wss -> transport "websocket" with "url".
+          - http/https -> transport "streamable_http" with "url".
+          - Otherwise falls back to config["connection_type"] (default "stdio"); the URL is included only for transports that accept it (e.g., "websocket", "streamable_http", "http").
+        - If no connection_url is present, uses config["connection_type"] or "stdio" as transport.
+        - For "stdio" transports with a "command":
+          - Includes "command".
+          - Normalizes "args" into a list (splits a string value) and includes it as "args".
+          - Includes "env" when provided.
+        - If "connection_token" is present, includes it as "token".
+        
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         Returns:
-            Dict[str, Dict[str, Any]]: Server configurations for MultiServerMCPClient
+            Dict[str, Dict[str, Any]]: Mapping of server names to server configuration dictionaries ready for MultiServerMCPClient.
         """
         server_configs = {}
 
@@ -122,10 +140,17 @@ class MCPClientManager:
 
     async def get_or_create_client(self) -> object | None:
         """
+<<<<<<< HEAD
         Get or create a MultiServerMCPClient with proper lifecycle management.
 
+=======
+        Get or create a MultiServerMCPClient and cache it on the manager.
+        
+        If a client already exists, it is returned. If the langchain-mcp-adapters are missing, no MCP configurations are provided, or client creation fails, this method returns None. On success the created client is stored in self._client for subsequent calls.
+        
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         Returns:
-            MultiServerMCPClient: The client instance or None if creation fails
+            Optional[object]: The existing or newly created MultiServerMCPClient instance, or None if unavailable or creation failed.
         """
         async with self._client_lock:
             if self._client is not None:
@@ -172,10 +197,19 @@ class MCPClientManager:
 
     async def get_all_tools(self) -> list:
         """
+<<<<<<< HEAD
         Get all available tools from MCP servers.
 
+=======
+        Return a list of all tools exposed by the configured MCP servers.
+        
+        This coroutine obtains (or lazily creates) the MCP client and requests tools from all configured servers.
+        If no client can be created, no tools are available, or an error occurs while fetching tools, an empty list
+        is returned rather than raising.
+        
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         Returns:
-            List: All available MCP tools
+            List: A list of tool objects provided by the MCP servers; empty if none are available or on error.
         """
         client = await self.get_or_create_client()
         if not client:

@@ -78,9 +78,12 @@ VALID_RETRIEVERS = [
 
 def get_all_retriever_names():
     """
-    Get all available retriever names
-    :return: List of all available retriever names
-    :rtype: list
+    Return the names of available retriever subdirectories located alongside this module.
+    
+    Searches the directory containing this file for entries that are directories and do not start with '__' (e.g., excludes __pycache__). On error, logs the failure and returns the module-level fallback constant VALID_RETRIEVERS.
+    
+    Returns:
+        list[str]: Directory names representing available retrievers.
     """
     try:
         current_dir = os.path.dirname(os.path.abspath(__file__))

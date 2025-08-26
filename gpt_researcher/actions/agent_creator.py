@@ -17,18 +17,9 @@ async def choose_agent(
     **kwargs,
 ):
     """
-    Chooses the agent automatically
-    Args:
-        parent_query: In some cases the research is conducted on a subtopic from the main query.
-            The parent query allows the agent to know the main context for better reasoning.
-        query: original query
-        cfg: Config
-        cost_callback: callback for calculating llm costs
-        prompt_family: Family of prompts
-
-    Returns:
-        agent: Agent name
-        agent_role_prompt: Agent role prompt
+    Automatically selects an agent for a research task by querying the configured LLM.
+    
+    If parent_query is provided, it is prepended to query ("parent_query - query") to give context. The function sends the combined task to the LLM (using prompt_family.auto_agent_instructions()) and expects a JSON response containing the keys "server" and "agent_role_prompt". Returns a tuple (agent_name, agent_role_prompt). If the LLM response cannot be parsed as JSON, the function delegates recovery to handle_json_error and returns its result.
     """
     query = f"{parent_query} - {query}" if parent_query else f"{query}"
     response = None  # Initialize response to ensure it's defined

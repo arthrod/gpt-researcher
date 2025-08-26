@@ -232,6 +232,7 @@ Format each question on a new line starting with 'Question: '""",
         }
 
     async def deep_research(
+<<<<<<< HEAD
         self,
         query: str,
         breadth: int,
@@ -242,6 +243,48 @@ Format each question on a new line starting with 'Question: '""",
         on_progress=None,
     ) -> dict[str, Any]:
         """Conduct deep iterative research"""
+=======
+            self,
+            query: str,
+            breadth: int,
+            depth: int,
+            learnings: List[str] = None,
+            citations: Dict[str, str] = None,
+            visited_urls: Set[str] = None,
+            on_progress=None
+    ) -> Dict[str, Any]:
+        """
+            Perform iterative, concurrent web research starting from `query`, collecting learnings, citations, visited URLs, context, and sources.
+            
+            This method:
+            - Generates SERP-like subqueries from `query` (breadth) and processes them concurrently (bounded by the instance's concurrency_limit).
+            - For each subquery, runs a GPTResearcher to fetch context/sources, extracts learnings and follow-up questions via process_research_results, and aggregates results.
+            - Recursively performs deeper research when `depth > 1`, reducing breadth and depth for subsequent levels and merging deeper results into the accumulators.
+            - Updates the instance's self.context and self.research_sources with collected context and sources.
+            - Logs and skips individual subquery failures; failures do not raise from this function.
+            
+            Parameters:
+                query (str): The initial research query or a composed query for recursive steps.
+                breadth (int): Number of subqueries (SERP-like queries) to generate and process at this level.
+                depth (int): Remaining recursive depth (1 means no further recursion).
+                learnings (List[str], optional): Existing learnings to seed aggregation; treated as an accumulator.
+                citations (Dict[str, str], optional): Existing mapping of learning -> source URL to seed aggregation.
+                visited_urls (Set[str], optional): Set of URLs already visited to avoid duplication across the run.
+                on_progress (callable, optional): Optional callback receiving a ResearchProgress instance to report progress updates.
+            
+            Returns:
+                Dict[str, Any]: A dictionary with aggregated results:
+                    - 'learnings' (List[str]): Deduplicated list of collected learnings.
+                    - 'visited_urls' (List[str]): List of visited URLs accumulated during this run.
+                    - 'citations' (Dict[str, str]): Mapping of learning text to source URL.
+                    - 'context' (List[str]): Trimmed list of context items, limited by MAX_CONTEXT_WORDS.
+                    - 'sources' (List[Any]): Flat list of source metadata collected from per-query researchers.
+            
+            Side effects:
+                - Extends self.context and self.research_sources with collected context and sources.
+                - Does not re-raise exceptions from individual subquery processing; those queries are logged and skipped.
+            """
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         if learnings is None:
             learnings = []
         if citations is None:
@@ -267,7 +310,40 @@ Format each question on a new line starting with 'Question: '""",
         # Process queries with concurrency limit
         semaphore = asyncio.Semaphore(self.concurrency_limit)
 
+<<<<<<< HEAD
         async def process_query(serp_query: dict[str, str]) -> dict[str, Any] | None:
+=======
+        async def process_query(serp_query: Dict[str, str]) -> Optional[Dict[str, Any]]:
+            """
+            Process a single SERP-style query: run web research, extract learnings and citations, and return aggregated results.
+            
+            Performs these steps under the concurrency semaphore:
+            - Updates and emits progress via the outer `progress` and `on_progress` callback.
+            - Instantiates a GPTResearcher for the given query and runs its asynchronous conduct_research().
+            - Calls self.process_research_results to extract learnings, follow-up questions, and citations.
+            - Aggregates and returns results suitable for higher-level merging.
+            
+            Parameters:
+                serp_query (dict): A SERP-like query object. Expected keys:
+                    - "query" (str): The search query to research.
+                    - "researchGoal" (str, optional): A short description of the research goal or intent.
+            
+            Returns:
+                Optional[dict]: A dictionary of results, or None if processing failed. When not None, the dict contains:
+                    - "learnings" (List[str]): Extracted learning statements.
+                    - "visited_urls" (List[str]): URLs visited during research.
+                    - "followUpQuestions" (List[str]): Follow-up questions suggested by the processor.
+                    - "researchGoal" (str|None): The original research goal from the input query.
+                    - "citations" (Dict[str, str]): Mapping from learning text to source URL.
+                    - "context" (str): Raw context returned by the GPTResearcher (empty string if none).
+                    - "sources" (List[Any]): Any structured sources metadata collected by the GPTResearcher.
+            
+            Side effects:
+                - Mutates the outer `progress` object and may call the `on_progress` callback.
+                - Updates researcher state (visited URLs / research sources) indirectly via GPTResearcher.
+                - Logs errors and returns None on exceptions.
+            """
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
             async with semaphore:
                 try:
                     progress.current_query = serp_query["query"]
@@ -395,7 +471,22 @@ Format each question on a new line starting with 'Question: '""",
         }
 
     async def run(self, on_progress=None) -> str:
-        """Run the deep research process and generate final report"""
+        """
+        Orchestrate the deep research workflow, persist results to the researcher, and return the final context.
+        
+        Performs a full deep research run using the configured breadth/depth:
+        - Generates follow-up questions and runs iterative, concurrent research.
+        - Records research costs and emits a cost event if a log handler is available.
+        - Assembles learnings with source citations, appends additional context, trims to the global word limit,
+          and stores the joined result on self.researcher.context.
+        - Updates self.researcher.visited_urls and, if present, self.researcher.research_sources.
+        
+        Parameters:
+            on_progress (callable, optional): Callback invoked with progress updates during the run (used for UI or telemetry).
+        
+        Returns:
+            str: The final researcher context (same value stored in self.researcher.context).
+        """
         start_time = time.time()
 
         # Log initial costs

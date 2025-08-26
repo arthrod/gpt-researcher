@@ -14,13 +14,15 @@ class BrowserManager:
 
     async def browse_urls(self, urls: list[str]) -> list[dict]:
         """
-        Scrape content from a list of URLs.
-
-        Args:
-            urls (list[str]): list of URLs to scrape.
-
+        Scrape content from the provided URLs and update the researcher with sources and selected images.
+        
+        Performs asynchronous scraping of the given list of URL strings, returns the scraped content (list of dicts), and has the side effect of adding the scraped sources to the researcher and selecting up to four top, non-duplicate images to add to the researcher. When the researcher's verbose flag is set, progress and results are streamed to the researcher's websocket.
+        
+        Parameters:
+            urls (list[str]): URLs to scrape.
+        
         Returns:
-            list[dict]: list of scraped content results.
+            list[dict]: Scraped content entries produced by the scraper (each entry is a dict).
         """
         if self.researcher.verbose:
             await stream_output(

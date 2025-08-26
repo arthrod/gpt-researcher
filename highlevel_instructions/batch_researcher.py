@@ -32,11 +32,17 @@ class BatchResearchManager:
 
     def __init__(self, researcher, max_concurrent: int = 3):
         """
+<<<<<<< HEAD
         Initialize the batch research manager.
 
         Args:
             researcher: The GPTResearcher instance
             max_concurrent: Maximum number of concurrent research iterations
+=======
+        Create a BatchResearchManager tied to a researcher and configure concurrency.
+        
+        Initializes internal storage for iteration results, collected contexts and URLs, sets the concurrency limit and associated asyncio.Semaphore, and prepares a placeholder for an optional progress callback. The `max_concurrent` value controls the maximum number of research iterations that may run concurrently.
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         """
         self.researcher = researcher
         self.research_results: list[ResearchIteration] = []
@@ -61,6 +67,7 @@ class BatchResearchManager:
         on_progress: Callable | None = None,
     ) -> dict[str, Any]:
         """
+<<<<<<< HEAD
         Conduct multiple research iterations with enhanced features.
 
         Args:
@@ -68,8 +75,22 @@ class BatchResearchManager:
             parallel: Whether to run iterations in parallel (respecting max_concurrent)
             on_progress: Optional callback for progress updates
 
+=======
+        Run a batch of research iterations and return aggregated results and metadata.
+        
+        If no instructions are provided, performs a single research run and returns its results.
+        Sets self.progress_callback to on_progress so per-iteration progress can be reported by internal methods.
+        Runs iterations sequentially or in parallel (honoring the manager's concurrency limit) and collects per-iteration ResearchIteration records.
+        On completion the manager's researcher.context is updated with a combined context and researcher.visited_urls is updated with all discovered URLs. When the researcher is in verbose mode, start/complete events are streamed.
+        
+        Parameters:
+            research_instructions (List[str]): Instructions/queries for each iteration. An empty list triggers a single-run fallback.
+            parallel (bool): If True, execute iterations concurrently (respecting max_concurrent); otherwise run sequentially.
+            on_progress (Optional[Callable]): Optional callback invoked for per-iteration progress (stored as self.progress_callback).
+        
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         Returns:
-            Enhanced combined research results with metadata
+            Dict[str, Any]: A formatted results dictionary containing per-iteration details and aggregated metadata (contexts, urls, combined_context, timing statistics, counts of successes/failures, and timestamp).
         """
         self.progress_callback = on_progress
 
@@ -124,8 +145,18 @@ class BatchResearchManager:
     ) -> list[ResearchIteration]:
 =======
     async def _conduct_sequential_research(self, instructions: List[str]) -> List[ResearchIteration]:
+<<<<<<< HEAD
 >>>>>>> 1027e1d0 (Fix linting issues)
         """Conduct research iterations sequentially."""
+=======
+        """
+        Run each research instruction one after another and return their results.
+        
+        Each instruction is executed by _execute_single_research with a 1-based iteration index. If self.progress_callback is set, it is awaited with (current_iteration, total_iterations, iteration_result) after each iteration. Returns a list of ResearchIteration objects in the same order as the provided instructions.
+        
+        Exceptions raised by the underlying _execute_single_research are propagated.
+        """
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         results = []
 
         for i, instruction in enumerate(instructions, 1):
@@ -145,8 +176,19 @@ class BatchResearchManager:
     ) -> list[ResearchIteration]:
 =======
     async def _conduct_parallel_research(self, instructions: List[str]) -> List[ResearchIteration]:
+<<<<<<< HEAD
 >>>>>>> 1027e1d0 (Fix linting issues)
         """Conduct research iterations in parallel with concurrency control."""
+=======
+        """
+        Run multiple research instructions concurrently, respecting the manager's concurrency limit.
+        
+        Each instruction is executed via the semaphore-wrapped helper (_execute_with_semaphore) so the configured max_concurrent is enforced. This coroutine gathers all tasks and returns a list of ResearchIteration objects in the same order as the provided instructions. If a task raises an exception, it is converted into a failed ResearchIteration containing the exception text in `error` and `success=False`.
+         
+        Returns:
+            List[ResearchIteration]: Per-instruction results (successful iterations or failure records for exceptions), ordered to match `instructions`.
+        """
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         tasks = []
 
         for i, instruction in enumerate(instructions, 1):
@@ -182,8 +224,24 @@ class BatchResearchManager:
     ) -> ResearchIteration:
 =======
     async def _execute_with_semaphore(self, instruction: str, iteration: int, total: int) -> ResearchIteration:
+<<<<<<< HEAD
 >>>>>>> 1027e1d0 (Fix linting issues)
         """Execute research with semaphore for concurrency control."""
+=======
+        """
+        Acquire the concurrency semaphore and run a single research iteration.
+        
+        This wraps _execute_single_research with the manager's semaphore to enforce the configured concurrency limit.
+        
+        Parameters:
+            instruction (str): Research instruction/query to run.
+            iteration (int): Current iteration index (used for reporting).
+            total (int): Total number of planned iterations.
+        
+        Returns:
+            ResearchIteration: The result object for this iteration.
+        """
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         async with self.semaphore:
             return await self._execute_single_research(instruction, iteration, total)
 
@@ -193,8 +251,24 @@ class BatchResearchManager:
     ) -> ResearchIteration:
 =======
     async def _execute_single_research(self, instruction: str, iteration: int, total: int) -> ResearchIteration:
+<<<<<<< HEAD
 >>>>>>> 1027e1d0 (Fix linting issues)
         """Execute a single research iteration with comprehensive error handling."""
+=======
+        """
+        Run a single research iteration: set the researcher's query, run the research with a timeout, collect results, and restore the original state.
+        
+        This coroutine updates the researcher's query to the provided instruction, invokes the research conductor (bounded by a timeout read from `researcher.cfg.research_timeout`, default 120s), and returns a ResearchIteration representing success or failure. On success the returned ResearchIteration contains the iteration's context, discovered URLs, timestamp and duration. On timeout or other exceptions it returns a ResearchIteration with `success=False` and an `error` message. The researcher's original `query` (and original context is preserved in the returned failure records) is always restored before returning. When the researcher is in verbose mode, progress and error events are streamed via _stream_output.
+        
+        Parameters:
+            instruction (str): The query/instruction to run for this iteration.
+            iteration (int): 1-based index of this iteration (used for reporting).
+            total (int): Total number of iterations in the batch (used for reporting).
+        
+        Returns:
+            ResearchIteration: Result object summarizing the iteration. On failure `success` is False and `error` contains the failure reason.
+        """
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         start_time = datetime.now()
 
         if self.researcher.verbose:
@@ -293,13 +367,23 @@ class BatchResearchManager:
     def _combine_contexts_intelligently(self, results: List[ResearchIteration]) -> str:
 >>>>>>> 1027e1d0 (Fix linting issues)
         """
+<<<<<<< HEAD
         Combine contexts with intelligent deduplication and organization.
 
         Args:
             results: List of research iteration results
 
+=======
+        Combine successful iteration contexts into a single deduplicated context string.
+        
+        This function collects the `context` values from successful ResearchIteration entries and merges them into a single string. Behavior:
+        - If no successful contexts are present, returns an empty string.
+        - If all successful contexts are strings, each context is split into paragraphs on double-newlines ('\n\n'); paragraphs are stripped, de-duplicated while preserving first-seen order, and joined with a blank-line separator.
+        - If contexts are heterogeneous (lists or other types), they are flattened by converting items to strings, stripping, de-duplicating by string value while preserving order, and joined with a blank-line separator.
+        
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         Returns:
-            Combined and deduplicated context string
+            A combined, deduplicated context string (possibly empty).
         """
         if not results:
             return ""
@@ -351,8 +435,37 @@ class BatchResearchManager:
     ) -> dict[str, Any]:
 =======
     def _format_results(self, results: List[ResearchIteration], total_planned: int) -> Dict[str, Any]:
+<<<<<<< HEAD
 >>>>>>> 1027e1d0 (Fix linting issues)
         """Format results with comprehensive metadata."""
+=======
+        """
+        Build a structured summary of research iterations and aggregate metadata.
+        
+        Produces a dictionary merging per-iteration data, aggregated statistics, and derived metadata suitable for reporting or downstream consumption.
+        
+        Parameters:
+            results (List[ResearchIteration]): Completed iteration records to include in the output.
+            total_planned (int): Number of iterations that were intended/planned for this batch.
+        
+        Returns:
+            Dict[str, Any]: A dictionary with the following keys:
+                - contexts: list of contexts from successful iterations.
+                - urls: set of all discovered URLs (self.all_urls).
+                - iterations_planned: the provided total_planned value.
+                - iterations_completed: number of iterations present in `results`.
+                - iterations_successful: count of successful iterations.
+                - iterations_failed: count of failed iterations.
+                - instruction_results: list of per-iteration dicts with keys
+                    instruction, context, urls, iteration, timestamp (ISO string),
+                    duration, success, and error.
+                - combined_context: a single combined context string produced by
+                    _combine_contexts_intelligently.
+                - metadata: dict containing total_duration, average_duration,
+                    total_unique_urls, failed_instructions (list of instruction strings),
+                    and timestamp (ISO string when this summary was produced).
+        """
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         successful_results = [r for r in results if r.success]
         failed_results = [r for r in results if not r.success]
 
@@ -390,7 +503,21 @@ class BatchResearchManager:
         }
 
     async def _stream_output(self, event_type: str, message: str):
-        """Helper method to stream output."""
+        """
+        Stream a message to the external streaming utility if available.
+        
+        Attempts to import and call the shared `stream_output` coroutine to send a log/event message
+        (using the manager's researcher.websocket). If the `stream_output` import is not available,
+        logs the event and message at INFO level instead.
+        
+        Parameters:
+            event_type (str): Short identifier of the event category (e.g., "iteration_start", "error").
+            message (str): Human-readable message or payload to stream.
+        
+        Notes:
+            This coroutine does not return a value. ImportError from the optional streaming utility is
+            handled internally and will not propagate.
+        """
         try:
 <<<<<<< HEAD
             from ..actions.utils import stream_output
@@ -435,12 +562,39 @@ class BatchResearchManager:
         return [r for r in self.research_results if r.success]
 
     def get_failed_results(self) -> List[ResearchIteration]:
-        """Get only failed research iterations."""
+        """
+        Return all ResearchIteration records marked as failed.
+        
+        Returns:
+            List[ResearchIteration]: Iterations from self.research_results whose `success` is False, in original order.
+        """
         return [r for r in self.research_results if not r.success]
 
     def get_statistics(self) -> Dict[str, Any]:
+<<<<<<< HEAD
 >>>>>>> 1027e1d0 (Fix linting issues)
         """Get comprehensive statistics about the batch research."""
+=======
+        """
+        Return aggregated statistics about the conducted batch research.
+        
+        Provides counts, rates, URL and context aggregates, and timing summaries across all recorded iterations.
+        If no iterations exist, returns an empty dict.
+        
+        Returns:
+            Dict[str, Any]: A mapping with the following keys:
+                - total_iterations (int): Number of iterations recorded.
+                - successful (int): Number of iterations marked successful.
+                - failed (int): Number of iterations that failed.
+                - success_rate (float): successful / total_iterations (0 when no iterations).
+                - total_urls_discovered (int): Count of unique URLs collected across all iterations.
+                - average_urls_per_iteration (float): total_urls_discovered / successful (0 if no successful iterations).
+                - total_context_size (int): Sum of lengths (characters) of successful iterations' contexts.
+                - average_context_size (float): Average context length across successful iterations (0 if none).
+                - total_duration (float): Sum of durations (seconds) of all iterations.
+                - average_duration (float): Mean duration (seconds) per iteration.
+        """
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         if not self.research_results:
             return {}
 

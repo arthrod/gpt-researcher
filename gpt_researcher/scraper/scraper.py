@@ -94,7 +94,27 @@ class Scraper:
 
     async def extract_data_from_url(self, link, session):
         """
-        Extracts the data from the link with logging
+        Extract content, images, and title for a single URL, respecting concurrency limits.
+        
+        Performs a scraping attempt for `link` using the appropriate scraper backend. This method:
+        - acquires a throttle slot from the instance's worker_pool to limit concurrent work,
+        - instantiates the selected scraper for the link and invokes either its async scrape method or runs its synchronous `scrape` in the worker_pool executor,
+        - returns a structured result dict for the URL.
+        
+        Parameters:
+            link (str): The URL to extract.
+            session: HTTP session used by scraper implementations (e.g., requests.Session or an async-compatible session).
+        
+        Returns:
+            dict: A result with keys:
+                - "url" (str): the original URL.
+                - "raw_content" (str|None): extracted text content, or None if extraction failed or content was too short (<100 chars).
+                - "image_urls" (list): list of discovered image URLs (empty on failure).
+                - "title" (str): extracted title (empty on failure).
+        
+        Side effects:
+            - Logs progress, warnings, and errors.
+            - Uses worker_pool to throttle concurrency and to run synchronous scrapers in an executor.
         """
         async with self.worker_pool.throttle():
             try:
@@ -157,19 +177,21 @@ class Scraper:
 
     def get_scraper(self, link):
         """
-        The function `get_scraper` determines the appropriate scraper class based on the provided link
-        or a default scraper if none matches.
-
-        Args:
-          link: The `get_scraper` method takes a `link` parameter which is a URL link to a webpage or a
-        PDF file. Based on the type of content the link points to, the method determines the appropriate
-        scraper class to use for extracting data from that content.
-
+        Select and return the scraper class appropriate for a given URL.
+        
+        Checks the URL to choose a scraper key: if the link ends with ".pdf" the "pdf" scraper is chosen;
+        if it contains "arxiv.org" the "arxiv" scraper is chosen; otherwise the Scraper instance's
+        configured default (self.scraper) is used. Looks up the key in the internal SCRAPER_CLASSES
+        mapping and returns the corresponding scraper class.
+        
+        Parameters:
+            link (str): The URL to examine.
+        
         Returns:
-          The `get_scraper` method returns the scraper class based on the provided link. The method
-        checks the link to determine the appropriate scraper class to use based on predefined mappings
-        in the `SCRAPER_CLASSES` dictionary. If the link ends with ".pdf", it selects the
-        `PyMuPDFScraper` class. If the link contains "arxiv.org", it selects the `ArxivScraper
+            type: The scraper class corresponding to the selected key.
+        
+        Raises:
+            Exception: If no scraper class is found for the resolved key.
         """
 
         SCRAPER_CLASSES = {

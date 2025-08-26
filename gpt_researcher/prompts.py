@@ -43,6 +43,7 @@ class PromptFamily:
         query: str, tools_info: list[dict], max_tools: int = 3
     ) -> str:
         """
+<<<<<<< HEAD
         Generate prompt for LLM-based MCP tool selection.
 
         Args:
@@ -50,8 +51,19 @@ class PromptFamily:
             tools_info: List of available tools with their metadata
             max_tools: Maximum number of tools to select
 
+=======
+        Generate a natural-language prompt that instructs an LLM-based MCP (multi-chain planner) to choose a fixed number of research tools.
+        
+        The returned prompt embeds the provided research query and a JSON serialization of the available tools, and it asks the model to analyze those tools and select exactly `max_tools` items. The prompt requires the model to rank the selected tools, provide a per-tool relevance score and reasoning, and give an overall selection rationale in a specific JSON structure.
+        
+        Parameters:
+            query (str): The research question or task to guide tool selection.
+            tools_info (List[Dict]): Metadata for available tools; must be JSON-serializable and should contain fields (e.g., name, description, capabilities) that help evaluate relevance.
+            max_tools (int): The exact number of tools the prompt should require the model to select.
+        
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         Returns:
-            str: The tool selection prompt
+            str: A prompt string suitable for sending to an LLM that requests selection of exactly `max_tools` tools and a JSON-formatted response detailing chosen tools and selection reasoning.
         """
         import json
 
@@ -89,14 +101,25 @@ Select exactly {max_tools} tools, ranked by relevance to the research query.
     @staticmethod
     def generate_mcp_research_prompt(query: str, selected_tools: list) -> str:
         """
+<<<<<<< HEAD
         Generate prompt for MCP research execution with selected tools.
 
         Args:
             query: The research query
             selected_tools: List of selected MCP tools
 
+=======
+        Generate a research-execution prompt for a multi-tool research agent.
+        
+        Returns a single string prompt instructing an assistant with access to specialized tools to research the provided query, use multiple tools as needed, handle tool failures, synthesize findings, and prioritize factual relevance.
+        
+        Parameters:
+            query (str): The research question or query to investigate.
+            selected_tools (List): Iterable of tools (either objects with a `name` attribute or strings) that the agent may use.
+        
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         Returns:
-            str: The research execution prompt
+            str: A formatted prompt ready to send to an LLM or agent orchestrator.
         """
         # Handle cases where selected_tools might be strings or objects with .name attribute
         tool_names = []
@@ -180,10 +203,22 @@ The response should contain ONLY the list.
         tone=None,
         language="english",
     ):
-        """Generates the report prompt for the given question and research summary.
-        Args: question (str): The question to generate the report prompt for
-                research_summary (str): The research summary to generate the report prompt for
-        Returns: str: The report prompt for the given question and research summary
+        """
+        Generate a full LLM prompt instructing an agent to produce a detailed report for a given question and supporting context.
+        
+        The returned prompt embeds the provided context and query, enforces formatting (Markdown and the requested citation/reference style), word-count expectations, optional tone, and special handling of source references based on report_source (web URLs vs. local document names). It also includes explicit instructions about citations, references, structure, and language.
+        
+        Parameters:
+            question (str): The research question or task to be answered.
+            context (str | list | any): Supporting information or scraped sources to include in the prompt (string or preformatted context block).
+            report_source (str): Source type indicator (e.g., ReportSource.Web.value) used to decide whether to require full URLs or document names in the references.
+            report_format (str, optional): Citation/reference format to request (default "apa").
+            total_words (int, optional): Minimum target word count for the generated report (default 1000).
+            tone (enum | None, optional): Optional Tone enum value; when provided, the prompt will request that writing tone.
+            language (str, optional): Desired language for the report (default "english").
+        
+        Returns:
+            str: A complete text prompt that can be sent to an LLM to generate the requested report.
         """
 
         reference_prompt = ""
@@ -275,14 +310,21 @@ The response MUST not contain any markdown format or additional text (like ```js
         total_words=1000,
         language="english",
     ):
-        """Generates the resource report prompt for the given question and research summary.
-
-        Args:
-            question (str): The question to generate the resource report prompt for.
-            context (str): The research summary to generate the resource report prompt for.
-
+        """
+        Generate a Markdown-formatted "bibliography recommendation" resource report prompt based on a research context.
+        
+        Detailed description:
+        Returns a prompt string that asks an LLM to produce a structured, in-depth bibliography/recommendation report for the given question using the provided context. The prompt enforces Markdown formatting (including tables), expects relevance/reliability/significance analysis for each resource, and requires inclusion of factual details and numeric evidence when available.
+        
+        Parameters that need extra context:
+            report_source (str): If equal to ReportSource.Web.value, the prompt requires full source URLs hyperlinked in Markdown. Otherwise, the prompt instructs the model to list each used document name once in a references section.
+            report_format (str): Citation formatting style to prefer (e.g., "apa"); included in the prompt to guide reference style.
+            total_words (int): Minimum required length of the generated report; the prompt enforces this as a word-count floor.
+            tone (str | None): Optional writing tone to apply to the report (e.g., objective, persuasive); included in the prompt when provided.
+            language (str): Language in which the report must be written.
+        
         Returns:
-            str: The resource report prompt for the given question and research summary.
+            str: A full prompt string ready to be sent to an LLM to generate the requested resource report.
         """
 
         reference_prompt = ""
@@ -362,17 +404,22 @@ The response MUST not contain any markdown format or additional text (like ```js
         total_words=2000,
         language: str = "english",
     ):
-        """Generates the deep research report prompt, specialized for handling hierarchical research results.
-        Args:
-            question (str): The research question
-            context (str): The research context containing learnings with citations
-            report_source (str): Source of the research (web, etc.)
-            report_format (str): Report formatting style
-            tone: The tone to use in writing
-            total_words (int): Minimum word count
-            language (str): Output language
+        """
+        Generate a detailed prompt for producing a hierarchical "deep research" report.
+        
+        This prompt instructs an LLM to synthesize multi-level research findings (provided via the `context`) into a coherent, well-structured report that builds from foundational to advanced insights, integrates branches of research, and maintains proper citations and references. The returned string includes instructions for minimum length, citation style, Markdown formatting (tables, lists, subsections), and a UTC date stamp.
+        
+        Parameters:
+            question (str): The research question or query the report should answer.
+            context (str): Hierarchically organized research content and citations to be synthesized.
+            report_source (str): Source type; when equal to the web source value, the prompt requires URL-based references and in-text hyperlinks, otherwise it asks for document-style references.
+            report_format (str): Citation/reference formatting style to use in in-text citations (e.g., "apa").
+            tone: Optional Tone enum value; when provided, the prompt will request the report be written in that tone.
+            total_words (int): Minimum target word count for the generated report.
+            language (str): Output language for the report.
+        
         Returns:
-            str: The deep research report prompt
+            str: A complete prompt string suitable for sending to an LLM to generate the requested deep research report.
         """
         reference_prompt = ""
         if report_source == ReportSource.Web.value:
@@ -476,6 +523,7 @@ response:
 
     @staticmethod
     def pretty_print_docs(docs: list[Document], top_n: int | None = None) -> str:
+<<<<<<< HEAD
         """Compress the list of documents into a context string"""
 <<<<<<< HEAD
         return "\n".join(
@@ -486,6 +534,18 @@ response:
             if top_n is None or i < top_n
         )
 =======
+=======
+        """
+        Format a list of Documents into a single context string.
+        
+        Each document is rendered as three lines:
+        `Source: {source}`
+        `Title: {title}`
+        `Content: {page_content}`
+        
+        If top_n is provided, only the first top_n documents are included. Returns an empty string if no documents are provided.
+        """
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         return "\n".join(f"Source: {d.metadata.get('source')}\n"
                           f"Title: {d.metadata.get('title')}\n"
                           f"Content: {d.page_content}\n"

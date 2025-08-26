@@ -40,6 +40,22 @@ class JSONResearchHandler:
 
 def setup_research_logging():
     # Create logs directory if it doesn't exist
+    """
+    Set up file and console logging for research and create a JSON research handler.
+    
+    Creates a "logs" directory (if missing), builds timestamped log and JSON file paths
+    under that directory, configures the 'research' logger with an INFO-level file
+    handler (writing to the generated log file) and a console handler, disables
+    propagation to the root logger, and instantiates a JSONResearchHandler for the
+    generated JSON file.
+    
+    Returns:
+        tuple: (log_file_path, json_file_path, research_logger, json_handler)
+            - log_file_path (str): Path to the created log file (timestamped).
+            - json_file_path (str): Path to the created JSON file (timestamped).
+            - research_logger (logging.Logger): Configured 'research' logger.
+            - json_handler (JSONResearchHandler): Handler managing the JSON output.
+    """
     logs_dir = Path("logs")
     logs_dir.mkdir(exist_ok=True)
 

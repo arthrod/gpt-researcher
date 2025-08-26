@@ -16,16 +16,16 @@ async def get_search_results(
     query: str, retriever: Any, query_domains: list[str] | None = None, researcher=None
 ) -> list[dict[str, Any]]:
     """
-    Get web search results for a given query.
-
-    Args:
-        query: The search query
-        retriever: The retriever instance
-        query_domains: Optional list of domains to search
-        researcher: The researcher instance (needed for MCP retrievers)
-
+    Retrieve search results for a given query using the provided retriever.
+    
+    If the retriever's class name contains "mcpretriever" (case-insensitive), the function instantiates it with the optional `researcher` argument; otherwise it instantiates the retriever without `researcher`. The function then calls the retriever's `search()` method and returns its results.
+    
+    Parameters:
+        query: The search query string.
+        query_domains: Optional list of domain strings to restrict the search.
+    
     Returns:
-        A list of search results
+        A list of result dictionaries as returned by the retriever's `search()` method.
     """
     # Check if this is an MCP retriever and pass the researcher instance
     if "mcpretriever" in retriever.__name__.lower():
@@ -51,20 +51,24 @@ async def generate_sub_queries(
     **kwargs,
 ) -> list[str]:
     """
-    Generate sub-queries using the specified LLM model.
-
-    Args:
-        query: The original query
-        parent_query: The parent query
-        report_type: The type of report
-        max_iterations: Maximum number of research iterations
-        context: Search results context
-        cfg: Configuration object
-        cost_callback: Callback for cost calculation
-        prompt_family: Family of prompts
-
+    Generate a list of focused sub-queries for the given query by prompting an LLM.
+    
+    Builds a prompt via the provided PromptFamily and attempts to obtain sub-queries from the configured strategic LLM. If the initial strategic-LM call fails, it retries with the strategic token limit; if that also fails it falls back to the configured smart LLM. The final LLM response is parsed with json_repair.loads and returned.
+    
+    Parameters:
+        query: The leaf query to decompose into sub-queries.
+        parent_query: The parent/ancestor query used to provide hierarchical context.
+        report_type: The report type to tailor the prompt (affects prompt content).
+        context: Search results or other context passed into the prompt.
+        cfg: Configuration object providing LLM models, providers, token limits, temperature, and other LLM-related settings.
+        cost_callback: Optional callback invoked to report/request cost information during LLM calls.
+        prompt_family: Prompt family (type or instance) used to generate the search-queries prompt.
+    
     Returns:
-        A list of sub-queries
+        A list of sub-query strings parsed from the LLM response.
+    
+    Raises:
+        Any exception from the final LLM call if all fallback attempts fail; intermediate LLM errors are handled internally and trigger retries/fallbacks.
     """
     gen_queries_prompt = prompt_family.generate_search_queries_prompt(
         query,
@@ -138,20 +142,14 @@ async def plan_research_outline(
     **kwargs,
 ) -> list[str]:
     """
-    Plan the research outline by generating sub-queries.
-
-    Args:
-        query: Original query
-        search_results: Initial search results
-        agent_role_prompt: Agent role prompt
-        cfg: Configuration object
-        parent_query: Parent query
-        report_type: Report type
-        cost_callback: Callback for cost calculation
-        retriever_names: Names of the retrievers being used
-
+    Decide whether to generate sub-queries for a research query and produce the research outline sub-queries.
+    
+    If retriever_names contains only an MCP retriever ("mcp" or "MCPRetriever"), sub-query generation is skipped and the original query is returned ([query]). If MCP is present alongside other retrievers, sub-queries are generated for the non-MCP retrieval path by delegating to generate_sub_queries.
+    
+    Parameters that are otherwise self-explanatory (cfg, cost_callback, agent_role_prompt, etc.) are used to configure prompt construction and LLM calls; exceptions raised by underlying calls propagate to the caller.
+    
     Returns:
-        A list of sub-queries
+        List[str]: Generated sub-queries, or a single-item list containing the original query when MCP is the sole retriever.
     """
     # Handle the case where retriever_names is not provided
     if retriever_names is None:

@@ -10,6 +10,19 @@ load_dotenv()
 
 
 async def main():
+    """
+    Run an embedding configuration test: load config, apply defaults if missing, create a Memory instance, obtain embeddings, and print a sample embedding vector.
+    
+    This asynchronous entry-point:
+    - Instantiates Config and prints relevant environment variables and config attributes.
+    - If cfg.embedding_provider or cfg.embedding_model are missing/empty, sets defaults ("openai" and "text-embedding-3-small" respectively).
+    - Creates a Memory using the resolved provider and model, retrieves the embeddings client, and computes an embedding for a short test sentence.
+    - Prints success information including provider, model, embedding length, and the first few values.
+    
+    Side effects:
+    - Writes status and error information to standard output.
+    - Does not raise exceptions from internal errors (they are caught and printed).
+    """
     cfg = Config()
 
     print("Current embedding configuration:")

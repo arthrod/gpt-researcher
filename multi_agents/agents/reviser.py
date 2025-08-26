@@ -22,9 +22,20 @@ class ReviserAgent:
 
     async def revise_draft(self, draft_state: dict):
         """
-        Review a draft article
-        :param draft_state:
-        :return:
+        Revise a draft using reviewer notes by calling the configured language model and returning the model's JSON response.
+        
+        Given a draft_state dict (expected keys described below), builds a system+user prompt that instructs the model to produce a revised draft and reviewer-style revision notes, then calls the LLM and returns its parsed JSON response.
+        
+        Parameters:
+            draft_state (dict): Input state containing:
+                - "review" (str): Reviewer's notes to guide the revision.
+                - "task" (dict): Task configuration; must include a "model" key naming the model to call.
+                - "draft" (str or dict): The original draft to be revised.
+        
+        Returns:
+            dict: Parsed JSON response from the model following the expected sample_revision_notes format:
+                - "draft" (object/string): The revised draft produced by the model.
+                - "revision_notes" (str): Reviewer's-style notes describing the changes and rationale.
         """
         review = draft_state.get("review")
         task = draft_state.get("task")
@@ -54,6 +65,13 @@ You MUST return nothing but a JSON in the following format:
         return response
 
     async def run(self, draft_state: dict):
+        """
+        Run the reviser agent: request a revised draft from the model, optionally stream or print revision notes, and return the updated draft and notes.
+        
+        Given a draft_state (expected to include keys "draft", "review", and "task"), this coroutine calls self.revise_draft(draft_state) to obtain a revision. If task.get("verbose") is truthy, the method will either stream the revision notes over self.websocket using self.stream_output (if both are provided) or print them via print_agent_output. Returns a dict with keys:
+        - "draft": the revised draft (from the model response)
+        - "revision_notes": the reviewer's revision notes (from the model response)
+        """
         print_agent_output("Rewriting draft based on feedback...", agent="REVISOR")
         revision = await self.revise_draft(draft_state)
 

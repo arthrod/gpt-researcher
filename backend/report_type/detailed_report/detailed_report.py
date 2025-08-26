@@ -27,6 +27,7 @@ class DetailedReport:
         mcp_configs=None,
         mcp_strategy=None,
     ):
+<<<<<<< HEAD
         if subtopics is None:
             subtopics = []
         if query_domains is None:
@@ -35,6 +36,19 @@ class DetailedReport:
             document_urls = []
         if source_urls is None:
             source_urls = []
+=======
+        """
+        Initialize a DetailedReport and its internal GPTResearcher, and prepare shared state used across subtopic generation.
+        
+        The constructor saves input parameters on the instance, normalizes headers to an empty dict when omitted, and builds a parameter map used to instantiate a GPTResearcher (note: the researcher is always created with its `report_type` set to "research_report" regardless of the `report_type` argument). If provided, `mcp_configs` and `mcp_strategy` are forwarded to the GPTResearcher. The instance also initializes empty containers for existing headers, global context, written sections, and a set of visited URLs derived from `source_urls` if any are given.
+        
+        Parameters documented only when their meaning is not obvious:
+            headers (Optional[Dict]): Initial header metadata to seed report composition; defaults to an empty dict when omitted.
+            complement_source_urls (bool): If True, indicates the researcher should attempt to supplement the provided source URLs with additional sources.
+            mcp_configs: Optional MCP configuration object passed through to GPTResearcher when present.
+            mcp_strategy: Optional MCP strategy identifier passed through to GPTResearcher when present.
+        """
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         self.query = query
         self.report_type = report_type
         self.report_source = report_source

@@ -61,6 +61,23 @@ Guidelines: {guidelines}\nDraft: {draft_state.get("draft")}\n
         return response
 
     async def run(self, draft_state: dict):
+        """
+        Decide whether to review a draft according to task settings, run the review if requested, and return the result.
+        
+        If task.follow_guidelines is truthy this method logs that it is reviewing, optionally logs the guidelines when task.verbose is truthy, and awaits self.review_draft(draft_state). If follow_guidelines is falsy it logs that guidelines are being ignored.
+        
+        Parameters:
+            draft_state (dict): Dictionary containing at minimum a "task" mapping. The method reads:
+                - task["guidelines"] (used only for logging)
+                - task["follow_guidelines"] (controls whether to run the review)
+                - task["verbose"] (if truthy, logs the guidelines)
+        
+        Returns:
+            dict: A mapping with a single key "review" whose value is the review text returned by review_draft or None if no review was performed or review_draft returned None.
+        
+        Side effects:
+            Emits output via print_agent_output and may call the asynchronous method self.review_draft.
+        """
         task = draft_state.get("task")
         guidelines = task.get("guidelines")
         to_follow_guidelines = task.get("follow_guidelines")

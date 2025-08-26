@@ -26,10 +26,22 @@ class TestWebSocket(WebSocket):
         return True
 
     async def accept(self):
+        """
+        Mark the test WebSocket as accepted by setting scope["type"] = "websocket"].
+        
+        This is a no-op acceptance used by tests to simulate a successful WebSocket handshake;
+        it records the connection state in the instance's scope but performs no network I/O.
+        """
         self.scope["type"] = "websocket"
         pass
 
     async def send_json(self, event):
+        """
+        Record a JSON-serializable event on the test WebSocket.
+        
+        This async test helper accepts an event payload (typically a JSON-serializable value, e.g. dict or list)
+        and appends it to the instance's `events` list for inspection by tests. It does not perform network I/O.
+        """
         logger.info(f"WebSocket received event: {event}")
         self.events.append(event)
 

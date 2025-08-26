@@ -35,7 +35,21 @@ for var in required_env_vars:
 
 
 async def evaluate_single_query(query: str, evaluator: SimpleQAEval) -> dict:
-    """Run a single evaluation query and return results"""
+    """
+    Run a single query through the researcher pipeline, evaluate the generated report against the ground-truth answer, and return summary metrics.
+    
+    Performs online research and report generation for `query` using GPTResearcher, looks up the corresponding example in `evaluator.examples`, and grades the generated report with the evaluator. Also prints brief progress and summary lines to stdout.
+    
+    Returns:
+        dict: Summary of the evaluation containing:
+            - query (str): The input query/problem text.
+            - context_length (int): Length (number of characters) of the retrieved research context.
+            - report_length (int): Length (number of characters) of the generated report.
+            - cost (float): Monetary cost reported by the researcher for this query.
+            - sources (List[str]): List of source URLs used by the researcher.
+            - evaluation_score (float): Numeric score returned by the evaluator.
+            - evaluation_grade (str): Categorical grade (e.g., "CORRECT", "INCORRECT", "NOT_ATTEMPTED") from the evaluator metrics.
+    """
     print(f"\nEvaluating query: {query}")
 
     # Run the researcher and get report
@@ -89,6 +103,24 @@ async def evaluate_single_query(query: str, evaluator: SimpleQAEval) -> dict:
 
 
 async def main(num_examples: int):
+    """
+    Run an end-to-end evaluation loop that runs research-and-evaluation on a set of QA examples.
+    
+    This async entry point initializes a ChatOpenAI grader and a SimpleQAEval evaluator, iterates over the evaluator's examples,
+    runs evaluate_single_query for each example, collects per-query results (including sources, lengths, cost, and evaluation grade/score),
+    prints per-query and aggregate statistics (rates, accuracy, F1, and cost summaries), and returns when complete.
+    
+    Parameters:
+        num_examples (int): Number of examples to request from the evaluator. Must be >= 1.
+    
+    Raises:
+        ValueError: If num_examples < 1, if the evaluator loads no examples, or if no results are produced.
+        Exception: Re-raises unexpected exceptions after printing a fatal error message.
+    
+    Side effects:
+        - Calls external services (OpenAI via ChatOpenAI and other evaluator/researcher code).
+        - Prints progress, warnings, per-query summaries, and aggregate metrics to stdout.
+    """
     if num_examples < 1:
         raise ValueError("num_examples must be at least 1")
 

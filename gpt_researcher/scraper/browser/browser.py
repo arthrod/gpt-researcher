@@ -43,6 +43,13 @@ class BrowserScraper:
         self.cookie_filename = f"{self._generate_random_string(8)}.pkl"
 
     def scrape(self) -> tuple:
+        """
+        Scrape the configured URL using a Selenium WebDriver and return extracted text, images, and title.
+        
+        Attempts to start a browser driver, establish cookies (visits Google to seed cookies, loads saved/browser cookies when configured), injects a header overlay, and extract page content. Returns a tuple (text, image_urls, title) on success. If no URL is set, returns an explanatory error string in place of text and empty lists/strings for the other fields. On unexpected errors, returns an error message that includes the exception string and full stack trace as the first tuple element; image_urls and title will be empty in that case.
+        
+        The method ensures the WebDriver is quit and any temporary cookie file is cleaned up before returning.
+        """
         if not self.url:
             print("URL not specified")
             return (
@@ -78,6 +85,14 @@ class BrowserScraper:
             self._cleanup_cookie_file()
 
     def _import_selenium(self):
+        """
+        Ensure Selenium is available and import required Selenium classes into module globals.
+        
+        This initializes the Selenium-related symbols used elsewhere in the module by importing:
+        `webdriver`, `By`, `EC`, `WebDriverWait`, `TimeoutException`, `WebDriverException`,
+        and browser option classes `ChromeOptions`, `FirefoxOptions`, `SafariOptions`.
+        If Selenium is not installed, prints brief installation guidance and re-raises ImportError with a descriptive message.
+        """
         try:
             global \
                 webdriver, \
@@ -109,6 +124,15 @@ class BrowserScraper:
     def setup_driver(self) -> None:
         # print(f"Setting up {self.selenium_web_browser} driver...")
 
+        """
+        Initialize and configure the Selenium WebDriver for the selected browser.
+        
+        Sets browser options (user agent, headless mode, JavaScript) and creates a WebDriver instance for Chrome, Firefox, or Safari.
+        Applies Linux-specific Chrome arguments and Chrome download preferences when appropriate. If `use_browser_cookies` is true, loads browser cookies after the driver is created.
+        
+        Raises:
+            Exception: Re-raises any exception raised while creating or configuring the WebDriver.
+        """
         options_available = {
             "chrome": ChromeOptions,
             "firefox": FirefoxOptions,
@@ -181,7 +205,11 @@ class BrowserScraper:
             })
 
     def _cleanup_cookie_file(self):
-        """Remove the cookie file"""
+        """
+        Remove the cookie file created for this scraper, if present.
+        
+        Attempts to delete self.cookie_filename from disk. If the file does not exist the function returns quietly (it prints a notice); any failure to remove the file is printed to stdout.
+        """
         cookie_file = Path(self.cookie_filename)
         if cookie_file.exists():
             try:
@@ -204,7 +232,11 @@ class BrowserScraper:
         return domain[4:] if domain.startswith("www.") else domain
 
     def _visit_google_and_save_cookies(self):
-        """Visit Google and save cookies before navigating to the target URL"""
+        """
+        Navigate the webdriver to https://www.google.com and persist any cookies to self.cookie_filename.
+        
+        This method loads Google (to trigger browser cookie setting), waits briefly for cookies to appear, then serializes the driver's cookies to the instance's cookie file. Side effects: navigates the active webdriver and writes a pickle file at self.cookie_filename. Exceptions are caught and logged; the method does not raise.
+        """
         try:
             self.driver.get("https://www.google.com")
             time.sleep(2)  # Wait for cookies to be set
@@ -221,6 +253,20 @@ class BrowserScraper:
             print(traceback.format_exc())
 
     def scrape_text_with_selenium(self) -> tuple:
+        """
+        Load the configured URL with Selenium and extract page text, relevant image URLs, and the page title.
+        
+        This method waits for the page body to be present, scrolls to the bottom to trigger dynamic content loading, and then extracts content depending on the URL type:
+        - For URLs ending with `.pdf`: extract text from the PDF using the internal PDF scraper and return no images or title.
+        - For ArXiv pages (URL contains "arxiv"): extract the arXiv PDF text via the arXiv scraper and return no images or title.
+        - For regular HTML pages: return the page text, a list of relevant image URLs, and the extracted title.
+        
+        Returns:
+            tuple: A 3-tuple (text, image_urls, title).
+                - text (str): Extracted textual content, or the error marker string "Page load timed out" if the initial page load timed out.
+                - image_urls (list): List of image URLs relevant to the page (empty for PDF and arXiv extractions or on timeout).
+                - title (str): Extracted page title (empty for PDF and arXiv extractions or on timeout).
+        """
         self.driver.get(self.url)
 
         try:

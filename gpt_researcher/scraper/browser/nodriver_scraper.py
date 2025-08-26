@@ -121,6 +121,22 @@ class NoDriverScraper:
 
         @asynccontextmanager
         async def rate_limit_for_domain(self, url: str):
+            """
+            Async context manager that enforces a simple per-domain rate limit for requests.
+            
+            This yields control while holding a per-domain semaphore (one concurrent holder per domain).
+            On first use for a domain a semaphore is created and stored in self.domain_semaphores.
+            If the semaphore was already locked when entering, the context waits a short randomized backoff
+            (0.6–1.2s) after acquiring the semaphore to reduce contention.
+            
+            Parameters:
+                url (str): The request URL used to derive the domain for rate limiting.
+            
+            Behavior:
+                - Allows only one concurrent holder per top-level domain.
+                - Creates and reuses a semaphore per domain stored in self.domain_semaphores.
+                - Logs a warning and yields normally if an unexpected exception occurs (does not raise).
+            """
             semaphore = None
             try:
                 domain = NoDriverScraper.get_domain(url)
@@ -147,6 +163,12 @@ class NoDriverScraper:
 >>>>>>> 1027e1d0 (Fix linting issues)
 
         async def stop(self):
+            """
+            Stop the browser instance and its underlying driver.
+            
+            If the browser is already stopping, this method returns immediately. Otherwise it sets the internal
+            stopping flag and asynchronously stops the wrapped driver. This method is idempotent.
+            """
             if self.stopping:
                 return
             self.stopping = True
@@ -206,8 +228,23 @@ class NoDriverScraper:
         self.session = session
         self.debug = False
 
+<<<<<<< HEAD
     async def scrape_async(self) -> tuple[str, list[dict], str]:
         """Returns tuple of (text, image_urls, title)"""
+=======
+    async def scrape_async(self) -> Tuple[str, list[dict], str]:
+        """
+        Fetch the page at self.url using a headless browser and extract its main text, relevant image URLs, and title.
+        
+        If no URL is set this returns an explanatory error string and empty results. On success returns (text, image_urls, title). On recoverable or unexpected failures returns (error_message, [], ""). When the extracted text is unusually short (<200 chars) a warning is logged; if self.debug is true a screenshot of the loaded page is saved to logs/screenshots for inspection.
+        
+        Returns:
+            Tuple[str, list[dict], str]: A 3-tuple containing:
+                - text: the extracted page text or an error message when scraping fails.
+                - image_urls: a list of image metadata/dictionaries relevant to the page (empty on error).
+                - title: the extracted page title (empty on error).
+        """
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         if not self.url:
             return (
                 "A URL was not specified, cancelling request to browse website.",

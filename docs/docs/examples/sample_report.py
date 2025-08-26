@@ -7,7 +7,33 @@ from gpt_researcher import GPTResearcher
 nest_asyncio.apply()
 
 
+<<<<<<< HEAD
 async def get_report(query: str, report_type: str, custom_prompt: str | None = None):
+=======
+
+async def get_report(query: str, report_type: str, custom_prompt: str = None):
+    """
+    Run an end-to-end research workflow and produce a report plus related metadata.
+    
+    Performs asynchronous research using GPTResearcher constructed from `query` and `report_type`, generates a written report (optionally using `custom_prompt`), and returns supplementary data collected during the workflow.
+    
+    Parameters:
+        query (str): The research question or topic to investigate.
+        report_type (str): Specifies the report style or format to produce (e.g., "research_report"); affects how GPTResearcher conducts research and writes the report.
+        custom_prompt (str, optional): If provided, overrides or customizes the prompt used when generating the final report.
+    
+    Returns:
+        tuple: (report, research_context, research_costs, research_images, research_sources)
+            - report (str): Generated report text.
+            - research_context (Any): Internal context/state gathered during research (implementation-specific).
+            - research_costs (Any): Cost/usage information produced by the researcher.
+            - research_images (list): Collected images or image metadata related to the research.
+            - research_sources (list): Source citations or references discovered during research.
+    
+    Notes:
+        - This function performs asynchronous I/O and may incur external API/LLM calls and associated costs.
+    """
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
     researcher = GPTResearcher(query, report_type)
 <<<<<<< HEAD
     _research_result = await researcher.conduct_research()

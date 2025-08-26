@@ -119,6 +119,11 @@ DOC_PATH = os.getenv("DOC_PATH", "./my-docs")
 
 @app.on_event("startup")
 def startup_event():
+    """
+    Create the outputs directory (if missing) and mount it at the FastAPI path "/outputs".
+    
+    This startup handler ensures an "outputs" folder exists on disk and exposes it via the application's static files mount so generated reports and artifacts can be served from "/outputs". No return value.
+    """
     os.makedirs("outputs", exist_ok=True)
     app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
     # os.makedirs(DOC_PATH, exist_ok=True)  # Commented out to avoid creating the folder if not needed

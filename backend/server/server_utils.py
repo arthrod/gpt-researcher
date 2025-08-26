@@ -61,8 +61,20 @@ class CustomLogsHandler:
                 indent=2,
             )
 
+<<<<<<< HEAD
     async def send_json(self, data: dict[str, Any]) -> None:
         """Store log data and send to websocket"""
+=======
+    async def send_json(self, data: Dict[str, Any]) -> None:
+        """
+        Send a log event to the connected websocket (if present) and persist it to the JSON log file.
+        
+        If data['type'] == 'logs', the function appends an event entry (timestamp, type "event", and the raw payload) to the log's "events" list. For other data types, the function merges the provided mapping into the log's "content" dictionary. The log file written is self.log_file. Operation is asynchronous only for the websocket send; file I/O is performed synchronously.
+        
+        Parameters:
+            data (Dict[str, Any]): Log payload. Expected to include a 'type' key (e.g., 'logs') to determine whether to append an event or update the content.
+        """
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         # Send to websocket for real-time display
         if self.websocket:
             await self.websocket.send_json(data)
@@ -105,7 +117,16 @@ class Researcher:
         )
 
     async def research(self) -> dict:
-        """Conduct research and return paths to generated files"""
+        """
+        Execute the configured research workflow, generate report files, and return their paths.
+        
+        Runs the research process via the internal GPTResearcher, writes the final report, and produces PDF, DOCX, and MD files derived from the report. Also returns the path to the JSON log file produced by the associated CustomLogsHandler.
+        
+        Returns:
+            dict: A dictionary with a single "output" key mapping to another dict that includes:
+                - "pdf", "docx", "md": file system paths to the generated report files.
+                - "json": relative path to the JSON log file created by the logs handler.
+        """
         await self.researcher.conduct_research()
         report = await self.researcher.write_report()
 
@@ -127,6 +148,7 @@ class Researcher:
 def sanitize_filename(filename: str) -> str:
     # Split into components
 <<<<<<< HEAD
+<<<<<<< HEAD
     prefix, timestamp, *task_parts = filename.split("_")
     task = "_".join(task_parts)
 
@@ -136,6 +158,19 @@ def sanitize_filename(filename: str) -> str:
         255 - len(os.getcwd()) - 24 - 5 - 10 - 6 - 5
     )  # ~189 chars for task
 =======
+=======
+    """
+    Return a filesystem-safe filename derived from an underscore-separated input, truncating the task portion to fit typical path length limits.
+    
+    The function expects `filename` in the form: "<prefix>_<timestamp>_<task...>" (prefix and timestamp are the first two underscore-separated segments; the rest are treated as the task). It ensures the resulting name fits within a 255-byte filename constraint by truncating the task portion based on UTF-8 byte length, then removes any characters other than letters, digits, underscores, and hyphens.
+    
+    Parameters:
+        filename (str): Input filename composed as "<prefix>_<timestamp>_<task...>".
+    
+    Returns:
+        str: A sanitized filename containing only word characters and hyphens, with the task part truncated if necessary to avoid excessively long paths.
+    """
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
     prefix, timestamp, *task_parts = filename.split('_')
     task = '_'.join(task_parts)
 
@@ -161,6 +196,24 @@ def sanitize_filename(filename: str) -> str:
 
 
 async def handle_start_command(websocket, data: str, manager):
+    """
+    Start a research run from a WebSocket "start" command, stream progress, generate output files, and send file paths back to the client.
+    
+    Expects `data` to be a string whose JSON payload begins at data[6:] (i.e., the incoming message starts with a "start" prefix). The JSON must contain at least `task` and `report_type`; other extracted fields may include source and document URLs, tone, headers, report_source, query_domains, and multi-client processing (MCP) settings.
+    
+    Behavior:
+    - Validates required fields; if `task` or `report_type` is missing, sends an error log message over the websocket and returns.
+    - Creates a CustomLogsHandler tied to the websocket and task, and initializes the log content with the task query.
+    - Uses sanitize_filename to produce a safe filename based on the task and current time.
+    - Calls manager.start_streaming(...) to run the research workflow and obtain the report.
+    - Converts the report to string and produces PDF, DOCX, and MD files via generate_report_files.
+    - Appends the JSON log file path to the output and sends the collection of output paths back to the client via the websocket.
+    
+    Side effects:
+    - Sends multiple JSON messages over the provided websocket (logs, errors, and final file paths).
+    - Persists a JSON log file and writes generated report files to disk.
+    - Returns None.
+    """
     json_data = json.loads(data[6:])
     (
         task,
@@ -437,6 +490,18 @@ async def execute_multi_agents(manager) -> Any:
 
 
 async def handle_websocket_communication(websocket, manager):
+    """
+    Handle incoming websocket messages in a continuous loop and dispatch them to the appropriate command handlers.
+    
+    This coroutine listens for text messages on `websocket` and:
+    - Responds to a "ping" with "pong".
+    - Rejects new commands while a previous long-running task is active.
+    - Dispatches messages starting with "start", "human_feedback", or "chat" to their respective handlers by scheduling them as background tasks.
+    - Wraps dispatched tasks with error handling that reports exceptions back over the websocket.
+    On exit (e.g., websocket closure or exception), any still-running background task is cancelled.
+    
+    This function runs until the websocket is closed or an unrecoverable error occurs. It has no return value but produces side effects: sending messages over the websocket and scheduling/cancelling asyncio tasks.
+    """
     running_task: asyncio.Task | None = None
 
     def run_long_running_task(awaitable: Awaitable) -> asyncio.Task:

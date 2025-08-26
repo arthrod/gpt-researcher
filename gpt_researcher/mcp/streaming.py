@@ -35,7 +35,11 @@ class MCPStreamer:
         self.websocket = websocket
 
     async def stream_log(self, message: str, data: Any = None):
-        """Stream a log message to the websocket if available."""
+        """
+        Log `message` locally and, if a websocket is configured, attempt to stream it as an MCP "logs" message.
+        
+        The optional `data` value is forwarded as the streaming `metadata`. Streaming errors are caught and logged locally; they are not propagated to callers.
+        """
         logger.info(message)
 
         if self.websocket:
@@ -53,7 +57,15 @@ class MCPStreamer:
                 logger.error(f"Error streaming log: {e}")
 
     def stream_log_sync(self, message: str, data: Any = None):
-        """Synchronous version of stream_log for use in sync contexts."""
+        """
+        Synchronous wrapper around stream_log that logs locally and forwards the message to the websocket-aware async streamer.
+        
+        If an asyncio event loop is running, this schedules the async stream_log as a task; otherwise it runs stream_log to completion. All streaming errors are caught and logged (they are not propagated).
+        
+        Parameters:
+            message (str): Log message to emit.
+            data (Any, optional): Optional metadata sent alongside the log to the websocket (e.g., context or structured payload).
+        """
         logger.info(message)
 
         if self.websocket:
@@ -118,9 +130,21 @@ class MCPStreamer:
         await self.stream_log(f"⚠️ {warning_msg}")
 
     async def stream_info(self, info_msg: str):
+<<<<<<< HEAD
         """Stream informational messages."""
 <<<<<<< HEAD
         await self.stream_log(f"i {info_msg}")
 =======
         await self.stream_log(f"ℹ️ {info_msg}")
 >>>>>>> 1027e1d0 (Fix linting issues)
+=======
+        """
+        Stream an informational message to the configured output.
+        
+        The message will be sent with an informational prefix ("ℹ️ ") and forwarded to the stream_log mechanism so it is logged locally and (if configured) streamed over the websocket.
+        
+        Parameters:
+            info_msg (str): The informational text to send; it will be prefixed with "ℹ️ ".
+        """
+        await self.stream_log(f"ℹ️ {info_msg}")
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)

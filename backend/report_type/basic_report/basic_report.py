@@ -21,6 +21,25 @@ class BasicReport:
         mcp_configs=None,
         mcp_strategy=None,
     ):
+        """
+        Initialize the BasicReport wrapper and construct an internal GPTResearcher configured to run the requested research and generate a report.
+        
+        Parameters:
+            query (str): Search or research prompt driving the report.
+            query_domains (list): Domains or areas to constrain the research (e.g., ["biology", "finance"]).
+            report_type (str): The format or style of report to produce (e.g., "summary", "detailed").
+            report_source (str): Identifier for the source or origin of the report request.
+            source_urls: Iterable of source URLs to include or prioritize during research.
+            document_urls: Iterable of document URLs to include as source material.
+            tone (Any): Tone/style guidance to apply to the generated report (format depends on upstream code).
+            config_path (str): Filesystem path to configuration used by the researcher.
+            headers (optional): HTTP headers to attach to outbound requests; defaults to an empty dict when None.
+            mcp_configs (optional): Optional MCP configuration object or mapping passed through to GPTResearcher when provided.
+            mcp_strategy (optional): Optional MCP strategy identifier or object passed through to GPTResearcher when provided.
+        
+        Side effects:
+            - Creates and assigns a GPTResearcher instance to self.gpt_researcher using the provided parameters.
+        """
         self.query = query
         self.query_domains = query_domains
         self.report_type = report_type
@@ -55,6 +74,11 @@ class BasicReport:
         self.gpt_researcher = GPTResearcher(**gpt_researcher_params)
 
     async def run(self):
+        """
+        Asynchronously runs the research and report generation process using the encapsulated GPTResearcher.
+        
+        Performs research (awaits conduct_research) and then generates a report (awaits write_report), returning the generated report object produced by GPTResearcher.
+        """
         await self.gpt_researcher.conduct_research()
         report = await self.gpt_researcher.write_report()
         return report

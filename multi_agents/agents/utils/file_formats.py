@@ -37,13 +37,18 @@ async def write_text_to_md(text: str, path: str) -> str:
 
 
 async def write_md_to_pdf(text: str, path: str) -> str:
-    """Converts Markdown text to a PDF file and returns the file path.
-
-    Args:
-        text (str): Markdown text to convert.
-
+    """
+    Convert Markdown text to a PDF file and return its URL-encoded path.
+    
+    Writes the rendered PDF to a uniquely named file under the given directory. If a CSS file named `pdf_styles.css`
+    exists in the same directory as this module it will be applied to the PDF. On failure the function returns an empty string.
+    
+    Parameters:
+        text (str): Markdown content to convert.
+        path (str): Directory where the PDF file will be created.
+    
     Returns:
-        str: The encoded file path of the generated PDF.
+        str: URL-encoded filesystem path to the generated PDF, or an empty string on error.
     """
     task = uuid.uuid4().hex
     file_path = f"{path}/{task}.pdf"

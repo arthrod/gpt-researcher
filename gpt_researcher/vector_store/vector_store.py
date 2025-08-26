@@ -17,12 +17,26 @@ class VectorStoreWrapper:
 =======
 >>>>>>> 1027e1d0 (Fix linting issues)
     def __init__(self, vector_store: VectorStore):
+        """
+        Initialize the wrapper with an underlying Langchain VectorStore.
+        
+        Stores the provided VectorStore instance on self.vector_store for all subsequent ingestion and similarity-search operations.
+        """
         self.vector_store = vector_store
 
     def load(self, documents):
         """
-        Load the documents into vector_store
-        Translate to langchain doc type, split to chunks then load
+        Ingest a list of GPT-Researcher-style records into the wrapped vector store.
+        
+        Converts input records to LangChain Document objects, splits them into text chunks using the wrapper's splitter, and adds the resulting documents to the underlying vector store.
+        
+        Parameters:
+            documents (List[Dict[str, str]]): Iterable of records where each item must contain:
+                - "raw_content": the full text to index
+                - "url": the source identifier stored as the Document's "source" metadata
+        
+        Returns:
+            None
         """
         langchain_documents = self._create_langchain_documents(documents)
         splitted_documents = self._split_documents(langchain_documents)
@@ -31,7 +45,19 @@ class VectorStoreWrapper:
 =======
 
     def _create_langchain_documents(self, data: List[Dict[str, str]]) -> List[Document]:
-        """Convert GPT Researcher Document to Langchain Document"""
+        """
+        Convert a list of GPT-Researcher-style dicts into Langchain Document objects.
+        
+        Each input dict must contain the keys:
+        - "raw_content": string used as the Document's page_content.
+        - "url": string stored in the Document's metadata under the "source" key.
+        
+        Parameters:
+            data (List[Dict[str, str]]): Iterable of document dicts with "raw_content" and "url".
+        
+        Returns:
+            List[Document]: Langchain Document instances with page_content and metadata populated.
+        """
         return [Document(page_content=item["raw_content"], metadata={"source": item["url"]}) for item in data]
 >>>>>>> 1027e1d0 (Fix linting issues)
 

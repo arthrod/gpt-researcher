@@ -41,10 +41,17 @@ class ResearchEvaluator:
 
     def __init__(self, queries_file: str = DEFAULT_QUERIES_FILE):
         """
+<<<<<<< HEAD
         Initialize the research evaluator.
 
         Args:
             queries_file: Path to JSONL file containing search queries
+=======
+        Create a ResearchEvaluator configured to load queries and run hallucination evaluations.
+        
+        Parameters:
+            queries_file (str): Path to a JSONL file containing search query objects (expects each line to be a JSON object with a "question" key). Defaults to DEFAULT_QUERIES_FILE.
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         """
 
         self.queries_file = Path(queries_file)
@@ -56,6 +63,7 @@ class ResearchEvaluator:
     def load_queries(self, num_queries: Optional[int] = None) -> List[str]:
 >>>>>>> 1027e1d0 (Fix linting issues)
         """
+<<<<<<< HEAD
         Load and optionally sample queries from the JSONL file.
 
         Args:
@@ -63,6 +71,11 @@ class ResearchEvaluator:
 
         Returns:
             List of query strings
+=======
+        Load queries from the instance's JSONL queries file and optionally return a random sample.
+        
+        Each line in the file is parsed as JSON and the value under the "question" key is collected in order. If num_queries is provided and is smaller than the total number of queries, a random sample of that many queries is returned; otherwise the full list is returned.
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         """
         queries = []
         with open(self.queries_file) as f:
@@ -80,13 +93,24 @@ class ResearchEvaluator:
     async def run_research(self, query: str) -> Dict:
 >>>>>>> 1027e1d0 (Fix linting issues)
         """
+<<<<<<< HEAD
         Run a single query through GPT-Researcher.
 
         Args:
             query: The search query to research
 
+=======
+        Run a single search query through GPT-Researcher and return the generated report and raw research context.
+        
+        Parameters:
+            query (str): The search/query string to investigate.
+        
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         Returns:
-            Dict containing research results and context
+            dict: A mapping with:
+                - "query" (str): the original input query.
+                - "report" (str): the researcher-generated report in markdown format.
+                - "context" (Any): the raw research result/context produced by GPTResearcher.conduct_research().
         """
         researcher = GPTResearcher(
             query=query,
@@ -111,14 +135,40 @@ class ResearchEvaluator:
         self, research_data: dict, output_dir: str | None = None
     ) -> dict:
         """
+<<<<<<< HEAD
         Evaluate research results for hallucination.
 
         Args:
             research_data: Dict containing research results and context
             output_dir: Optional directory to save evaluation results
 
+=======
+        Evaluate a single research result for hallucination and persist the evaluation.
+        
+        Evaluates the provided research report against its source context using the hallucination evaluator,
+        returns the evaluation result, and appends the result as a JSON line to `evaluation_records.jsonl`
+        in the resolved output directory.
+        
+        Args:
+            research_data (Dict): Research result dictionary expected to contain:
+                - "query": the original query string
+                - "report": the model-generated report to evaluate
+                - "context": combined source/context text used for verification (if missing, evaluation is skipped)
+            output_dir (Optional[str]): Directory where evaluation records and aggregates are saved.
+                If None, defaults to DEFAULT_OUTPUT_DIR.
+        
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
         Returns:
-            Dict containing evaluation results
+            Dict: Evaluation result. When "context" is missing, the result will have:
+                - "input", "output", "source" (set to "No source text available"),
+                - "is_hallucination": None,
+                - "confidence_score": None,
+                - "reasoning": explanation why evaluation was skipped.
+            Otherwise contains the evaluator's output schema.
+        
+        Side effects:
+            - Ensures the output directory exists.
+            - Appends the evaluation result as a JSON line to `<output_dir>/evaluation_records.jsonl`.
         """
         # Use default output directory if none provided
         if output_dir is None:
@@ -158,11 +208,25 @@ class ResearchEvaluator:
 
 async def main(num_queries: int = 5, output_dir: str = DEFAULT_OUTPUT_DIR):
     """
+<<<<<<< HEAD
     Run evaluation on a sample of queries.
 
     Args:
         num_queries: Number of queries to evaluate
         output_dir: Directory to save results
+=======
+    Run evaluation across a sampled set of queries: execute research, evaluate for hallucination, save per-query and aggregate results.
+    
+    This coroutine:
+    - Loads up to `num_queries` search queries.
+    - For each query, runs GPT-Researcher to produce a report and context, then evaluates the report for hallucination using HallucinationEvaluator.
+    - Appends per-query evaluation records to the specified output directory and accumulates aggregate metrics (total responses, evaluated responses, total hallucinated, and hallucination rate).
+    - Writes an `aggregate_results.json` file to `output_dir` and prints a short summary to stdout.
+    
+    Parameters:
+        num_queries (int): Number of queries to sample and process (default 5).
+        output_dir (str): Directory where per-query records and the aggregate JSON will be written.
+>>>>>>> 9a0c4dfe (📝 Add docstrings to `enhancements/highlevel-instructions`)
     """
     evaluator = ResearchEvaluator()
 
