@@ -1,4 +1,5 @@
-from typing import Union, List, Dict, Any
+from typing import Any
+
 from typing_extensions import TypedDict
 
 
@@ -24,11 +25,11 @@ class BaseConfig(TypedDict):
     MAX_ITERATIONS: int
     APPEND_SOURCES: bool
     LANGUAGE: str
-    AGENT_ROLE: Union[str, None]
+    AGENT_ROLE: str | None
     SCRAPER: str
     MAX_SCRAPER_WORKERS: int
     MAX_SUBTOPICS: int
-    REPORT_SOURCE: Union[str, None]
+    REPORT_SOURCE: str | None
     DOC_PATH: str
     PROMPT_FAMILY: str
     LLM_KWARGS: dict
@@ -36,9 +37,9 @@ class BaseConfig(TypedDict):
     DEEP_RESEARCH_CONCURRENCY: int
     DEEP_RESEARCH_DEPTH: int
     DEEP_RESEARCH_BREADTH: int
-    MCP_SERVERS: List[Dict[str, Any]]
+    MCP_SERVERS: list[dict[str, Any]]
     MCP_AUTO_TOOL_SELECTION: bool
     MCP_USE_LLM_ARGS: bool
-    MCP_ALLOWED_ROOT_PATHS: List[str]
+    MCP_ALLOWED_ROOT_PATHS: list[str]
     MCP_STRATEGY: str
     REASONING_EFFORT: str

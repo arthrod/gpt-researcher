@@ -1,8 +1,10 @@
-import os
 import json
-import requests
-from typing import List, Dict
+import os
+
 from urllib.parse import urljoin
+
+import requests
+
 from ..utils import build_domain_query
 
 
@@ -10,6 +12,7 @@ class SearxSearch:
     """
     SearxNG API Retriever
     """
+
     def __init__(self, query: str, query_domains=None):
         """
         Initializes the SearxSearch object
@@ -28,8 +31,8 @@ class SearxSearch:
         """
         try:
             base_url = os.environ["SEARX_URL"]
-            if not base_url.endswith('/'):
-                base_url += '/'
+            if not base_url.endswith("/"):
+                base_url += "/"
             return base_url
         except KeyError:
             raise Exception(
@@ -37,7 +40,7 @@ class SearxSearch:
                 "You can find public instances at https://searx.space/"
             )
 
-    def search(self, max_results: int = 10) -> List[Dict[str, str]]:
+    def search(self, max_results: int = 10) -> list[dict[str, str]]:
         """
         Searches the query using SearxNG API
         Args:
@@ -49,28 +52,30 @@ class SearxSearch:
         query = build_domain_query(self.query, self.query_domains)
         params = {
             # The search query.
-            'q': query,
+            "q": query,
             # Output format of results. Format needs to be activated in searxng config.
-            'format': 'json'
+            "format": "json",
         }
 
         try:
             response = requests.get(
-                search_url,
-                params=params,
-                headers={'Accept': 'application/json'}
+                search_url, params=params, headers={"Accept": "application/json"}
             )
             response.raise_for_status()
             results = response.json()
 
             # Normalize results to match the expected format
             search_response = []
-            for idx, result in enumerate(results.get('results', [])[:max_results], start=1):
-                search_response.append({
-                    "id": idx,
-                    "href": result.get('url', ''),
-                    "body": result.get('content', '')
-                })
+            for idx, result in enumerate(
+                results.get("results", [])[:max_results], start=1
+            ):
+                search_response.append(
+                    {
+                        "id": idx,
+                        "href": result.get("url", ""),
+                        "body": result.get("content", ""),
+                    }
+                )
 
             return search_response
 

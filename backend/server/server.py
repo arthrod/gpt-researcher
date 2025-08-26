@@ -1,25 +1,32 @@
+import logging
 import os
 import time
 
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, File, UploadFile, BackgroundTasks
+from fastapi import (
+    BackgroundTasks,
+    FastAPI,
+    File,
+    Request,
+    UploadFile,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-from backend.server.websocket_manager import WebSocketManager
 from backend.server.server_utils import (
+    execute_multi_agents,
+    handle_file_deletion,
+    handle_file_upload,
+    handle_websocket_communication,
     sanitize_filename,
-    handle_file_upload, handle_file_deletion,
-    execute_multi_agents, handle_websocket_communication
 )
-
-from backend.server.websocket_manager import run_agent
-from backend.utils import write_md_to_word, write_md_to_pdf
+from backend.server.websocket_manager import WebSocketManager, run_agent
+from backend.utils import write_md_to_pdf, write_md_to_word
 from gpt_researcher.utils.enum import Tone
-
-import logging
 
 # Get logger instance
 logger = logging.getLogger(__name__)
@@ -32,7 +39,7 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler()  # Only log to console
-    ]
+    ],
 )
 
 # Models
@@ -57,13 +64,13 @@ class ConfigRequest(BaseModel):
     OPENAI_API_KEY: str
     DOC_PATH: str
     RETRIEVER: str
-    GOOGLE_API_KEY: str = ''
-    GOOGLE_CX_KEY: str = ''
-    BING_API_KEY: str = ''
-    SEARCHAPI_API_KEY: str = ''
-    SERPAPI_API_KEY: str = ''
-    SERPER_API_KEY: str = ''
-    SEARX_URL: str = ''
+    GOOGLE_API_KEY: str = ""
+    GOOGLE_CX_KEY: str = ""
+    BING_API_KEY: str = ""
+    SEARCHAPI_API_KEY: str = ""
+    SERPAPI_API_KEY: str = ""
+    SERPER_API_KEY: str = ""
+    SEARX_URL: str = ""
     XAI_API_KEY: str
     DEEPSEEK_API_KEY: str
 
@@ -106,18 +113,22 @@ def startup_event():
 
 @app.get("/")
 async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "report": None})
+    return templates.TemplateResponse(
+        "index.html", {"request": request, "report": None}
+    )
 
 
 @app.get("/report/{research_id}")
 async def read_report(request: Request, research_id: str):
-    docx_path = os.path.join('outputs', f"{research_id}.docx")
+    docx_path = os.path.join("outputs", f"{research_id}.docx")
     if not os.path.exists(docx_path):
         return {"message": "Report not found."}
     return FileResponse(docx_path)
 
 
-async def write_report(research_request: ResearchRequest, research_id: str = None):
+async def write_report(
+    research_request: ResearchRequest, research_id: str | None = None
+):
     report_information = await run_agent(
         task=research_request.task,
         report_type=research_request.report_type,
@@ -130,7 +141,7 @@ async def write_report(research_request: ResearchRequest, research_id: str = Non
         headers=research_request.headers,
         query_domains=[],
         config_path="",
-        return_researcher=True
+        return_researcher=True,
     )
 
     docx_path = await write_md_to_word(report_information[0], research_id)
@@ -148,21 +159,33 @@ async def write_report(research_request: ResearchRequest, research_id: str = Non
             },
             "report": report,
             "docx_path": docx_path,
-            "pdf_path": pdf_path
+            "pdf_path": pdf_path,
         }
     else:
-        response = { "research_id": research_id, "report": "", "docx_path": docx_path, "pdf_path": pdf_path }
+        response = {
+            "research_id": research_id,
+            "report": "",
+            "docx_path": docx_path,
+            "pdf_path": pdf_path,
+        }
 
     return response
 
+
 @app.post("/report/")
-async def generate_report(research_request: ResearchRequest, background_tasks: BackgroundTasks):
+async def generate_report(
+    research_request: ResearchRequest, background_tasks: BackgroundTasks
+):
     research_id = sanitize_filename(f"task_{int(time.time())}_{research_request.task}")
 
     if research_request.generate_in_background:
-        background_tasks.add_task(write_report, research_request=research_request, research_id=research_id)
-        return {"message": "Your report is being generated in the background. Please check back later.",
-                "research_id": research_id}
+        background_tasks.add_task(
+            write_report, research_request=research_request, research_id=research_id
+        )
+        return {
+            "message": "Your report is being generated in the background. Please check back later.",
+            "research_id": research_id,
+        }
     else:
         response = await write_report(research_request, research_id)
         return response

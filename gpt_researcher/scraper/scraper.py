@@ -1,24 +1,25 @@
 import asyncio
-from colorama import Fore, init
-
-import requests
-import subprocess
-import sys
 import importlib
 import logging
+import subprocess
+import sys
+
+import requests
+
+from colorama import Fore, init
 
 from gpt_researcher.utils.workers import WorkerPool
 
 from . import (
     ArxivScraper,
     BeautifulSoupScraper,
-    PyMuPDFScraper,
-    WebBaseLoaderScraper,
     BrowserScraper,
-    NoDriverScraper,
-    TavilyExtract,
     FireCrawl,
     JinaAIScraper,
+    NoDriverScraper,
+    PyMuPDFScraper,
+    TavilyExtract,
+    WebBaseLoaderScraper,
 )
 
 

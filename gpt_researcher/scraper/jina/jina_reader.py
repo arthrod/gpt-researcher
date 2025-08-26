@@ -1,5 +1,6 @@
 import requests
 
+
 class JinaAIScraper:
     """Scrape web pages using the public Jina AI reader API."""
 
@@ -31,5 +32,8 @@ class JinaAIScraper:
             return content, [], title
         except Exception as e:
             import logging
-            logging.getLogger(__name__).error(f"Failed to scrape {self.link} using Jina AI Reader: {e}")
+
+            logging.getLogger(__name__).error(
+                f"Failed to scrape {self.link} using Jina AI Reader: {e}"
+            )
             return "", [], ""

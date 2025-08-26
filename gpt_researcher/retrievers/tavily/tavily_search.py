@@ -1,10 +1,13 @@
 # Tavily API Retriever
 
 # libraries
-import os
-from typing import Literal, Sequence
-import requests
 import json
+import os
+
+from collections.abc import Sequence
+from typing import Literal
+
+import requests
 
 
 class TavilySearch:
@@ -49,7 +52,6 @@ class TavilySearch:
                 return ""
         return api_key
 
-
     def _search(
         self,
         query: str,
@@ -57,8 +59,8 @@ class TavilySearch:
         topic: str = "general",
         days: int = 2,
         max_results: int = 10,
-        include_domains: Sequence[str] = None,
-        exclude_domains: Sequence[str] = None,
+        include_domains: Sequence[str] | None = None,
+        exclude_domains: Sequence[str] | None = None,
         include_answer: bool = False,
         include_raw_content: bool = False,
         include_images: bool = False,

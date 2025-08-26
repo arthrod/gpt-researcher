@@ -5,7 +5,7 @@ ENCODING_MODEL = "o200k_base"
 INPUT_COST_PER_TOKEN = 0.000005
 OUTPUT_COST_PER_TOKEN = 0.000015
 IMAGE_INFERENCE_COST = 0.003825
-EMBEDDING_COST = 0.02 / 1000000 # Assumes new ada-3-small
+EMBEDDING_COST = 0.02 / 1000000  # Assumes new ada-3-small
 
 
 # Cost estimation is via OpenAI libraries and models. May vary for other models
@@ -22,4 +22,3 @@ def estimate_embedding_cost(model, docs):
     encoding = tiktoken.encoding_for_model(model)
     total_tokens = sum(len(encoding.encode(str(doc))) for doc in docs)
     return total_tokens * EMBEDDING_COST
-

@@ -1,10 +1,10 @@
-from .utils.views import print_agent_output
 from .utils.llms import call_model
+from .utils.views import print_agent_output
 
 sample_revision_notes = """
 {
-  "draft": { 
-    draft title: The revised draft that you are submitting for review 
+  "draft": {
+    draft title: The revised draft that you are submitting for review
   },
   "revision_notes": Your message to the reviewer about the changes you made to the draft based on their feedback
 }

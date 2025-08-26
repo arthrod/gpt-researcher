@@ -1,7 +1,9 @@
 from datetime import datetime
+
 import json5 as json
-from .utils.views import print_agent_output
+
 from .utils.llms import call_model
+from .utils.views import print_agent_output
 
 sample_json = """
 {
@@ -70,7 +72,7 @@ class WriterAgent:
         prompt = [
             {
                 "role": "system",
-                "content": """You are a research writer. 
+                "content": """You are a research writer.
 Your sole purpose is to revise the headers data based on the given guidelines.""",
             },
             {

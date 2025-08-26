@@ -1,11 +1,11 @@
-from typing import TypedDict, List
+from typing import TypedDict
 
 
 class ResearchState(TypedDict):
     task: dict
     initial_research: str
-    sections: List[str]
-    research_data: List[dict]
+    sections: list[str]
+    research_data: list[dict]
     human_feedback: str
     # Report layout
     title: str
@@ -14,7 +14,5 @@ class ResearchState(TypedDict):
     table_of_contents: str
     introduction: str
     conclusion: str
-    sources: List[str]
+    sources: list[str]
     report: str
-
-

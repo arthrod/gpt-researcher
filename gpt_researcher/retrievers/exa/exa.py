@@ -1,4 +1,5 @@
 import os
+
 from ..utils import check_pkg
 
 
@@ -16,6 +17,7 @@ class ExaSearch:
         # This validation is necessary since exa_py is optional
         check_pkg("exa_py")
         from exa_py import Exa
+
         self.query = query
         self.api_key = self._retrieve_api_key()
         self.client = Exa(api_key=self.api_key)
@@ -57,7 +59,7 @@ class ExaSearch:
             use_autoprompt=use_autoprompt,
             num_results=max_results,
             include_domains=self.query_domains,
-            **filters
+            **filters,
         )
 
         search_response = [

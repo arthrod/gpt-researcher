@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import ClassVar
 
 import requests
 
@@ -9,7 +9,11 @@ class SemanticScholarSearch:
     """
 
     BASE_URL = "https://api.semanticscholar.org/graph/v1/paper/search"
-    VALID_SORT_CRITERIA = ["relevance", "citationCount", "publicationDate"]
+    VALID_SORT_CRITERIA: ClassVar[list[str]] = [
+        "relevance",
+        "citationCount",
+        "publicationDate",
+    ]
 
     def __init__(self, query: str, sort: str = "relevance", query_domains=None):
         """
@@ -22,7 +26,7 @@ class SemanticScholarSearch:
         assert sort in self.VALID_SORT_CRITERIA, "Invalid sort criterion"
         self.sort = sort.lower()
 
-    def search(self, max_results: int = 20) -> List[Dict[str, str]]:
+    def search(self, max_results: int = 20) -> list[dict[str, str]]:
         """
         Perform the search on Semantic Scholar and return results.
 

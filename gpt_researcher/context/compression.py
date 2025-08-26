@@ -1,7 +1,6 @@
-import os
 import asyncio
-from typing import Optional
-from .retriever import SearchAPIRetriever, SectionRetriever
+import os
+
 from langchain.retrievers import (
     ContextualCompressionRetriever,
 )
@@ -10,22 +9,23 @@ from langchain.retrievers.document_compressors import (
     EmbeddingsFilter,
 )
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from ..vector_store import VectorStoreWrapper
-from ..utils.costs import estimate_embedding_cost
+
 from ..memory.embeddings import OPENAI_EMBEDDING_MODEL
 from ..prompts import PromptFamily
+from ..utils.costs import estimate_embedding_cost
+from ..vector_store import VectorStoreWrapper
+from .retriever import SearchAPIRetriever, SectionRetriever
 
 
 class VectorstoreCompressor:
     def __init__(
         self,
         vector_store: VectorStoreWrapper,
-        max_results:int = 7,
-        filter: Optional[dict] = None,
+        max_results: int = 7,
+        filter: dict | None = None,
         prompt_family: type[PromptFamily] | PromptFamily = PromptFamily,
         **kwargs,
     ):
-
         self.vector_store = vector_store
         self.max_results = max_results
         self.filter = filter
@@ -34,7 +34,9 @@ class VectorstoreCompressor:
 
     async def async_get_context(self, query, max_results=5):
         """Get relevant context from vector store"""
-        results = await self.vector_store.asimilarity_search(query=query, k=max_results, filter=self.filter)
+        results = await self.vector_store.asimilarity_search(
+            query=query, k=max_results, filter=self.filter
+        )
         return self.prompt_family.pretty_print_docs(results)
 
 
@@ -56,14 +58,13 @@ class ContextCompressor:
 
     def __get_contextual_retriever(self):
         splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
-        relevance_filter = EmbeddingsFilter(embeddings=self.embeddings,
-                                            similarity_threshold=self.similarity_threshold)
+        relevance_filter = EmbeddingsFilter(
+            embeddings=self.embeddings, similarity_threshold=self.similarity_threshold
+        )
         pipeline_compressor = DocumentCompressorPipeline(
             transformers=[splitter, relevance_filter]
         )
-        base_retriever = SearchAPIRetriever(
-            pages=self.documents
-        )
+        base_retriever = SearchAPIRetriever(pages=self.documents)
         contextual_retriever = ContextualCompressionRetriever(
             base_compressor=pipeline_compressor, base_retriever=base_retriever
         )
@@ -72,8 +73,14 @@ class ContextCompressor:
     async def async_get_context(self, query, max_results=5, cost_callback=None):
         compressed_docs = self.__get_contextual_retriever()
         if cost_callback:
-            cost_callback(estimate_embedding_cost(model=OPENAI_EMBEDDING_MODEL, docs=self.documents))
-        relevant_docs = await asyncio.to_thread(compressed_docs.invoke, query, **self.kwargs)
+            cost_callback(
+                estimate_embedding_cost(
+                    model=OPENAI_EMBEDDING_MODEL, docs=self.documents
+                )
+            )
+        relevant_docs = await asyncio.to_thread(
+            compressed_docs.invoke, query, **self.kwargs
+        )
         return self.prompt_family.pretty_print_docs(relevant_docs, max_results)
 
 
@@ -86,25 +93,34 @@ class WrittenContentCompressor:
 
     def __get_contextual_retriever(self):
         splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
-        relevance_filter = EmbeddingsFilter(embeddings=self.embeddings,
-                                            similarity_threshold=self.similarity_threshold)
+        relevance_filter = EmbeddingsFilter(
+            embeddings=self.embeddings, similarity_threshold=self.similarity_threshold
+        )
         pipeline_compressor = DocumentCompressorPipeline(
             transformers=[splitter, relevance_filter]
         )
-        base_retriever = SectionRetriever(
-            sections=self.documents
-        )
+        base_retriever = SectionRetriever(sections=self.documents)
         contextual_retriever = ContextualCompressionRetriever(
             base_compressor=pipeline_compressor, base_retriever=base_retriever
         )
         return contextual_retriever
 
     def __pretty_docs_list(self, docs, top_n):
-        return [f"Title: {d.metadata.get('section_title')}\nContent: {d.page_content}\n" for i, d in enumerate(docs) if i < top_n]
+        return [
+            f"Title: {d.metadata.get('section_title')}\nContent: {d.page_content}\n"
+            for i, d in enumerate(docs)
+            if i < top_n
+        ]
 
     async def async_get_context(self, query, max_results=5, cost_callback=None):
         compressed_docs = self.__get_contextual_retriever()
         if cost_callback:
-            cost_callback(estimate_embedding_cost(model=OPENAI_EMBEDDING_MODEL, docs=self.documents))
-        relevant_docs = await asyncio.to_thread(compressed_docs.invoke, query, **self.kwargs)
+            cost_callback(
+                estimate_embedding_cost(
+                    model=OPENAI_EMBEDDING_MODEL, docs=self.documents
+                )
+            )
+        relevant_docs = await asyncio.to_thread(
+            compressed_docs.invoke, query, **self.kwargs
+        )
         return self.__pretty_docs_list(relevant_docs, max_results)

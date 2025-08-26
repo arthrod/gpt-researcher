@@ -1,14 +1,18 @@
 import importlib.util
 import logging
 import os
+
 import requests
 
 logger = logging.getLogger(__name__)
 
-async def stream_output(log_type, step, content, websocket=None, with_data=False, data=None):
+
+async def stream_output(
+    log_type, step, content, websocket=None, with_data=False, data=None
+):
     """
     Stream output to the client.
-    
+
     Args:
         log_type (str): The type of log
         step (str): The step being performed
@@ -20,28 +24,24 @@ async def stream_output(log_type, step, content, websocket=None, with_data=False
     if websocket:
         try:
             if with_data:
-                await websocket.send_json({
-                    "type": log_type,
-                    "step": step,
-                    "content": content,
-                    "data": data
-                })
+                await websocket.send_json(
+                    {"type": log_type, "step": step, "content": content, "data": data}
+                )
             else:
-                await websocket.send_json({
-                    "type": log_type,
-                    "step": step,
-                    "content": content
-                })
+                await websocket.send_json(
+                    {"type": log_type, "step": step, "content": content}
+                )
         except Exception as e:
             logger.error(f"Error streaming output: {e}")
+
 
 def check_pkg(pkg: str) -> None:
     """
     Checks if a package is installed and raises an error if not.
-    
+
     Args:
         pkg (str): The package name
-    
+
     Raises:
         ImportError: If the package is not installed
     """
@@ -70,17 +70,16 @@ def build_domain_query(query: str, domains: list[str] | None) -> str:
     return f"{query} {domain_query}"
 
 
-def jina_rerank(query: str, documents: list[dict], top_n: int | None = None) -> list[dict]:
+def jina_rerank(
+    query: str, documents: list[dict], top_n: int | None = None
+) -> list[dict]:
     """Rerank documents using Jina AI reranker API."""
     api_key = os.environ.get("JINA_API_KEY")
     if not api_key:
         return documents
     try:
         texts = [
-            d.get("body")
-            or d.get("content")
-            or d.get("snippet")
-            or ""
+            d.get("body") or d.get("content") or d.get("snippet") or ""
             for d in documents
         ]
         payload = {
@@ -114,6 +113,7 @@ def jina_rerank(query: str, documents: list[dict], top_n: int | None = None) -> 
         logger.error(f"Jina rerank failed: {e}")
         return documents
 
+
 # Valid retrievers for fallback
 VALID_RETRIEVERS = [
     "tavily",
@@ -134,6 +134,7 @@ VALID_RETRIEVERS = [
     "jina",
 ]
 
+
 def get_all_retriever_names():
     """
     Get all available retriever names
@@ -148,8 +149,10 @@ def get_all_retriever_names():
 
         # Filter out only the directories, excluding __pycache__
         retrievers = [
-            item for item in all_items
-            if os.path.isdir(os.path.join(current_dir, item)) and not item.startswith('__')
+            item
+            for item in all_items
+            if os.path.isdir(os.path.join(current_dir, item))
+            and not item.startswith("__")
         ]
 
         return retrievers

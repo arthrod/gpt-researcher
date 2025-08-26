@@ -1,7 +1,7 @@
-from typing import List
 import json
-from ..utils.llm import create_chat_completion
+
 from ..actions import stream_output
+from ..utils.llm import create_chat_completion
 
 
 class SourceCurator:
@@ -12,9 +12,9 @@ class SourceCurator:
 
     async def curate_sources(
         self,
-        source_data: List,
+        source_data: list,
         max_results: int = 10,
-    ) -> List:
+    ) -> list:
         """
         Rank sources based on research data and guidelines.
 
@@ -41,8 +41,12 @@ class SourceCurator:
                 model=self.researcher.cfg.smart_llm_model,
                 messages=[
                     {"role": "system", "content": f"{self.researcher.role}"},
-                    {"role": "user", "content": self.researcher.prompt_family.curate_sources(
-                        self.researcher.query, source_data, max_results)},
+                    {
+                        "role": "user",
+                        "content": self.researcher.prompt_family.curate_sources(
+                            self.researcher.query, source_data, max_results
+                        ),
+                    },
                 ],
                 temperature=0.2,
                 max_tokens=8000,
@@ -52,7 +56,9 @@ class SourceCurator:
             )
 
             curated_sources = json.loads(response)
-            print(f"\n\nFinal Curated sources {len(source_data)} sources: {curated_sources}")
+            print(
+                f"\n\nFinal Curated sources {len(source_data)} sources: {curated_sources}"
+            )
 
             if self.researcher.verbose:
                 await stream_output(

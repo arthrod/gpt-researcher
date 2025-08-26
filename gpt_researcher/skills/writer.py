@@ -16,18 +16,22 @@ class ReportGenerator:
     def __init__(self, researcher):
         self.researcher = researcher
         self.research_params = {
-            'query': self.researcher.query,
-            'agent_role_prompt': self.researcher.cfg.agent_role or self.researcher.role,
-            'report_type': self.researcher.report_type,
-            'report_source': self.researcher.report_source,
-            'tone': self.researcher.tone,
-            'websocket': self.researcher.websocket,
-            'cfg': self.researcher.cfg,
-            'headers': self.researcher.headers,
+            "query": self.researcher.query,
+            "agent_role_prompt": self.researcher.cfg.agent_role or self.researcher.role,
+            "report_type": self.researcher.report_type,
+            "report_source": self.researcher.report_source,
+            "tone": self.researcher.tone,
+            "websocket": self.researcher.websocket,
+            "cfg": self.researcher.cfg,
+            "headers": self.researcher.headers,
         }
 
     async def write_report(
-        self, existing_headers: list = [], relevant_written_contents: list = [], ext_context=None, custom_prompt=''
+        self,
+        existing_headers: list | None = None,
+        relevant_written_contents: list | None = None,
+        ext_context=None,
+        custom_prompt="",
     ) -> str:
         """
         Write a report based on existing headers and relevant contents.
@@ -42,11 +46,15 @@ class ReportGenerator:
             str: The generated report.
         """
         # send the selected images prior to writing report
+        if relevant_written_contents is None:
+            relevant_written_contents = []
+        if existing_headers is None:
+            existing_headers = []
         research_images = self.researcher.get_research_images()
         if research_images:
             await stream_output(
-                'images',
-                'selected_images',
+                "images",
+                "selected_images",
                 json.dumps(research_images),
                 self.researcher.websocket,
                 True,
@@ -56,42 +64,48 @@ class ReportGenerator:
         context = ext_context or self.researcher.context
         if self.researcher.verbose:
             await stream_output(
-                'logs',
-                'writing_report',
+                "logs",
+                "writing_report",
                 f"✍️ Writing report for '{self.researcher.query}'...",
                 self.researcher.websocket,
             )
 
         report_params = self.research_params.copy()
-        report_params['context'] = context
-        report_params['custom_prompt'] = custom_prompt
+        report_params["context"] = context
+        report_params["custom_prompt"] = custom_prompt
 
-        if self.researcher.report_type == 'subtopic_report':
+        if self.researcher.report_type == "subtopic_report":
             report_params.update({
-                'main_topic': self.researcher.parent_query,
-                'existing_headers': existing_headers,
-                'relevant_written_contents': relevant_written_contents,
-                'cost_callback': self.researcher.add_costs,
+                "main_topic": self.researcher.parent_query,
+                "existing_headers": existing_headers,
+                "relevant_written_contents": relevant_written_contents,
+                "cost_callback": self.researcher.add_costs,
             })
         else:
-            report_params['cost_callback'] = self.researcher.add_costs
+            report_params["cost_callback"] = self.researcher.add_costs
 
         report = await generate_report(**report_params, **self.researcher.kwargs)
 
-        if getattr(self.researcher.cfg, 'append_sources', False) and self.researcher.research_sources:
-            lines = ['', '', 'Sources:', '']
+        if (
+            getattr(self.researcher.cfg, "append_sources", False)
+            and self.researcher.research_sources
+        ):
+            lines = ["", "", "Sources:", ""]
             for src in self.researcher.research_sources:
-                url = src.get('url', '')
-                title = src.get('title') or url
-                src_id = src.get('id')
+                url = src.get("url", "")
+                title = src.get("title") or url
+                src_id = src.get("id")
                 if not url or src_id is None:
                     continue
-                lines.append(f'[{src_id}] {title} - {url}')
-            report = report.rstrip() + '\n' + '\n'.join(lines) + '\n'
+                lines.append(f"[{src_id}] {title} - {url}")
+            report = report.rstrip() + "\n" + "\n".join(lines) + "\n"
 
         if self.researcher.verbose:
             await stream_output(
-                'logs', 'report_written', f"📝 Report written for '{self.researcher.query}'", self.researcher.websocket
+                "logs",
+                "report_written",
+                f"📝 Report written for '{self.researcher.query}'",
+                self.researcher.websocket,
             )
 
         return report
@@ -108,8 +122,8 @@ class ReportGenerator:
         """
         if self.researcher.verbose:
             await stream_output(
-                'logs',
-                'writing_conclusion',
+                "logs",
+                "writing_conclusion",
                 f"✍️ Writing conclusion for '{self.researcher.query}'...",
                 self.researcher.websocket,
             )
@@ -127,8 +141,8 @@ class ReportGenerator:
 
         if self.researcher.verbose:
             await stream_output(
-                'logs',
-                'conclusion_written',
+                "logs",
+                "conclusion_written",
                 f"📝 Conclusion written for '{self.researcher.query}'",
                 self.researcher.websocket,
             )
@@ -139,8 +153,8 @@ class ReportGenerator:
         """Write the introduction section of the report."""
         if self.researcher.verbose:
             await stream_output(
-                'logs',
-                'writing_introduction',
+                "logs",
+                "writing_introduction",
                 f"✍️ Writing introduction for '{self.researcher.query}'...",
                 self.researcher.websocket,
             )
@@ -158,8 +172,8 @@ class ReportGenerator:
 
         if self.researcher.verbose:
             await stream_output(
-                'logs',
-                'introduction_written',
+                "logs",
+                "introduction_written",
                 f"📝 Introduction written for '{self.researcher.query}'",
                 self.researcher.websocket,
             )
@@ -170,8 +184,8 @@ class ReportGenerator:
         """Retrieve subtopics for the research."""
         if self.researcher.verbose:
             await stream_output(
-                'logs',
-                'generating_subtopics',
+                "logs",
+                "generating_subtopics",
                 f"🌳 Generating subtopics for '{self.researcher.query}'...",
                 self.researcher.websocket,
             )
@@ -187,8 +201,8 @@ class ReportGenerator:
 
         if self.researcher.verbose:
             await stream_output(
-                'logs',
-                'subtopics_generated',
+                "logs",
+                "subtopics_generated",
                 f"📊 Subtopics generated for '{self.researcher.query}'",
                 self.researcher.websocket,
             )
@@ -199,8 +213,8 @@ class ReportGenerator:
         """Generate draft section titles for the report."""
         if self.researcher.verbose:
             await stream_output(
-                'logs',
-                'generating_draft_sections',
+                "logs",
+                "generating_draft_sections",
                 f"📑 Generating draft section titles for '{self.researcher.query}'...",
                 self.researcher.websocket,
             )
@@ -219,8 +233,8 @@ class ReportGenerator:
 
         if self.researcher.verbose:
             await stream_output(
-                'logs',
-                'draft_sections_generated',
+                "logs",
+                "draft_sections_generated",
                 f"🗂️ Draft section titles generated for '{self.researcher.query}'",
                 self.researcher.websocket,
             )

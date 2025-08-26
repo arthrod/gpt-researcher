@@ -1,6 +1,7 @@
-from gpt_researcher import GPTResearcher
-from backend.utils import write_md_to_pdf
 import asyncio
+
+from backend.utils import write_md_to_pdf
+from gpt_researcher import GPTResearcher
 
 
 async def main(task: str):
@@ -20,13 +21,14 @@ async def main(task: str):
 
     # Run research with progress tracking
     print("Starting deep research...")
-    context = await researcher.conduct_research(on_progress=on_progress)
+    _context = await researcher.conduct_research(on_progress=on_progress)
     print("\nResearch completed. Generating report...")
 
     # Generate the final report
     report = await researcher.write_report()
     await write_md_to_pdf(report, "deep_research_report")
     print(f"\nFinal Report: {report}")
+
 
 if __name__ == "__main__":
     query = "What are the most effective ways for beginners to start investing?"

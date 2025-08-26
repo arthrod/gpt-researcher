@@ -1,7 +1,10 @@
-import os
-import requests
 import logging
+import os
+
+import requests
+
 from ..utils import build_domain_query
+
 
 class JinaSearch:
     """Jina AI search retriever using the public search API."""
@@ -23,7 +26,10 @@ class JinaSearch:
         }
         try:
             resp = requests.post(
-                "https://api.jina.ai/v1/search", headers=headers, json=payload, timeout=10
+                "https://api.jina.ai/v1/search",
+                headers=headers,
+                json=payload,
+                timeout=10,
             )
             data = resp.json().get("data", [])
         except Exception as e:

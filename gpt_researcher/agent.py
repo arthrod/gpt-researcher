@@ -1,30 +1,30 @@
-from typing import Any, Optional
 import json
 import os
 
+from typing import Any
+
+from .actions import (
+    add_references,
+    choose_agent,
+    extract_headers,
+    extract_sections,
+    get_retrievers,
+    get_search_results,
+    table_of_contents,
+)
 from .config import Config
 from .memory import Memory
-from .utils.enum import ReportSource, ReportType, Tone
 from .prompts import get_prompt_family
-from .vector_store import VectorStoreWrapper
+from .skills.browser import BrowserManager
+from .skills.context_manager import ContextManager
+from .skills.curator import SourceCurator
+from .skills.deep_research import DeepResearchSkill
 
 # Research skills
 from .skills.researcher import ResearchConductor
 from .skills.writer import ReportGenerator
-from .skills.context_manager import ContextManager
-from .skills.browser import BrowserManager
-from .skills.curator import SourceCurator
-from .skills.deep_research import DeepResearchSkill
-
-from .actions import (
-    add_references,
-    extract_headers,
-    extract_sections,
-    table_of_contents,
-    get_search_results,
-    get_retrievers,
-    choose_agent
-)
+from .utils.enum import ReportSource, ReportType, Tone
+from .vector_store import VectorStoreWrapper
 
 
 class GPTResearcher:
@@ -58,11 +58,11 @@ class GPTResearcher:
         mcp_configs: list[dict] | None = None,
         mcp_max_iterations: int | None = None,
         mcp_strategy: str | None = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize a GPT Researcher instance.
-        
+
         Args:
             query (str): The research query or question.
             report_type (str): Type of report to generate.
@@ -99,7 +99,7 @@ class GPTResearcher:
                 - connection_url (str): URL for WebSocket or HTTP connection
                 - connection_type (str): Connection type (stdio, websocket, http)
                 - connection_token (str): Authentication token for remote connections
-                
+
                 Example:
                 ```python
                 mcp_configs=[{
@@ -110,7 +110,7 @@ class GPTResearcher:
                 ```
             mcp_strategy (str, optional): MCP execution strategy. Options:
                 - "fast" (default): Run MCP once with original query for best performance
-                - "deep": Run MCP for all sub-queries for maximum thoroughness  
+                - "deep": Run MCP for all sub-queries for maximum thoroughness
                 - "disabled": Skip MCP entirely, use only web retrievers
         """
         self.kwargs = kwargs
@@ -118,7 +118,9 @@ class GPTResearcher:
         self.report_type = report_type
         self.cfg = Config(config_path)
         self.cfg.set_verbose(verbose)
-        self.report_source = report_source if report_source else getattr(self.cfg, 'report_source', None)
+        self.report_source = (
+            report_source if report_source else getattr(self.cfg, "report_source", None)
+        )
         self.report_format = report_format
         self.max_subtopics = max_subtopics
         self.tone = tone if isinstance(tone, Tone) else Tone.Objective
@@ -143,7 +145,9 @@ class GPTResearcher:
         self.headers = headers or {}
         self.research_costs = 0.0
         self.log_handler = log_handler
-        self.prompt_family = get_prompt_family(prompt_family or self.cfg.prompt_family, self.cfg)
+        self.prompt_family = get_prompt_family(
+            prompt_family or self.cfg.prompt_family, self.cfg
+        )
 
         # Process MCP configurations if provided
         self.mcp_configs = mcp_configs
@@ -152,11 +156,13 @@ class GPTResearcher:
 
         self.retrievers = get_retrievers(self.headers, self.cfg)
         self.memory = Memory(
-            self.cfg.embedding_provider, self.cfg.embedding_model, **self.cfg.embedding_kwargs
+            self.cfg.embedding_provider,
+            self.cfg.embedding_model,
+            **self.cfg.embedding_kwargs,
         )
 
         # Set default encoding to utf-8
-        self.encoding = kwargs.get('encoding', 'utf-8')
+        self.encoding = kwargs.get("encoding", "utf-8")
 
         # Initialize components
         self.research_conductor: ResearchConductor = ResearchConductor(self)
@@ -164,27 +170,29 @@ class GPTResearcher:
         self.context_manager: ContextManager = ContextManager(self)
         self.scraper_manager: BrowserManager = BrowserManager(self)
         self.source_curator: SourceCurator = SourceCurator(self)
-        self.deep_researcher: Optional[DeepResearchSkill] = None
+        self.deep_researcher: DeepResearchSkill | None = None
         if report_type == ReportType.DeepResearch.value:
             self.deep_researcher = DeepResearchSkill(self)
 
         # Handle MCP strategy configuration with backwards compatibility
         self.mcp_strategy = self._resolve_mcp_strategy(mcp_strategy, mcp_max_iterations)
 
-    def _resolve_mcp_strategy(self, mcp_strategy: str | None, mcp_max_iterations: int | None) -> str:
+    def _resolve_mcp_strategy(
+        self, mcp_strategy: str | None, mcp_max_iterations: int | None
+    ) -> str:
         """
         Resolve MCP strategy from various sources with backwards compatibility.
-        
+
         Priority:
         1. Parameter mcp_strategy (new approach)
-        2. Parameter mcp_max_iterations (backwards compatibility)  
+        2. Parameter mcp_max_iterations (backwards compatibility)
         3. Config MCP_STRATEGY
         4. Default "fast"
-        
+
         Args:
             mcp_strategy: New strategy parameter
             mcp_max_iterations: Legacy parameter for backwards compatibility
-            
+
         Returns:
             str: Resolved strategy ("fast", "deep", or "disabled")
         """
@@ -196,21 +204,33 @@ class GPTResearcher:
             # Support old strategy names for backwards compatibility
             elif mcp_strategy == "optimized":
                 import logging
-                logging.getLogger(__name__).warning("mcp_strategy 'optimized' is deprecated, use 'fast' instead")
+
+                logging.getLogger(__name__).warning(
+                    "mcp_strategy 'optimized' is deprecated, use 'fast' instead"
+                )
                 return "fast"
             elif mcp_strategy == "comprehensive":
                 import logging
-                logging.getLogger(__name__).warning("mcp_strategy 'comprehensive' is deprecated, use 'deep' instead")
+
+                logging.getLogger(__name__).warning(
+                    "mcp_strategy 'comprehensive' is deprecated, use 'deep' instead"
+                )
                 return "deep"
             else:
                 import logging
-                logging.getLogger(__name__).warning(f"Invalid mcp_strategy '{mcp_strategy}', defaulting to 'fast'")
+
+                logging.getLogger(__name__).warning(
+                    f"Invalid mcp_strategy '{mcp_strategy}', defaulting to 'fast'"
+                )
                 return "fast"
 
         # Priority 2: Convert mcp_max_iterations for backwards compatibility
         if mcp_max_iterations is not None:
             import logging
-            logging.getLogger(__name__).warning("mcp_max_iterations is deprecated, use mcp_strategy instead")
+
+            logging.getLogger(__name__).warning(
+                "mcp_max_iterations is deprecated, use mcp_strategy instead"
+            )
 
             if mcp_max_iterations == 0:
                 return "disabled"
@@ -223,7 +243,7 @@ class GPTResearcher:
                 return "fast"
 
         # Priority 3: Use config setting
-        if hasattr(self.cfg, 'mcp_strategy'):
+        if hasattr(self.cfg, "mcp_strategy"):
             config_strategy = self.cfg.mcp_strategy
             # Support new strategy names
             if config_strategy in ["fast", "deep", "disabled"]:
@@ -240,10 +260,10 @@ class GPTResearcher:
     def _process_mcp_configs(self, mcp_configs: list[dict]) -> None:
         """
         Process MCP configurations from a list of configuration dictionaries.
-        
+
         This method validates the MCP configurations. It only adds MCP to retrievers
         if no explicit retriever configuration is provided via environment variables.
-        
+
         Args:
             mcp_configs (list[dict]): List of MCP server configuration dictionaries.
         """
@@ -252,9 +272,13 @@ class GPTResearcher:
 
         if not user_set_retriever:
             # Only auto-add MCP if user hasn't explicitly set retrievers
-            if hasattr(self.cfg, 'retrievers') and self.cfg.retrievers:
+            if hasattr(self.cfg, "retrievers") and self.cfg.retrievers:
                 # If retrievers is set in config (but not via env var)
-                current_retrievers = set(self.cfg.retrievers.split(",")) if isinstance(self.cfg.retrievers, str) else set(self.cfg.retrievers)
+                current_retrievers = (
+                    set(self.cfg.retrievers.split(","))
+                    if isinstance(self.cfg.retrievers, str)
+                    else set(self.cfg.retrievers)
+                )
                 if "mcp" not in current_retrievers:
                     current_retrievers.add("mcp")
                     self.cfg.retrievers = ",".join(filter(None, current_retrievers))
@@ -271,68 +295,82 @@ class GPTResearcher:
         if self.log_handler:
             try:
                 if event_type == "tool":
-                    await self.log_handler.on_tool_start(kwargs.get('tool_name', ''), **kwargs)
+                    await self.log_handler.on_tool_start(
+                        kwargs.get("tool_name", ""), **kwargs
+                    )
                 elif event_type == "action":
-                    await self.log_handler.on_agent_action(kwargs.get('action', ''), **kwargs)
+                    await self.log_handler.on_agent_action(
+                        kwargs.get("action", ""), **kwargs
+                    )
                 elif event_type == "research":
-                    await self.log_handler.on_research_step(kwargs.get('step', ''), kwargs.get('details', {}))
+                    await self.log_handler.on_research_step(
+                        kwargs.get("step", ""), kwargs.get("details", {})
+                    )
 
                 # Add direct logging as backup
                 import logging
-                research_logger = logging.getLogger('research')
+
+                research_logger = logging.getLogger("research")
                 research_logger.info(f"{event_type}: {json.dumps(kwargs, default=str)}")
 
             except Exception as e:
                 import logging
-                logging.getLogger('research').error(f"Error in _log_event: {e}", exc_info=True)
+
+                logging.getLogger("research").error(
+                    f"Error in _log_event: {e}", exc_info=True
+                )
 
     async def conduct_research(self, on_progress=None):
         """Conduct comprehensive research on the given query.
-        
+
         This method orchestrates the entire research process, including:
         - Agent selection based on the query type
         - Multi-source information gathering
         - Content scraping and processing
         - Context aggregation and filtering
         - Cost tracking and logging
-        
+
         For deep research report types, this method delegates to specialized
         deep research workflows that provide iterative exploration.
-        
+
         Args:
             on_progress (callable, optional): Callback function to report progress.
                 Called with progress updates during the research process.
-                
+
         Returns:
             list: A list of research context items containing aggregated information
                   from all sources. Each item typically contains text content,
                   metadata, and source information.
-                  
+
         Raises:
             Exception: If agent selection or research process fails.
-            
+
         Example:
             ```python
             researcher = GPTResearcher("What are the latest AI trends?")
-            
+
             def progress_callback(progress):
                 print(f"Research progress: {progress}")
-                
+
             context = await researcher.conduct_research(on_progress=progress_callback)
             print(f"Found {len(context)} research items")
             ```
-            
+
         Note:
             This method automatically selects the appropriate agent and role
             if not already specified, tracks research costs, and logs all
             research activities for monitoring and debugging.
         """
-        await self._log_event("research", step="start", details={
-            "query": self.query,
-            "report_type": self.report_type,
-            "agent": self.agent,
-            "role": self.role
-        })
+        await self._log_event(
+            "research",
+            step="start",
+            details={
+                "query": self.query,
+                "report_type": self.report_type,
+                "agent": self.agent,
+                "role": self.role,
+            },
+        )
 
         # Handle deep research separately
         if self.report_type == ReportType.DeepResearch.value and self.deep_researcher:
@@ -347,41 +385,53 @@ class GPTResearcher:
                 cost_callback=self.add_costs,
                 headers=self.headers,
                 prompt_family=self.prompt_family,
-                **self.kwargs
+                **self.kwargs,
             )
-            await self._log_event("action", action="agent_selected", details={
-                "agent": self.agent,
-                "role": self.role
-            })
+            await self._log_event(
+                "action",
+                action="agent_selected",
+                details={"agent": self.agent, "role": self.role},
+            )
 
-        await self._log_event("research", step="conducting_research", details={
-            "agent": self.agent,
-            "role": self.role
-        })
+        await self._log_event(
+            "research",
+            step="conducting_research",
+            details={"agent": self.agent, "role": self.role},
+        )
         self.context = await self.research_conductor.conduct_research()
 
-        await self._log_event("research", step="research_completed", details={
-            "context_length": len(self.context)
-        })
+        await self._log_event(
+            "research",
+            step="research_completed",
+            details={"context_length": len(self.context)},
+        )
         return self.context
 
     async def _handle_deep_research(self, on_progress=None):
         """Handle deep research execution and logging."""
         # Log deep research configuration
-        await self._log_event("research", step="deep_research_initialize", details={
-            "type": "deep_research",
-            "breadth": self.deep_researcher.breadth,
-            "depth": self.deep_researcher.depth,
-            "concurrency": self.deep_researcher.concurrency_limit
-        })
+        await self._log_event(
+            "research",
+            step="deep_research_initialize",
+            details={
+                "type": "deep_research",
+                "breadth": self.deep_researcher.breadth,
+                "depth": self.deep_researcher.depth,
+                "concurrency": self.deep_researcher.concurrency_limit,
+            },
+        )
 
         # Log deep research start
-        await self._log_event("research", step="deep_research_start", details={
-            "query": self.query,
-            "breadth": self.deep_researcher.breadth,
-            "depth": self.deep_researcher.depth,
-            "concurrency": self.deep_researcher.concurrency_limit
-        })
+        await self._log_event(
+            "research",
+            step="deep_research_start",
+            details={
+                "query": self.query,
+                "breadth": self.deep_researcher.breadth,
+                "depth": self.deep_researcher.depth,
+                "concurrency": self.deep_researcher.concurrency_limit,
+            },
+        )
 
         # Run deep research and get context
         self.context = await self.deep_researcher.run(on_progress=on_progress)
@@ -390,29 +440,43 @@ class GPTResearcher:
         total_costs = self.get_costs()
 
         # Log deep research completion with costs
-        await self._log_event("research", step="deep_research_complete", details={
-            "context_length": len(self.context),
-            "visited_urls": len(self.visited_urls),
-            "total_costs": total_costs
-        })
+        await self._log_event(
+            "research",
+            step="deep_research_complete",
+            details={
+                "context_length": len(self.context),
+                "visited_urls": len(self.visited_urls),
+                "total_costs": total_costs,
+            },
+        )
 
         # Log final cost update
-        await self._log_event("research", step="cost_update", details={
-            "cost": total_costs,
-            "total_cost": total_costs,
-            "research_type": "deep_research"
-        })
+        await self._log_event(
+            "research",
+            step="cost_update",
+            details={
+                "cost": total_costs,
+                "total_cost": total_costs,
+                "research_type": "deep_research",
+            },
+        )
 
         # Return the research context
         return self.context
 
-    async def write_report(self, existing_headers: list = [], relevant_written_contents: list = [], ext_context=None, custom_prompt="") -> str:
+    async def write_report(
+        self,
+        existing_headers: list | None = None,
+        relevant_written_contents: list | None = None,
+        ext_context=None,
+        custom_prompt="",
+    ) -> str:
         """Generate a comprehensive research report based on conducted research.
-        
+
         This method synthesizes the research context into a well-structured report
         using the configured report type, tone, and format. It can incorporate
         existing content and custom prompts for specialized report generation.
-        
+
         Args:
             existing_headers (list, optional): List of existing headers to avoid
                 duplication in multi-section reports. Defaults to [].
@@ -422,56 +486,64 @@ class GPTResearcher:
                 instance's research context. If None, uses self.context.
             custom_prompt (str, optional): Custom prompt to guide report generation.
                 Overrides default prompts when provided. Defaults to "".
-                
+
         Returns:
             str: A formatted research report in the specified format (markdown, etc.).
                  The report includes structured sections, citations, and conclusions
                  based on the research findings.
-                 
+
         Raises:
             Exception: If report generation fails due to insufficient context,
                       LLM errors, or formatting issues.
-                      
+
         Example:
             ```python
             researcher = GPTResearcher("AI safety research")
             await researcher.conduct_research()
-            
+
             # Generate basic report
             report = await researcher.write_report()
-            
+
             # Generate report with custom prompt
             custom_report = await researcher.write_report(
                 custom_prompt="Focus on practical applications and risks"
             )
-            
+
             # Generate incremental report section
             section_report = await researcher.write_report(
                 existing_headers=["Introduction", "Background"],
                 relevant_written_contents=[previous_section_content]
             )
             ```
-            
+
         Note:
             The report format, tone, and structure are determined by the instance
             configuration. The method automatically handles citation formatting,
             source attribution, and maintains consistency with the specified tone.
         """
-        await self._log_event("research", step="writing_report", details={
-            "existing_headers": existing_headers,
-            "context_source": "external" if ext_context else "internal"
-        })
+        if relevant_written_contents is None:
+            relevant_written_contents = []
+        if existing_headers is None:
+            existing_headers = []
+        await self._log_event(
+            "research",
+            step="writing_report",
+            details={
+                "existing_headers": existing_headers,
+                "context_source": "external" if ext_context else "internal",
+            },
+        )
 
         report = await self.report_generator.write_report(
             existing_headers=existing_headers,
             relevant_written_contents=relevant_written_contents,
             ext_context=ext_context or self.context,
-            custom_prompt=custom_prompt
+            custom_prompt=custom_prompt,
         )
 
-        await self._log_event("research", step="report_completed", details={
-            "report_length": len(report)
-        })
+        await self._log_event(
+            "research", step="report_completed", details={"report_length": len(report)}
+        )
         return report
 
     async def write_report_conclusion(self, report_body: str) -> str:
@@ -486,8 +558,12 @@ class GPTResearcher:
         await self._log_event("research", step="introduction_completed")
         return intro
 
-    async def quick_search(self, query: str, query_domains: list[str] = None) -> list[Any]:
-        return await get_search_results(query, self.retrievers[0], query_domains=query_domains)
+    async def quick_search(
+        self, query: str, query_domains: list[str] | None = None
+    ) -> list[Any]:
+        return await get_search_results(
+            query, self.retrievers[0], query_domains=query_domains
+        )
 
     async def get_subtopics(self):
         return await self.report_generator.get_subtopics()
@@ -500,13 +576,10 @@ class GPTResearcher:
         current_subtopic: str,
         draft_section_titles: list[str],
         written_contents: list[dict],
-        max_results: int = 10
+        max_results: int = 10,
     ) -> list[str]:
         return await self.context_manager.get_similar_written_contents_by_draft_section_titles(
-            current_subtopic,
-            draft_section_titles,
-            written_contents,
-            max_results
+            current_subtopic, draft_section_titles, written_contents, max_results
         )
 
     # Utility methods
@@ -558,11 +631,12 @@ class GPTResearcher:
         self.verbose = verbose
 
     def add_costs(self, cost: float) -> None:
-        if not isinstance(cost, (float, int)):
+        if not isinstance(cost, float | int):
             raise ValueError("Cost must be an integer or float")
         self.research_costs += cost
         if self.log_handler:
-            self._log_event("research", step="cost_update", details={
-                "cost": cost,
-                "total_cost": self.research_costs
-            })
+            self._log_event(
+                "research",
+                step="cost_update",
+                details={"cost": cost, "total_cost": self.research_costs},
+            )

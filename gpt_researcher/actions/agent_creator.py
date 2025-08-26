@@ -1,17 +1,20 @@
 import json
 import re
+
 import json_repair
-from gpt_researcher.utils.llm import create_chat_completion
+
 from gpt_researcher.prompts import PromptFamily
+from gpt_researcher.utils.llm import create_chat_completion
+
 
 async def choose_agent(
     query,
     cfg,
     parent_query=None,
-    cost_callback: callable = None,
+    cost_callback: callable | None = None,
     headers=None,
     prompt_family: type[PromptFamily] | PromptFamily = PromptFamily,
-    **kwargs
+    **kwargs,
 ):
     """
     Chooses the agent automatically
@@ -34,14 +37,17 @@ async def choose_agent(
         response = await create_chat_completion(
             model=cfg.smart_llm_model,
             messages=[
-                {"role": "system", "content": f"{prompt_family.auto_agent_instructions()}"},
+                {
+                    "role": "system",
+                    "content": f"{prompt_family.auto_agent_instructions()}",
+                },
                 {"role": "user", "content": f"task: {query}"},
             ],
             temperature=0.15,
             llm_provider=cfg.smart_llm_provider,
             llm_kwargs=cfg.llm_kwargs,
             cost_callback=cost_callback,
-            **kwargs
+            **kwargs,
         )
 
         agent_dict = json.loads(response)

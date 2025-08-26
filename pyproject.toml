@@ -62,6 +62,43 @@ filterwarnings = [
 
 [tool.ruff]
 # Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
+
+
+# Same as Black.
+line-length = 88
+indent-width = 4
+
+# Assume Python 3.11
+target-version = "py311"
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+[tool.ruff.lint]
+fixable = ["ALL"]
+unfixable = []
+ignore = [
+    "E501",  # Line too long (handled by formatter)
+    "B008",  # Do not perform function calls in argument defaults
+    "C901",  # Function is too complex
+    "T201",  # `print` found (allow print statements for debugging)
+    "B904",  # Within an `except` clause, raise exceptions with `raise ... from err`
+    "B006", # Empty variables in lieu of `None`
+    "W505", # Line too long
+    "ARG002", # unused arguments
+    "ARG001",  # unused arguments
+    "ARG004",
+]
 select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
@@ -77,17 +114,6 @@ select = [
     "TCH", # flake8-type-checking
     "RUF", # Ruff-specific rules
 ]
-ignore = [
-    "E501",  # Line too long (handled by formatter)
-    "B008",  # Do not perform function calls in argument defaults
-    "C901",  # Function is too complex
-    "T201",  # `print` found (allow print statements for debugging)
-    "B904",  # Within an `except` clause, raise exceptions with `raise ... from err`
-]
-
-# Allow fix for all enabled rules (when `--fix`) is provided.
-fixable = ["ALL"]
-unfixable = []
 
 # Exclude a variety of commonly ignored directories.
 exclude = [
@@ -116,25 +142,6 @@ exclude = [
     "outputs",
 ]
 
-# Same as Black.
-line-length = 88
-indent-width = 4
-
-# Assume Python 3.11
-target-version = "py311"
-
-[tool.ruff.format]
-# Like Black, use double quotes for strings.
-quote-style = "double"
-
-# Like Black, indent with spaces, rather than tabs.
-indent-style = "space"
-
-# Like Black, respect magic trailing commas.
-skip-magic-trailing-comma = false
-
-# Like Black, automatically detect the appropriate line ending.
-line-ending = "auto"
 
 [tool.ruff.lint.isort]
 # Use a single line between direct and from import

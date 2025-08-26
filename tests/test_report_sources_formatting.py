@@ -1,12 +1,14 @@
 """Tests for report sources formatting fix."""
 
-import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
-import asyncio
 
 # Add project root to path
 import sys
+
 from pathlib import Path
+from unittest.mock import AsyncMock, patch
+
+import pytest
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 from gpt_researcher.skills.writer import ReportGenerator
@@ -14,6 +16,7 @@ from gpt_researcher.skills.writer import ReportGenerator
 
 class MockConfig:
     """Mock configuration object."""
+
     def __init__(self, append_sources=True):
         self.append_sources = append_sources
         self.agent_role = None  # Add required attribute
@@ -21,6 +24,7 @@ class MockConfig:
 
 class MockResearcher:
     """Mock researcher object for testing."""
+
     def __init__(self, append_sources=True, sources=None):
         self.cfg = MockConfig(append_sources)
         self.research_sources = sources or []
@@ -36,15 +40,15 @@ class MockResearcher:
         self.headers = {}
         self.context = []
         self.research_images = []
-        
+
     def get_research_images(self):
         """Mock method to get research images."""
         return self.research_images
-        
+
     def get_research_sources(self):
         """Mock method to get research sources."""
         return self.research_sources
-        
+
     def add_costs(self, cost):
         """Mock method to track costs."""
         pass
@@ -53,7 +57,7 @@ class MockResearcher:
 @pytest.mark.asyncio
 async def test_sources_formatting_with_proper_newlines():
     """Test that sources are formatted with proper newlines."""
-    
+
     # Create mock researcher with sources
     sources = [
         {"id": 1, "title": "Article 1", "url": "https://example.com/1"},
@@ -61,19 +65,21 @@ async def test_sources_formatting_with_proper_newlines():
         {"id": 3, "url": "https://example.com/3"},  # No title
     ]
     researcher = MockResearcher(append_sources=True, sources=sources)
-    
+
     # Create report generator
     generator = ReportGenerator(researcher)
-    
+
     # Mock the generate_report function
     mock_report_content = "This is the main report content."
-    
-    with patch('gpt_researcher.skills.writer.generate_report', new_callable=AsyncMock) as mock_gen:
+
+    with patch(
+        "gpt_researcher.skills.writer.generate_report", new_callable=AsyncMock
+    ) as mock_gen:
         mock_gen.return_value = mock_report_content
-        
+
         # Generate report
         report = await generator.write_report()
-    
+
     # Verify formatting
     assert report.startswith("This is the main report content.")
     assert "\n\n\nSources:\n\n" in report
@@ -86,7 +92,7 @@ async def test_sources_formatting_with_proper_newlines():
 @pytest.mark.asyncio
 async def test_sources_with_missing_keys():
     """Test handling of sources with missing keys."""
-    
+
     # Create sources with various missing keys
     sources = [
         {"id": 1, "title": "Valid", "url": "https://example.com/1"},
@@ -96,14 +102,16 @@ async def test_sources_with_missing_keys():
         {},  # Empty source
     ]
     researcher = MockResearcher(append_sources=True, sources=sources)
-    
+
     generator = ReportGenerator(researcher)
-    
-    with patch('gpt_researcher.skills.writer.generate_report', new_callable=AsyncMock) as mock_gen:
+
+    with patch(
+        "gpt_researcher.skills.writer.generate_report", new_callable=AsyncMock
+    ) as mock_gen:
         mock_gen.return_value = "Main report."
-        
+
         report = await generator.write_report()
-    
+
     # Only the valid source should be included
     assert "[1] Valid - https://example.com/1" in report
     assert "[2]" not in report  # Missing id
@@ -114,19 +122,19 @@ async def test_sources_with_missing_keys():
 @pytest.mark.asyncio
 async def test_no_sources_appended_when_disabled():
     """Test that sources are not appended when append_sources is False."""
-    
-    sources = [
-        {"id": 1, "title": "Article", "url": "https://example.com/1"}
-    ]
+
+    sources = [{"id": 1, "title": "Article", "url": "https://example.com/1"}]
     researcher = MockResearcher(append_sources=False, sources=sources)
-    
+
     generator = ReportGenerator(researcher)
-    
-    with patch('gpt_researcher.skills.writer.generate_report', new_callable=AsyncMock) as mock_gen:
+
+    with patch(
+        "gpt_researcher.skills.writer.generate_report", new_callable=AsyncMock
+    ) as mock_gen:
         mock_gen.return_value = "Main report content."
-        
+
         report = await generator.write_report()
-    
+
     # Sources should not be appended
     assert report == "Main report content."
     assert "Sources:" not in report
@@ -135,25 +143,28 @@ async def test_no_sources_appended_when_disabled():
 @pytest.mark.asyncio
 async def test_safe_getattr_for_append_sources():
     """Test safe access to append_sources attribute."""
-    
+
     class MinimalConfig:
         """Config without append_sources attribute."""
+
         agent_role = None  # Add required attribute
-    
+
     researcher = MockResearcher(append_sources=True)
     researcher.cfg = MinimalConfig()  # Replace with config missing append_sources
     researcher.research_sources = [
         {"id": 1, "title": "Test", "url": "https://example.com"}
     ]
-    
+
     generator = ReportGenerator(researcher)
-    
-    with patch('gpt_researcher.skills.writer.generate_report', new_callable=AsyncMock) as mock_gen:
+
+    with patch(
+        "gpt_researcher.skills.writer.generate_report", new_callable=AsyncMock
+    ) as mock_gen:
         mock_gen.return_value = "Report content."
-        
+
         # Should not raise AttributeError
         report = await generator.write_report()
-    
+
     # Sources should not be appended (defaults to False)
     assert report == "Report content."
     assert "Sources:" not in report
@@ -162,14 +173,12 @@ async def test_safe_getattr_for_append_sources():
 @pytest.mark.asyncio
 async def test_report_ending_with_whitespace():
     """Test handling of reports ending with various whitespace."""
-    
-    sources = [
-        {"id": 1, "title": "Source", "url": "https://example.com"}
-    ]
+
+    sources = [{"id": 1, "title": "Source", "url": "https://example.com"}]
     researcher = MockResearcher(append_sources=True, sources=sources)
-    
+
     generator = ReportGenerator(researcher)
-    
+
     # Test various report endings
     test_cases = [
         "Report with spaces   ",
@@ -177,13 +186,15 @@ async def test_report_ending_with_whitespace():
         "Report with tabs\t\t",
         "Report with mixed whitespace  \n\t  ",
     ]
-    
+
     for test_content in test_cases:
-        with patch('gpt_researcher.skills.writer.generate_report', new_callable=AsyncMock) as mock_gen:
+        with patch(
+            "gpt_researcher.skills.writer.generate_report", new_callable=AsyncMock
+        ) as mock_gen:
             mock_gen.return_value = test_content
-            
+
             report = await generator.write_report()
-        
+
         # Should have consistent formatting regardless of trailing whitespace
         assert not report.startswith("\n")
         assert "\n\n\nSources:\n\n" in report
@@ -194,16 +205,18 @@ async def test_report_ending_with_whitespace():
 @pytest.mark.asyncio
 async def test_empty_sources_list():
     """Test behavior with empty sources list."""
-    
+
     researcher = MockResearcher(append_sources=True, sources=[])
-    
+
     generator = ReportGenerator(researcher)
-    
-    with patch('gpt_researcher.skills.writer.generate_report', new_callable=AsyncMock) as mock_gen:
+
+    with patch(
+        "gpt_researcher.skills.writer.generate_report", new_callable=AsyncMock
+    ) as mock_gen:
         mock_gen.return_value = "Report content."
-        
+
         report = await generator.write_report()
-    
+
     # Should not append sources section for empty list
     assert report == "Report content."
     assert "Sources:" not in report

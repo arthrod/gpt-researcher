@@ -51,7 +51,7 @@ class PubMedCentralSearch:
             "usehistory": "y",
             "api_key": self.api_key,
             "retmode": "json",
-            "sort": "relevance"
+            "sort": "relevance",
         }
         response = requests.get(base_url, params=params)
 

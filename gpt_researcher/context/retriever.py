@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import ClassVar
 
 from langchain.callbacks.manager import CallbackManagerForRetrieverRun
 from langchain.schema import Document
@@ -7,12 +7,12 @@ from langchain.schema.retriever import BaseRetriever
 
 class SearchAPIRetriever(BaseRetriever):
     """Search API retriever."""
-    pages: List[Dict] = []
+
+    pages: ClassVar[list[dict]] = []
 
     def _get_relevant_documents(
         self, query: str, *, run_manager: CallbackManagerForRetrieverRun
-    ) -> List[Document]:
-
+    ) -> list[Document]:
         docs = [
             Document(
                 page_content=page.get("raw_content", ""),
@@ -26,12 +26,14 @@ class SearchAPIRetriever(BaseRetriever):
 
         return docs
 
+
 class SectionRetriever(BaseRetriever):
     """
     SectionRetriever:
     This class is used to retrieve sections while avoiding redundant subtopics.
     """
-    sections: List[Dict] = []
+
+    sections: ClassVar[list[dict]] = []
     """
     sections example:
     [
@@ -45,8 +47,7 @@ class SectionRetriever(BaseRetriever):
 
     def _get_relevant_documents(
         self, query: str, *, run_manager: CallbackManagerForRetrieverRun
-    ) -> List[Document]:
-
+    ) -> list[Document]:
         docs = [
             Document(
                 page_content=page.get("written_content", ""),

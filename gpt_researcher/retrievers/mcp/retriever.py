@@ -6,20 +6,24 @@ This retriever implements a two-stage approach:
 1. Tool Selection: LLM selects 2-3 most relevant tools from all available MCP tools
 2. Research Execution: LLM uses the selected tools to conduct intelligent research
 """
+
 import asyncio
 import logging
-from typing import List, Dict, Any, Optional
+
+from typing import Any
 
 try:
-    from langchain_mcp_adapters.client import MultiServerMCPClient
+    # Import for availability check and potential future use
+    from langchain_mcp_adapters.client import MultiServerMCPClient  # noqa: F401
+
     HAS_MCP_ADAPTERS = True
 except ImportError:
     HAS_MCP_ADAPTERS = False
 
 from ...mcp.client import MCPClientManager
-from ...mcp.tool_selector import MCPToolSelector
 from ...mcp.research import MCPResearchSkill
 from ...mcp.streaming import MCPStreamer
+from ...mcp.tool_selector import MCPToolSelector
 
 logger = logging.getLogger(__name__)
 
@@ -27,14 +31,14 @@ logger = logging.getLogger(__name__)
 class MCPRetriever:
     """
     Model Context Protocol (MCP) Retriever for GPT Researcher.
-    
+
     This retriever implements a two-stage approach:
     1. Tool Selection: LLM selects 2-3 most relevant tools from all available MCP tools
     2. Research Execution: LLM with bound tools conducts intelligent research
-    
-    This approach is more efficient than calling all tools and provides better, 
+
+    This approach is more efficient than calling all tools and provides better,
     more targeted research results.
-    
+
     The retriever requires a researcher instance to access:
     - mcp_configs: List of MCP server configurations
     - cfg: Configuration object with LLM settings and parameters
@@ -44,15 +48,15 @@ class MCPRetriever:
     def __init__(
         self,
         query: str,
-        headers: Optional[Dict[str, str]] = None,
-        query_domains: Optional[List[str]] = None,
+        headers: dict[str, str] | None = None,
+        query_domains: list[str] | None = None,
         websocket=None,
         researcher=None,
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize the MCP Retriever.
-        
+
         Args:
             query (str): The search query string.
             headers (dict, optional): Headers containing MCP configuration.
@@ -82,44 +86,56 @@ class MCPRetriever:
 
         # Log initialization
         if self.mcp_configs:
-            self.streamer.stream_log_sync(f"🔧 Initializing MCP retriever for query: {self.query}")
-            self.streamer.stream_log_sync(f"🔧 Found {len(self.mcp_configs)} MCP server configurations")
+            self.streamer.stream_log_sync(
+                f"🔧 Initializing MCP retriever for query: {self.query}"
+            )
+            self.streamer.stream_log_sync(
+                f"🔧 Found {len(self.mcp_configs)} MCP server configurations"
+            )
         else:
-            logger.error("No MCP server configurations found. The retriever will fail during search.")
-            self.streamer.stream_log_sync("❌ CRITICAL: No MCP server configurations found. Please check documentation.")
+            logger.error(
+                "No MCP server configurations found. The retriever will fail during search."
+            )
+            self.streamer.stream_log_sync(
+                "❌ CRITICAL: No MCP server configurations found. Please check documentation."
+            )
 
-    def _get_mcp_configs(self) -> List[Dict[str, Any]]:
+    def _get_mcp_configs(self) -> list[dict[str, Any]]:
         """
         Get MCP configurations from the researcher instance.
-        
+
         Returns:
             List[Dict[str, Any]]: List of MCP server configurations.
         """
-        if self.researcher and hasattr(self.researcher, 'mcp_configs'):
+        if self.researcher and hasattr(self.researcher, "mcp_configs"):
             return self.researcher.mcp_configs or []
         return []
 
     def _get_config(self):
         """
         Get configuration from the researcher instance.
-        
+
         Returns:
             Config: Configuration object with LLM settings.
         """
-        if self.researcher and hasattr(self.researcher, 'cfg'):
+        if self.researcher and hasattr(self.researcher, "cfg"):
             return self.researcher.cfg
 
         # If no config available, this is a critical error
-        logger.error("No config found in researcher instance. MCPRetriever requires a researcher instance with cfg attribute.")
-        raise ValueError("MCPRetriever requires a researcher instance with cfg attribute containing LLM configuration")
+        logger.error(
+            "No config found in researcher instance. MCPRetriever requires a researcher instance with cfg attribute."
+        )
+        raise ValueError(
+            "MCPRetriever requires a researcher instance with cfg attribute containing LLM configuration"
+        )
 
-    async def search_async(self, max_results: int = 10) -> List[Dict[str, str]]:
+    async def search_async(self, max_results: int = 10) -> list[dict[str, str]]:
         """
         Perform an async search using MCP tools with intelligent two-stage approach.
-        
+
         Args:
             max_results: Maximum number of results to return.
-            
+
         Returns:
             List[Dict[str, str]]: The search results.
         """
@@ -127,7 +143,9 @@ class MCPRetriever:
         if not self.mcp_configs:
             error_msg = "No MCP server configurations available. Please provide mcp_configs parameter to GPTResearcher."
             logger.error(error_msg)
-            await self.streamer.stream_error("MCP retriever cannot proceed without server configurations.")
+            await self.streamer.stream_error(
+                "MCP retriever cannot proceed without server configurations."
+            )
             return []  # Return empty instead of raising to allow research to continue
 
         # Log to help debug the integration flow
@@ -135,24 +153,38 @@ class MCPRetriever:
 
         try:
             # Stage 1: Get all available tools
-            await self.streamer.stream_stage_start("Stage 1", "Getting all available MCP tools")
+            await self.streamer.stream_stage_start(
+                "Stage 1", "Getting all available MCP tools"
+            )
             all_tools = await self._get_all_tools()
 
             if not all_tools:
-                await self.streamer.stream_warning("No MCP tools available, skipping MCP research")
+                await self.streamer.stream_warning(
+                    "No MCP tools available, skipping MCP research"
+                )
                 return []
 
             # Stage 2: Select most relevant tools
-            await self.streamer.stream_stage_start("Stage 2", "Selecting most relevant tools")
-            selected_tools = await self.tool_selector.select_relevant_tools(self.query, all_tools, max_tools=3)
+            await self.streamer.stream_stage_start(
+                "Stage 2", "Selecting most relevant tools"
+            )
+            selected_tools = await self.tool_selector.select_relevant_tools(
+                self.query, all_tools, max_tools=3
+            )
 
             if not selected_tools:
-                await self.streamer.stream_warning("No relevant tools selected, skipping MCP research")
+                await self.streamer.stream_warning(
+                    "No relevant tools selected, skipping MCP research"
+                )
                 return []
 
             # Stage 3: Conduct research with selected tools
-            await self.streamer.stream_stage_start("Stage 3", "Conducting research with selected tools")
-            results = await self.mcp_researcher.conduct_research_with_tools(self.query, selected_tools)
+            await self.streamer.stream_stage_start(
+                "Stage 3", "Conducting research with selected tools"
+            )
+            results = await self.mcp_researcher.conduct_research_with_tools(
+                self.query, selected_tools
+            )
 
             # Limit the number of results
             if len(results) > max_results:
@@ -163,8 +195,12 @@ class MCPRetriever:
             logger.info(f"MCPRetriever returning {len(results)} results")
 
             # Calculate total content length for summary
-            total_content_length = sum(len(result.get("body", "")) for result in results)
-            await self.streamer.stream_research_results(len(results), total_content_length)
+            total_content_length = sum(
+                len(result.get("body", "")) for result in results
+            )
+            await self.streamer.stream_research_results(
+                len(results), total_content_length
+            )
 
             # Log detailed content samples for debugging
             if results:
@@ -174,16 +210,24 @@ class MCPRetriever:
                     url = result.get("href", "No URL")
                     content = result.get("body", "")
                     content_length = len(content)
-                    content_sample = content[:400] + "..." if len(content) > 400 else content
+                    content_sample = (
+                        content[:400] + "..." if len(content) > 400 else content
+                    )
 
-                    logger.debug(f"Result {i+1}/{len(results)}: '{title}'")
+                    logger.debug(f"Result {i + 1}/{len(results)}: '{title}'")
                     logger.debug(f"URL: {url}")
-                    logger.debug(f"Content ({content_length:,} chars): {content_sample}")
+                    logger.debug(
+                        f"Content ({content_length:,} chars): {content_sample}"
+                    )
 
                 if len(results) > 3:
                     remaining_results = len(results) - 3
-                    remaining_content = sum(len(result.get("body", "")) for result in results[3:])
-                    logger.debug(f"... and {remaining_results} more results ({remaining_content:,} chars)")
+                    remaining_content = sum(
+                        len(result.get("body", "")) for result in results[3:]
+                    )
+                    logger.debug(
+                        f"... and {remaining_results} more results ({remaining_content:,} chars)"
+                    )
 
             return results
 
@@ -198,16 +242,16 @@ class MCPRetriever:
             except Exception as e:
                 logger.error(f"Error during client cleanup: {e}")
 
-    def search(self, max_results: int = 10) -> List[Dict[str, str]]:
+    def search(self, max_results: int = 10) -> list[dict[str, str]]:
         """
         Perform a search using MCP tools with intelligent two-stage approach.
-        
+
         This is the synchronous interface required by GPT Researcher.
         It wraps the async search_async method.
-        
+
         Args:
             max_results: Maximum number of results to return.
-            
+
         Returns:
             List[Dict[str, str]]: The search results.
         """
@@ -215,7 +259,9 @@ class MCPRetriever:
         if not self.mcp_configs:
             error_msg = "No MCP server configurations available. Please provide mcp_configs parameter to GPTResearcher."
             logger.error(error_msg)
-            self.streamer.stream_log_sync("❌ MCP retriever cannot proceed without server configurations.")
+            self.streamer.stream_log_sync(
+                "❌ MCP retriever cannot proceed without server configurations."
+            )
             return []  # Return empty instead of raising to allow research to continue
 
         # Log to help debug the integration flow
@@ -225,7 +271,7 @@ class MCPRetriever:
             # Handle the async/sync boundary properly
             try:
                 # Try to get the current event loop
-                loop = asyncio.get_running_loop()
+                _loop = asyncio.get_running_loop()
                 # If we're in an async context, we need to schedule the coroutine
                 # This is a bit tricky - we'll create a task and let it run
                 import concurrent.futures
@@ -235,7 +281,9 @@ class MCPRetriever:
                     new_loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(new_loop)
                     try:
-                        result = new_loop.run_until_complete(self.search_async(max_results))
+                        result = new_loop.run_until_complete(
+                            self.search_async(max_results)
+                        )
                         return result
                     finally:
                         # Enhanced cleanup procedure for MCP connections
@@ -250,12 +298,16 @@ class MCPRetriever:
                                 try:
                                     new_loop.run_until_complete(
                                         asyncio.wait_for(
-                                            asyncio.gather(*pending, return_exceptions=True),
-                                            timeout=5.0  # 5 second timeout for cleanup
+                                            asyncio.gather(
+                                                *pending, return_exceptions=True
+                                            ),
+                                            timeout=5.0,  # 5 second timeout for cleanup
                                         )
                                     )
-                                except asyncio.TimeoutError:
-                                    logger.debug("Timeout during task cleanup, continuing...")
+                                except TimeoutError:
+                                    logger.debug(
+                                        "Timeout during task cleanup, continuing..."
+                                    )
                                 except Exception:
                                     pass  # Ignore other cleanup errors
                         except Exception:
@@ -264,10 +316,12 @@ class MCPRetriever:
                             try:
                                 # Give the loop a moment to finish any final cleanup
                                 import time
+
                                 time.sleep(0.1)
 
                                 # Force garbage collection to clean up any remaining references
                                 import gc
+
                                 gc.collect()
 
                                 # Additional time for HTTP clients to finish their cleanup
@@ -296,10 +350,10 @@ class MCPRetriever:
             # Return empty results instead of raising to allow research to continue
             return []
 
-    async def _get_all_tools(self) -> List:
+    async def _get_all_tools(self) -> list:
         """
         Get all available tools from MCP servers.
-        
+
         Returns:
             List: All available MCP tools
         """
@@ -310,11 +364,15 @@ class MCPRetriever:
             all_tools = await self.client_manager.get_all_tools()
 
             if all_tools:
-                await self.streamer.stream_log(f"📋 Loaded {len(all_tools)} total tools from MCP servers")
+                await self.streamer.stream_log(
+                    f"📋 Loaded {len(all_tools)} total tools from MCP servers"
+                )
                 self._all_tools_cache = all_tools
                 return all_tools
             else:
-                await self.streamer.stream_warning("No tools available from MCP servers")
+                await self.streamer.stream_warning(
+                    "No tools available from MCP servers"
+                )
                 return []
 
         except Exception as e:

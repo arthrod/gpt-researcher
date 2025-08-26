@@ -3,8 +3,9 @@ SimpleQA: Measuring short-form factuality in large language models
 Adapted for GPT-Researcher from OpenAI's simple-evals
 """
 
-import pandas
 import random
+
+import pandas
 
 GRADER_TEMPLATE = """
 Your job is to look at a question, a gold target, and a predicted answer, and then assign a grade of either ["CORRECT", "INCORRECT", "NOT_ATTEMPTED"].
@@ -57,9 +58,9 @@ These predicted answers are all NOT_ATTEMPTED because:
 
 
 Also note the following things:
-- For grading questions where the gold target is a number, the predicted answer needs to be correct to the last significant figure in the gold answer. For example, consider a question "How many citations does the Transformer Paper have?" with gold target "120k". 
-    - Predicted answers "120k", "124k", and 115k" are all CORRECT. 
-    - Predicted answers "100k" and "113k" are INCORRECT. 
+- For grading questions where the gold target is a number, the predicted answer needs to be correct to the last significant figure in the gold answer. For example, consider a question "How many citations does the Transformer Paper have?" with gold target "120k".
+    - Predicted answers "120k", "124k", and 115k" are all CORRECT.
+    - Predicted answers "100k" and "113k" are INCORRECT.
     - Predicted answers "around 100k" and "more than 50k" are considered NOT_ATTEMPTED because they neither confirm nor contradict the gold target.
 - The gold target may contain more information than the question. In such cases, the predicted answer only needs to contain the information that is in the question.
     - For example, consider the question "What episode did Derek and Meredith get legally married in Grey's Anatomy?" with gold target "Season 7, Episode 20: White Wedding". Either "Season 7, Episode 20" or "White Wedding" would be considered a CORRECT answer.
@@ -68,7 +69,7 @@ Also note the following things:
     - Consider the question "What award did A pretrainer's guide to training data: Measuring the effects of data age, domain coverage, quality, & toxicity win at NAACL '24?", the gold target is "Outstanding Paper Award". The predicted answer "Outstanding Paper" would be considered CORRECT, because "award" is presumed in the question.
     - For the question "What is the height of Jason Wei in meters?", the gold target is "1.73 m". The predicted answer "1.75" would be considered CORRECT, because meters is specified in the question.
     - For the question "What is the name of Barack Obama's wife?", the gold target is "Michelle Obama". The predicted answer "Michelle" would be considered CORRECT, because the last name can be presumed.
-- Do not punish for typos in people's name if it's clearly the same name. 
+- Do not punish for typos in people's name if it's clearly the same name.
     - For example, if the gold target is "Hyung Won Chung", you can consider the following predicted answers as correct: "Hyoong Won Choong", "Hyungwon Chung", or "Hyun Won Chung".
 
 
@@ -90,7 +91,7 @@ Just return the letters "A", "B", or "C", with no text around it.
 
 CHOICE_LETTERS = ["A", "B", "C"]
 CHOICE_STRINGS = ["CORRECT", "INCORRECT", "NOT_ATTEMPTED"]
-CHOICE_LETTER_TO_STRING = dict(zip(CHOICE_LETTERS, CHOICE_STRINGS))
+CHOICE_LETTER_TO_STRING = dict(zip(CHOICE_LETTERS, CHOICE_STRINGS, strict=False))
 
 
 class SimpleQAEval:
@@ -101,11 +102,13 @@ class SimpleQAEval:
         # Load all examples from CSV
         csv_url = "https://openaipublic.blob.core.windows.net/simple-evals/simple_qa_test_set.csv"
         df = pandas.read_csv(csv_url)
-        all_examples = df.to_dict('records')
+        all_examples = df.to_dict("records")
 
         # Randomly select num_examples without replacement
         if num_examples > len(all_examples):
-            print(f"Warning: Requested {num_examples} examples but only {len(all_examples)} available")
+            print(
+                f"Warning: Requested {num_examples} examples but only {len(all_examples)} available"
+            )
             num_examples = len(all_examples)
 
         self.examples = random.sample(all_examples, num_examples)
@@ -124,19 +127,23 @@ class SimpleQAEval:
             "grade": grade,
             "is_correct": 1.0 if grade == "CORRECT" else 0.0,
             "is_incorrect": 1.0 if grade == "INCORRECT" else 0.0,
-            "is_not_attempted": 1.0 if grade == "NOT_ATTEMPTED" else 0.0
+            "is_not_attempted": 1.0 if grade == "NOT_ATTEMPTED" else 0.0,
         }
 
         return {
             "score": metrics["is_correct"],  # Score is 1.0 for CORRECT, 0.0 otherwise
             "metrics": {"grade": grade},
             "html": "",
-            "convo": [{"role": "evaluator", "content": problem},
-                      {"role": "evaluator", "content": correct_answer},
-                      {"role": "agent", "content": predicted_answer}]
+            "convo": [
+                {"role": "evaluator", "content": problem},
+                {"role": "evaluator", "content": correct_answer},
+                {"role": "agent", "content": predicted_answer},
+            ],
         }
 
-    def grade_response(self, question: str, correct_answer: str, model_answer: str) -> str:
+    def grade_response(
+        self, question: str, correct_answer: str, model_answer: str
+    ) -> str:
         """Grade a single response using the grader model."""
         print("\n=== Grading Details ===")
         print(f"Question: {question}")
@@ -144,9 +151,7 @@ class SimpleQAEval:
         print(f"Predicted answer: {model_answer}")
 
         prompt = GRADER_TEMPLATE.format(
-            question=question,
-            target=correct_answer,
-            predicted_answer=model_answer
+            question=question, target=correct_answer, predicted_answer=model_answer
         )
 
         messages = [{"role": "user", "content": prompt}]

@@ -1,21 +1,20 @@
 import asyncio
 import os
-from typing import List, Union
+
 from langchain_community.document_loaders import (
+    BSHTMLLoader,
     PyMuPDFLoader,
     TextLoader,
     UnstructuredCSVLoader,
     UnstructuredExcelLoader,
     UnstructuredMarkdownLoader,
     UnstructuredPowerPointLoader,
-    UnstructuredWordDocumentLoader
+    UnstructuredWordDocumentLoader,
 )
-from langchain_community.document_loaders import BSHTMLLoader
 
 
 class DocumentLoader:
-
-    def __init__(self, path: Union[str, List[str]]):
+    def __init__(self, path: str | list[str]):
         self.path = path
 
     async def load(self) -> list:
@@ -28,8 +27,8 @@ class DocumentLoader:
                     file_extension = file_extension_with_dot.strip(".").lower()
                     tasks.append(self._load_document(file_path, file_extension))
 
-        elif isinstance(self.path, (str, bytes, os.PathLike)):
-            for root, dirs, files in os.walk(self.path):
+        elif isinstance(self.path, str | bytes | os.PathLike):
+            for root, _dirs, files in os.walk(self.path):
                 for file in files:
                     file_path = os.path.join(root, file)
                     file_name, file_extension_with_dot = os.path.splitext(file)
@@ -37,7 +36,9 @@ class DocumentLoader:
                     tasks.append(self._load_document(file_path, file_extension))
 
         else:
-            raise ValueError("Invalid type for path. Expected str, bytes, os.PathLike, or list thereof.")
+            raise ValueError(
+                "Invalid type for path. Expected str, bytes, os.PathLike, or list thereof."
+            )
 
         # for root, dirs, files in os.walk(self.path):
         #     for file in files:
@@ -50,10 +51,12 @@ class DocumentLoader:
         for pages in await asyncio.gather(*tasks):
             for page in pages:
                 if page.page_content:
-                    docs.append({
-                        "raw_content": page.page_content,
-                        "url": os.path.basename(page.metadata['source'])
-                    })
+                    docs.append(
+                        {
+                            "raw_content": page.page_content,
+                            "url": os.path.basename(page.metadata["source"]),
+                        }
+                    )
 
         if not docs:
             raise ValueError("🤷 Failed to load any documents!")
@@ -74,10 +77,10 @@ class DocumentLoader:
                 "xlsx": UnstructuredExcelLoader(file_path, mode="elements"),
                 "md": UnstructuredMarkdownLoader(file_path),
                 "html": BSHTMLLoader(file_path),
-                "htm": BSHTMLLoader(file_path)
+                "htm": BSHTMLLoader(file_path),
             }
 
-            loader = loader_dict.get(file_extension, None)
+            loader = loader_dict.get(file_extension)
             if loader:
                 try:
                     ret_data = loader.load()

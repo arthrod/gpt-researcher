@@ -2,7 +2,6 @@ from langchain_community.retrievers import ArxivRetriever
 
 
 class ArxivScraper:
-
     def __init__(self, link, session=None):
         self.link = link
         self.session = session
@@ -11,7 +10,7 @@ class ArxivScraper:
         """
         The function scrapes relevant documents from Arxiv based on a given link and returns the content
         of the first document.
-        
+
         Returns:
           The code is returning the page content of the first document retrieved by the ArxivRetriever
         for a given query extracted from the link.

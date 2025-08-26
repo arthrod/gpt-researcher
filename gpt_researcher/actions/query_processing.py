@@ -1,15 +1,20 @@
+import logging
+
+from typing import Any
+
 import json_repair
 
-from gpt_researcher.llm_provider.generic.base import ReasoningEfforts
-from gpt_researcher.utils.llm import create_chat_completion
-from gpt_researcher.prompts import PromptFamily
-from typing import Any, List, Dict
 from gpt_researcher.config import Config
-import logging
+from gpt_researcher.llm_provider.generic.base import ReasoningEfforts
+from gpt_researcher.prompts import PromptFamily
+from gpt_researcher.utils.llm import create_chat_completion
 
 logger = logging.getLogger(__name__)
 
-async def get_search_results(query: str, retriever: Any, query_domains: List[str] = None, researcher=None) -> List[Dict[str, Any]]:
+
+async def get_search_results(
+    query: str, retriever: Any, query_domains: list[str] | None = None, researcher=None
+) -> list[dict[str, Any]]:
     """
     Get web search results for a given query.
 
@@ -27,23 +32,24 @@ async def get_search_results(query: str, retriever: Any, query_domains: List[str
         search_retriever = retriever(
             query,
             query_domains=query_domains,
-            researcher=researcher  # Pass researcher instance for MCP retrievers
+            researcher=researcher,  # Pass researcher instance for MCP retrievers
         )
     else:
         search_retriever = retriever(query, query_domains=query_domains)
 
     return search_retriever.search()
 
+
 async def generate_sub_queries(
     query: str,
     parent_query: str,
     report_type: str,
-    context: List[Dict[str, Any]],
+    context: list[dict[str, Any]],
     cfg: Config,
-    cost_callback: callable = None,
+    cost_callback: callable | None = None,
     prompt_family: type[PromptFamily] | PromptFamily = PromptFamily,
-    **kwargs
-) -> List[str]:
+    **kwargs,
+) -> list[str]:
     """
     Generate sub-queries using the specified LLM model.
 
@@ -77,10 +83,12 @@ async def generate_sub_queries(
             llm_kwargs=cfg.llm_kwargs,
             reasoning_effort=ReasoningEfforts.Medium.value,
             cost_callback=cost_callback,
-            **kwargs
+            **kwargs,
         )
     except Exception as e:
-        logger.warning(f"Error with strategic LLM: {e}. Retrying with max_tokens={cfg.strategic_token_limit}.")
+        logger.warning(
+            f"Error with strategic LLM: {e}. Retrying with max_tokens={cfg.strategic_token_limit}."
+        )
         logger.warning("See https://github.com/assafelovic/gpt-researcher/issues/1022")
         try:
             response = await create_chat_completion(
@@ -90,11 +98,15 @@ async def generate_sub_queries(
                 llm_provider=cfg.strategic_llm_provider,
                 llm_kwargs=cfg.llm_kwargs,
                 cost_callback=cost_callback,
-                **kwargs
+                **kwargs,
             )
-            logger.warning(f"Retrying with max_tokens={cfg.strategic_token_limit} successful.")
+            logger.warning(
+                f"Retrying with max_tokens={cfg.strategic_token_limit} successful."
+            )
         except Exception as e:
-            logger.warning(f"Retrying with max_tokens={cfg.strategic_token_limit} failed.")
+            logger.warning(
+                f"Retrying with max_tokens={cfg.strategic_token_limit} failed."
+            )
             logger.warning(f"Error with strategic LLM: {e}. Falling back to smart LLM.")
             response = await create_chat_completion(
                 model=cfg.smart_llm_model,
@@ -104,22 +116,23 @@ async def generate_sub_queries(
                 llm_provider=cfg.smart_llm_provider,
                 llm_kwargs=cfg.llm_kwargs,
                 cost_callback=cost_callback,
-                **kwargs
+                **kwargs,
             )
 
     return json_repair.loads(response)
 
+
 async def plan_research_outline(
     query: str,
-    search_results: List[Dict[str, Any]],
+    search_results: list[dict[str, Any]],
     agent_role_prompt: str,
     cfg: Config,
     parent_query: str,
     report_type: str,
-    cost_callback: callable = None,
-    retriever_names: List[str] = None,
-    **kwargs
-) -> List[str]:
+    cost_callback: callable | None = None,
+    retriever_names: list[str] | None = None,
+    **kwargs,
+) -> list[str]:
     """
     Plan the research outline by generating sub-queries.
 
@@ -142,9 +155,12 @@ async def plan_research_outline(
 
     # For MCP retrievers, we may want to skip sub-query generation
     # Check if MCP is the only retriever or one of multiple retrievers
-    if retriever_names and ("mcp" in retriever_names or "MCPRetriever" in retriever_names):
-        mcp_only = (len(retriever_names) == 1 and
-                   ("mcp" in retriever_names or "MCPRetriever" in retriever_names))
+    if retriever_names and (
+        "mcp" in retriever_names or "MCPRetriever" in retriever_names
+    ):
+        mcp_only = len(retriever_names) == 1 and (
+            "mcp" in retriever_names or "MCPRetriever" in retriever_names
+        )
 
         if mcp_only:
             # If MCP is the only retriever, skip sub-query generation
@@ -153,17 +169,13 @@ async def plan_research_outline(
             return [query]
         else:
             # If MCP is one of multiple retrievers, generate sub-queries for the others
-            logger.info("Using MCP with other retrievers - generating sub-queries for non-MCP retrievers")
+            logger.info(
+                "Using MCP with other retrievers - generating sub-queries for non-MCP retrievers"
+            )
 
     # Generate sub-queries for research outline
     sub_queries = await generate_sub_queries(
-        query,
-        parent_query,
-        report_type,
-        search_results,
-        cfg,
-        cost_callback,
-        **kwargs
+        query, parent_query, report_type, search_results, cfg, cost_callback, **kwargs
     )
 
     return sub_queries

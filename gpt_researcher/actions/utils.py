@@ -1,4 +1,6 @@
-from typing import Dict, Any, Callable
+from collections.abc import Callable
+from typing import Any
+
 from ..utils.logger import get_formatted_logger
 
 logger = get_formatted_logger()
@@ -22,17 +24,15 @@ async def stream_output(
             logger.info(f"{output}")
         except UnicodeEncodeError:
             # Option 1: Replace problematic characters with a placeholder
-            logger.error(output.encode(
-                'cp1252', errors='replace').decode('cp1252'))
+            logger.error(output.encode("cp1252", errors="replace").decode("cp1252"))
 
     if websocket:
         await websocket.send_json(
-            {"type": type, "content": content,
-                "output": output, "metadata": metadata}
+            {"type": type, "content": content, "output": output, "metadata": metadata}
         )
 
 
-async def safe_send_json(websocket: Any, data: Dict[str, Any]) -> None:
+async def safe_send_json(websocket: Any, data: dict[str, Any]) -> None:
     """
     Safely send JSON data through a WebSocket connection.
 
@@ -49,11 +49,7 @@ async def safe_send_json(websocket: Any, data: Dict[str, Any]) -> None:
         logger.error(f"Error sending JSON through WebSocket: {e}")
 
 
-def calculate_cost(
-    prompt_tokens: int,
-    completion_tokens: int,
-    model: str
-) -> float:
+def calculate_cost(prompt_tokens: int, completion_tokens: int, model: str) -> float:
     """
     Calculate the cost of API usage based on the number of tokens and the model used.
 
@@ -78,9 +74,8 @@ def calculate_cost(
 
     model = model.lower()
     if model not in costs:
-        logger.warning(
-            f"Unknown model: {model}. Cost calculation may be inaccurate.")
-        return 0.0001 # Default avg cost if model is unknown
+        logger.warning(f"Unknown model: {model}. Cost calculation may be inaccurate.")
+        return 0.0001  # Default avg cost if model is unknown
 
     cost_per_1k = costs[model]
     total_tokens = prompt_tokens + completion_tokens
@@ -101,10 +96,7 @@ def format_token_count(count: int) -> str:
 
 
 async def update_cost(
-    prompt_tokens: int,
-    completion_tokens: int,
-    model: str,
-    websocket: Any
+    prompt_tokens: int, completion_tokens: int, model: str, websocket: Any
 ) -> None:
     """
     Update and send the cost information through the WebSocket.
@@ -121,15 +113,18 @@ async def update_cost(
     cost = calculate_cost(prompt_tokens, completion_tokens, model)
     total_tokens = prompt_tokens + completion_tokens
 
-    await safe_send_json(websocket, {
-        "type": "cost",
-        "data": {
-            "total_tokens": format_token_count(total_tokens),
-            "prompt_tokens": format_token_count(prompt_tokens),
-            "completion_tokens": format_token_count(completion_tokens),
-            "total_cost": f"${cost:.4f}"
-        }
-    })
+    await safe_send_json(
+        websocket,
+        {
+            "type": "cost",
+            "data": {
+                "total_tokens": format_token_count(total_tokens),
+                "prompt_tokens": format_token_count(prompt_tokens),
+                "completion_tokens": format_token_count(completion_tokens),
+                "total_cost": f"${cost:.4f}",
+            },
+        },
+    )
 
 
 def create_cost_callback(websocket: Any) -> Callable:
@@ -142,10 +137,9 @@ def create_cost_callback(websocket: Any) -> Callable:
     Returns:
         Callable: A callback function that can be used to update costs.
     """
+
     async def cost_callback(
-        prompt_tokens: int,
-        completion_tokens: int,
-        model: str
+        prompt_tokens: int, completion_tokens: int, model: str
     ) -> None:
         await update_cost(prompt_tokens, completion_tokens, model, websocket)
 
