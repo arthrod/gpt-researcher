@@ -521,6 +521,11 @@ class ResearchConductor:
                 for r in self.researcher.retrievers
                 if "mcpretriever" in r.__name__.lower()
             ]
+            non_mcp_retrievers = [
+                r
+                for r in self.researcher.retrievers
+                if "mcpretriever" not in r.__name__.lower()
+            ]
 
             # Initialize context components
             mcp_context = []

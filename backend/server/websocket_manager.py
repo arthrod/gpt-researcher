@@ -1,6 +1,4 @@
 import asyncio
-import contextlib
-import logging
 
 from fastapi import WebSocket
 
@@ -143,12 +141,12 @@ async def run_agent(
     websocket,
     stream_output=stream_output,
     headers=None,
-    query_domains=None,
+    query_domains=[],
     config_path="",
     return_researcher=False,
     mcp_enabled=False,
     mcp_strategy="fast",
-    mcp_configs=None,
+    mcp_configs=[],
 ):
     """Run the agent."""
     # Create logs handler for this research task

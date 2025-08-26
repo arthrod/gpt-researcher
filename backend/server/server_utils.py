@@ -15,9 +15,7 @@ from fastapi.responses import JSONResponse
 
 from backend.utils import write_md_to_pdf, write_md_to_word, write_text_to_md
 from gpt_researcher import GPTResearcher
-from gpt_researcher.actions import stream_output
 from gpt_researcher.document.document import DocumentLoader
-from multi_agents.main import run_research_task
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)

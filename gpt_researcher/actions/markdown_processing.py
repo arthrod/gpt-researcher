@@ -60,9 +60,10 @@ def extract_sections(markdown_text: str) -> list[dict[str, str]]:
     for title, content in matches:
         clean_content = re.sub(r"<.*?>", "", content).strip()
         if clean_content:
-            sections.append(
-                {"section_title": title.strip(), "written_content": clean_content}
-            )
+            sections.append({
+                "section_title": title.strip(),
+                "written_content": clean_content,
+            })
 
     return sections
 

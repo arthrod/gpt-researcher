@@ -48,8 +48,8 @@ class MCPRetriever:
     def __init__(
         self,
         query: str,
-        headers: dict[str, str] | None = None,
-        query_domains: list[str] | None = None,
+        headers: Optional[Dict[str, str]] = None,
+        query_domains: Optional[List[str]] = None,
         websocket=None,
         researcher=None,
         **kwargs,

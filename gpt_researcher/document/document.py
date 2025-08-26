@@ -51,12 +51,10 @@ class DocumentLoader:
         for pages in await asyncio.gather(*tasks):
             for page in pages:
                 if page.page_content:
-                    docs.append(
-                        {
-                            "raw_content": page.page_content,
-                            "url": os.path.basename(page.metadata["source"]),
-                        }
-                    )
+                    docs.append({
+                        "raw_content": page.page_content,
+                        "url": os.path.basename(page.metadata["source"]),
+                    })
 
         if not docs:
             raise ValueError("🤷 Failed to load any documents!")

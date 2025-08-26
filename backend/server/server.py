@@ -24,7 +24,7 @@ from backend.server.server_utils import (
     handle_websocket_communication,
     sanitize_filename,
 )
-from backend.server.websocket_manager import WebSocketManager, run_agent
+from backend.server.websocket_manager import run_agent
 from backend.utils import write_md_to_pdf, write_md_to_word
 from gpt_researcher.utils.enum import Tone
 

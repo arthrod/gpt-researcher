@@ -199,7 +199,7 @@ eg: Author, A. A. (Year, Month Date). Title of web page. Website Name. [url webs
 """
         else:
             reference_prompt = """
-You MUST write all used source document names at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each.
+You MUST write all used source document names at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each."
 """
         tone_prompt = f"Write the report in a {tone.value} tone." if tone else ""
 
@@ -290,7 +290,7 @@ The response MUST not contain any markdown format or additional text (like ```js
             """
         else:
             reference_prompt = """
-            You MUST write all used source document names at the end of the report as references, each preceded by its id in square brackets, and make sure to not add duplicated sources."
+            You MUST write all used source document names at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each."
         """
 
         return (
@@ -370,7 +370,7 @@ The response MUST not contain any markdown format or additional text (like ```js
         reference_prompt = ""
         if report_source == ReportSource.Web.value:
             reference_prompt = """
-You MUST write all used source urls at the end of the report as references, each preceded by its id in square brackets (e.g., [1]).
+You MUST write all used source urls at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each.
 Every url should be hyperlinked: [url website](url)
 Additionally, you MUST include hyperlinks to the relevant URLs wherever they are referenced in the report:
 
@@ -378,7 +378,7 @@ eg: Author, A. A. (Year, Month Date). Title of web page. Website Name. [url webs
 """
         else:
             reference_prompt = """
-You MUST write all used source document names at the end of the report as references, each preceded by its id in square brackets, and make sure to not add duplicated sources."
+You MUST write all used source document names at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each."
 """
 
         tone_prompt = f"Write the report in a {tone.value} tone." if tone else ""

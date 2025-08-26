@@ -54,9 +54,11 @@ async def evaluate_single_query(query: str, evaluator: SimpleQAEval) -> dict:
     example = next(ex for ex in evaluator.examples if ex["problem"] == query)
     correct_answer = example["answer"]
 
-    eval_result = evaluator.evaluate_example(
-        {"problem": query, "answer": correct_answer, "predicted": report}
-    )
+    eval_result = evaluator.evaluate_example({
+        "problem": query,
+        "answer": correct_answer,
+        "predicted": report,
+    })
 
     result = {
         "query": query,

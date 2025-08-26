@@ -1,4 +1,3 @@
-from typing import ClassVar
 
 from langchain.callbacks.manager import CallbackManagerForRetrieverRun
 from langchain.schema import Document

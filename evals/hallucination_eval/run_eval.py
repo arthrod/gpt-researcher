@@ -46,7 +46,7 @@ class ResearchEvaluator:
         self.queries_file = Path(queries_file)
         self.hallucination_evaluator = HallucinationEvaluator()
 
-    def load_queries(self, num_queries: int | None = None) -> list[str]:
+    def load_queries(self, num_queries: Optional[int] = None) -> List[str]:
         """
         Load and optionally sample queries from the JSONL file.
 
@@ -66,7 +66,7 @@ class ResearchEvaluator:
             return random.sample(queries, num_queries)
         return queries
 
-    async def run_research(self, query: str) -> dict:
+    async def run_research(self, query: str) -> Dict:
         """
         Run a single query through GPT-Researcher.
 

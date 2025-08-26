@@ -37,12 +37,10 @@ class ArxivSearch:
         search_result = []
 
         for result in arxiv_gen:
-            search_result.append(
-                {
-                    "title": result.title,
-                    "href": result.pdf_url,
-                    "body": result.summary,
-                }
-            )
+            search_result.append({
+                "title": result.title,
+                "href": result.pdf_url,
+                "body": result.summary,
+            })
 
         return search_result

@@ -62,7 +62,6 @@ class ChatAgentWithMemory:
 
     def vector_store_tool(self, vector_store) -> Tool:
         """Create Vector Store Tool"""
-
         @tool
         def retrieve_info(query):
             """

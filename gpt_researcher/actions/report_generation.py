@@ -1,9 +1,8 @@
-
-from gpt_researcher.config.config import Config
-from gpt_researcher.prompts import PromptFamily, get_prompt_by_report_type
-from gpt_researcher.utils.enum import Tone
-from gpt_researcher.utils.llm import create_chat_completion
-from gpt_researcher.utils.logger import get_formatted_logger
+from ..config.config import Config
+from ..prompts import PromptFamily, get_prompt_by_report_type
+from ..utils.enum import Tone
+from ..utils.llm import create_chat_completion
+from ..utils.logger import get_formatted_logger
 
 logger = get_formatted_logger()
 

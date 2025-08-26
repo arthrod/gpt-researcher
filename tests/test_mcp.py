@@ -24,7 +24,6 @@ Prerequisites:
 
 import asyncio
 import logging
-import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

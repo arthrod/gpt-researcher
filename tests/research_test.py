@@ -92,6 +92,7 @@ if __name__ == "__main__":
 #     print(f"\nLength of the context = {len(researcher.get_research_context())}") # Must say Non-zero value because the query is UNRELATED to the contents of the page, but the complement_source_urls is set which should make gptr do default web search to gather contexts
 
 
+
 # #### Test case 4 (Furthermore, GPTR will create more context in addition to source_urls if the complement_source_urls parameter is set allowing for a larger research scope)
 
 # from gpt_researcher.agent import GPTResearcher  # Ensure this path is correct

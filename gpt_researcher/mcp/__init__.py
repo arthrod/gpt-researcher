@@ -23,15 +23,13 @@ try:
     from .client import MCPClientManager
     from .research import MCPResearchSkill
     from .streaming import MCPStreamer
-    from .tool_selector import MCPToolSelector
 
     __all__ = [
+        "HAS_MCP_ADAPTERS",
         "HAS_MCP_ADAPTERS",
         "MCPClientManager",
         "MCPResearchSkill",
         "MCPStreamer",
-        "MCPToolSelector",
-        "MultiServerMCPClient",
     ]
 
 except ImportError as e:

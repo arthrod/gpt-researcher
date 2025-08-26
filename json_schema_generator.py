@@ -32,7 +32,6 @@ def generate_structured_json(schema: BaseModel, data: dict[str, Any]) -> str:
     except Exception as e:
         return f"Error generating JSON: {e!s}"
 
-
 # Example usage
 if __name__ == "__main__":
     sample_data = {

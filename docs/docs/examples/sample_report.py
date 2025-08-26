@@ -9,7 +9,7 @@ nest_asyncio.apply()
 
 async def get_report(query: str, report_type: str, custom_prompt: str | None = None):
     researcher = GPTResearcher(query, report_type)
-    _research_result = await researcher.conduct_research()
+    research_result = await researcher.conduct_research()
 
     # Generate report with optional custom prompt
     report = await researcher.write_report(custom_prompt=custom_prompt)

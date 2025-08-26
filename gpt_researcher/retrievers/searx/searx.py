@@ -50,7 +50,7 @@ class SearxSearch:
         # TODO: Add support for query domains
         params = {
             # The search query.
-            "q": query,
+            "q": self.query,
             # Output format of results. Format needs to be activated in searxng config.
             "format": "json",
         }

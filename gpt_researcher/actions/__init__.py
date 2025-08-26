@@ -19,11 +19,17 @@ from .web_scraping import scrape_urls
 
 __all__ = [
     "add_references",
+    "add_references",
     "choose_agent",
+    "choose_agent",
+    "extract_headers",
     "extract_headers",
     "extract_json_with_regex",
     "extract_sections",
+    "extract_sections",
     "generate_draft_section_titles",
+    "generate_draft_section_titles",
+    "generate_report",
     "generate_report",
     "get_retriever",
     "get_retrievers",

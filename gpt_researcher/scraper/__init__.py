@@ -13,8 +13,6 @@ __all__ = [
     "ArxivScraper",
     "BeautifulSoupScraper",
     "BrowserScraper",
-    "FireCrawl",
-    "JinaAIScraper",
     "NoDriverScraper",
     "PyMuPDFScraper",
     "Scraper",

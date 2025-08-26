@@ -3,8 +3,6 @@ import os
 
 from unittest.mock import AsyncMock
 
-import pytest
-
 from backend.server.server_utils import CustomLogsHandler
 
 

@@ -116,4 +116,4 @@ class MCPStreamer:
 
     async def stream_info(self, info_msg: str):
         """Stream informational messages."""
-        await self.stream_log(f"i {info_msg}")
+        await self.stream_log(f"ℹ️ {info_msg}")

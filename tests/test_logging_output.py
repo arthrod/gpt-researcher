@@ -33,7 +33,6 @@ class TestWebSocket(WebSocket):
 async def test_log_output_file():
     """Test to verify logs are properly written to output file"""
     from backend.server.server_utils import CustomLogsHandler
-    from gpt_researcher.agent import GPTResearcher
 
     # 1. Setup like the main app
     websocket = TestWebSocket()
