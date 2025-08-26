@@ -7,8 +7,6 @@ import os
 
 import requests
 
-from ..utils import build_domain_query
-
 
 class BingSearch:
     """
@@ -22,7 +20,7 @@ class BingSearch:
             query:
         """
         self.query = query
-        self.query_domains = query_domains or []
+        self.query_domains = query_domains or None
         self.api_key = self.get_api_key()
         self.logger = logging.getLogger(__name__)
 
@@ -56,10 +54,10 @@ class BingSearch:
             "Ocp-Apim-Subscription-Key": self.api_key,
             "Content-Type": "application/json",
         }
-        query = build_domain_query(self.query, self.query_domains)
+        # TODO: Add support for query domains
         params = {
             "responseFilter": "Webpages",
-            "q": query,
+            "q": self.query,
             "count": max_results,
             "setLang": "en-GB",
             "textDecorations": False,
@@ -86,12 +84,11 @@ class BingSearch:
         search_results = []
 
         # Normalize the results to match the format of the other search APIs
-        for idx, result in enumerate(results, start=1):
+        for result in results:
             # skip youtube results
             if "youtube.com" in result["url"]:
                 continue
             search_result = {
-                "id": idx,
                 "title": result["name"],
                 "href": result["url"],
                 "body": result["snippet"],

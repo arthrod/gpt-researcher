@@ -2,8 +2,6 @@ import importlib.util
 import logging
 import os
 
-import requests
-
 logger = logging.getLogger(__name__)
 
 
@@ -24,13 +22,18 @@ async def stream_output(
     if websocket:
         try:
             if with_data:
-                await websocket.send_json(
-                    {"type": log_type, "step": step, "content": content, "data": data}
-                )
+                await websocket.send_json({
+                    "type": log_type,
+                    "step": step,
+                    "content": content,
+                    "data": data,
+                })
             else:
-                await websocket.send_json(
-                    {"type": log_type, "step": step, "content": content}
-                )
+                await websocket.send_json({
+                    "type": log_type,
+                    "step": step,
+                    "content": content,
+                })
         except Exception as e:
             logger.error(f"Error streaming output: {e}")
 
@@ -53,67 +56,6 @@ def check_pkg(pkg: str) -> None:
         )
 
 
-def build_domain_query(query: str, domains: list[str] | None) -> str:
-    """Append domain filters to a search query.
-
-    Args:
-        query: The original search query.
-        domains: List of domains to restrict the search to.
-
-    Returns:
-        The query string with ``site:`` filters appended if domains are
-        provided.
-    """
-    if not domains:
-        return query
-    domain_query = " OR ".join([f"site:{domain}" for domain in domains])
-    return f"{query} {domain_query}"
-
-
-def jina_rerank(
-    query: str, documents: list[dict], top_n: int | None = None
-) -> list[dict]:
-    """Rerank documents using Jina AI reranker API."""
-    api_key = os.environ.get("JINA_API_KEY")
-    if not api_key:
-        return documents
-    try:
-        texts = [
-            d.get("body") or d.get("content") or d.get("snippet") or ""
-            for d in documents
-        ]
-        payload = {
-            "model": "jina-reranker-v1",
-            "query": query,
-            "documents": texts,
-        }
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        }
-        resp = requests.post(
-            "https://api.jina.ai/v1/rerank",
-            json=payload,
-            headers=headers,
-            timeout=10,
-        )
-        resp.raise_for_status()
-        json_data = resp.json()
-        data = json_data.get("data", []) or []
-        # Pair documents with scores defensively
-        ranked = sorted(
-            zip(documents, data, strict=False),
-            key=lambda x: x[1].get("relevance_score", 0),
-            reverse=True,
-        )
-        reranked = [doc for doc, _ in ((d, s) for d, s, *_ in ranked)]
-        return reranked[:top_n] if top_n else reranked
-    except Exception as e:
-        logger.error(f"Jina rerank failed: {e}")
-        return documents
-
-
 # Valid retrievers for fallback
 VALID_RETRIEVERS = [
     "tavily",
@@ -131,7 +73,6 @@ VALID_RETRIEVERS = [
     "exa",
     "mcp",
     "mock",
-    "jina",
 ]
 
 

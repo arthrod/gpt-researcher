@@ -30,7 +30,7 @@ class CustomLogsHandler:
         self.logs = []
         self.websocket = websocket
         sanitized_filename = sanitize_filename(f"task_{int(time.time())}_{task}")
-        self.log_file: str = os.path.join("outputs", f"{sanitized_filename}.json")
+        self.log_file = os.path.join("outputs", f"{sanitized_filename}.json")
         self.timestamp = datetime.now().isoformat()
         # Initialize log file with metadata
         os.makedirs("outputs", exist_ok=True)
@@ -63,9 +63,11 @@ class CustomLogsHandler:
 
         # Update appropriate section based on data type
         if data.get("type") == "logs":
-            log_data["events"].append(
-                {"timestamp": datetime.now().isoformat(), "type": "event", "data": data}
-            )
+            log_data["events"].append({
+                "timestamp": datetime.now().isoformat(),
+                "type": "event",
+                "data": data,
+            })
         else:
             # Update content section for other types of data
             log_data["content"].update(data)
@@ -153,21 +155,22 @@ async def handle_start_command(websocket, data: str, manager):
 
     if not task or not report_type:
         print("❌ Error: Missing task or report_type")
-        await websocket.send_json(
-            {
-                "type": "logs",
-                "content": "error",
-                "output": f"Missing required parameters - task: {task}, report_type: {report_type}",
-            }
-        )
+        await websocket.send_json({
+            "type": "logs",
+            "content": "error",
+            "output": f"Missing required parameters - task: {task}, report_type: {report_type}",
+        })
         return
 
     # Create logs handler with websocket and task
     logs_handler = CustomLogsHandler(websocket, task)
     # Initialize log content with query
-    await logs_handler.send_json(
-        {"query": task, "sources": [], "context": [], "report": ""}
-    )
+    await logs_handler.send_json({
+        "query": task,
+        "sources": [],
+        "context": [],
+        "report": "",
+    })
 
     sanitized_filename = sanitize_filename(f"task_{int(time.time())}_{task}")
 
@@ -188,7 +191,7 @@ async def handle_start_command(websocket, data: str, manager):
     report = str(report)
     file_paths = await generate_report_files(report, sanitized_filename)
     # Add JSON log path to file_paths
-    file_paths["json"] = str(os.path.relpath(logs_handler.log_file))
+    file_paths["json"] = os.path.relpath(logs_handler.log_file)
     await send_file_paths(websocket, file_paths)
 
 
@@ -418,13 +421,11 @@ async def handle_websocket_communication(websocket, manager):
                 raise
             except Exception as e:
                 logger.error(f"Error running task: {e}\n{traceback.format_exc()}")
-                await websocket.send_json(
-                    {
-                        "type": "logs",
-                        "content": "error",
-                        "output": f"Error: {e}",
-                    }
-                )
+                await websocket.send_json({
+                    "type": "logs",
+                    "content": "error",
+                    "output": f"Error: {e}",
+                })
 
         return asyncio.create_task(safe_run())
 
@@ -440,12 +441,10 @@ async def handle_websocket_communication(websocket, manager):
                     logger.warning(
                         f"Received request while task is already running. Request data preview: {data[: min(20, len(data))]}..."
                     )
-                    websocket.send_json(
-                        {
-                            "types": "logs",
-                            "output": "Task already running. Please wait.",
-                        }
-                    )
+                    websocket.send_json({
+                        "types": "logs",
+                        "output": "Task already running. Please wait.",
+                    })
                 elif data.startswith("start"):
                     running_task = run_long_running_task(
                         handle_start_command(websocket, data, manager)

@@ -277,12 +277,10 @@ class ResearchConductor:
             )
 
         # Using asyncio.gather to process the sub_queries asynchronously
-        context = await asyncio.gather(
-            *[
-                self._process_sub_query_with_vectorstore(sub_query, filter)
-                for sub_query in sub_queries
-            ]
-        )
+        context = await asyncio.gather(*[
+            self._process_sub_query_with_vectorstore(sub_query, filter)
+            for sub_query in sub_queries
+        ])
         return context
 
     async def _get_context_by_web_search(
@@ -384,12 +382,10 @@ class ResearchConductor:
 
         # Using asyncio.gather to process the sub_queries asynchronously
         try:
-            context = await asyncio.gather(
-                *[
-                    self._process_sub_query(sub_query, scraped_data, query_domains)
-                    for sub_query in sub_queries
-                ]
-            )
+            context = await asyncio.gather(*[
+                self._process_sub_query(sub_query, scraped_data, query_domains)
+                for sub_query in sub_queries
+            ])
             self.logger.info(f"Gathered context from {len(context)} sub-queries")
             # Filter out empty results and join the context
             context = [c for c in context if c]

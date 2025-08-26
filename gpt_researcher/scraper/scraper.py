@@ -15,7 +15,6 @@ from . import (
     BeautifulSoupScraper,
     BrowserScraper,
     FireCrawl,
-    JinaAIScraper,
     NoDriverScraper,
     PyMuPDFScraper,
     TavilyExtract,
@@ -78,9 +77,13 @@ class Scraper:
             init(autoreset=True)
             print(Fore.YELLOW + f"{pkg_inst_name} not found. Attempting to install...")
             try:
-                subprocess.check_call(
-                    [sys.executable, "-m", "pip", "install", pkg_inst_name]
-                )
+                subprocess.check_call([
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                    pkg_inst_name,
+                ])
                 print(Fore.GREEN + f"{pkg_inst_name} installed successfully.")
             except subprocess.CalledProcessError:
                 raise ImportError(
@@ -178,7 +181,6 @@ class Scraper:
             "nodriver": NoDriverScraper,
             "tavily_extract": TavilyExtract,
             "firecrawl": FireCrawl,
-            "jina": JinaAIScraper,
         }
 
         scraper_key = None

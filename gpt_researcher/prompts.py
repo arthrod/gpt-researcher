@@ -190,13 +190,16 @@ The response should contain ONLY the list.
         if report_source == ReportSource.Web.value:
             reference_prompt = """
 You MUST write all used source urls at the end of the report as references, each preceded by its id in square brackets (e.g., [1]).
+            reference_prompt = f"""
+You MUST write all used source urls at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each.
 Every url should be hyperlinked: [url website](url)
-When citing within the report body, append the corresponding source id in brackets after the statement.
-eg: Author, A. A. (Year, Month Date). Title of web page. Website Name. [url website](url) [1]
+Additionally, you MUST include hyperlinks to the relevant URLs wherever they are referenced in the report:
+
+eg: Author, A. A. (Year, Month Date). Title of web page. Website Name. [url website](url)
 """
         else:
             reference_prompt = """
-You MUST write all used source document names at the end of the report as references, each preceded by its id in square brackets. Do not add duplicated sources.
+You MUST write all used source document names at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each."
 """
         tone_prompt = f"Write the report in a {tone.value} tone." if tone else ""
 
@@ -369,8 +372,9 @@ The response MUST not contain any markdown format or additional text (like ```js
             reference_prompt = """
 You MUST write all used source urls at the end of the report as references, each preceded by its id in square brackets (e.g., [1]).
 Every url should be hyperlinked: [url website](url)
-When citing within the report body, append the corresponding source id in brackets after the statement.
-eg: Author, A. A. (Year, Month Date). Title of web page. Website Name. [url website](url) [1]
+Additionally, you MUST include hyperlinks to the relevant URLs wherever they are referenced in the report:
+
+eg: Author, A. A. (Year, Month Date). Title of web page. Website Name. [url website](url)
 """
         else:
             reference_prompt = """
@@ -694,15 +698,13 @@ class Granite3PromptFamily(PromptFamily):
     def pretty_print_docs(cls, docs: list[Document], top_n: int | None = None) -> str:
         if not docs:
             return ""
-        all_documents = "\n\n".join(
-            [
-                f"Document {doc.metadata.get('source', i)}\n"
-                + f"Title: {doc.metadata.get('title')}\n"
-                + doc.page_content
-                for i, doc in enumerate(docs)
-                if top_n is None or i < top_n
-            ]
-        )
+        all_documents = "\n\n".join([
+            f"Document {doc.metadata.get('source', i)}\n"
+            + f"Title: {doc.metadata.get('title')}\n"
+            + doc.page_content
+            for i, doc in enumerate(docs)
+            if top_n is None or i < top_n
+        ])
         return "".join([cls._DOCUMENTS_PREFIX, all_documents, cls._DOCUMENTS_SUFFIX])
 
     @classmethod
@@ -736,16 +738,14 @@ class Granite33PromptFamily(PromptFamily):
 
     @classmethod
     def pretty_print_docs(cls, docs: list[Document], top_n: int | None = None) -> str:
-        return "\n".join(
-            [
-                cls._DOCUMENT_TEMPLATE.format(
-                    document_id=doc.metadata.get("source", i),
-                    document_content=cls._get_content(doc),
-                )
-                for i, doc in enumerate(docs)
-                if top_n is None or i < top_n
-            ]
-        )
+        return "\n".join([
+            cls._DOCUMENT_TEMPLATE.format(
+                document_id=doc.metadata.get("source", i),
+                document_content=cls._get_content(doc),
+            )
+            for i, doc in enumerate(docs)
+            if top_n is None or i < top_n
+        ])
 
     @classmethod
     def join_local_web_documents(
@@ -794,7 +794,8 @@ def get_prompt_by_report_type(
             f"Invalid report type: {report_type}.\n"
             f"Please use one of the following: {', '.join(list(report_type_mapping))}\n"
             f"Using default report type: {default_report_type} prompt.",
-            UserWarning, stacklevel=2,
+            UserWarning,
+            stacklevel=2,
         )
         prompt_by_type = getattr(
             prompt_family, report_type_mapping.get(default_report_type)
@@ -825,6 +826,7 @@ def get_prompt_family(
         f"Invalid prompt family: {prompt_family_name}.\n"
         f"Please use one of the following: {', '.join(list(prompt_family_mapping))}\n"
         f"Using default prompt family: {PromptFamilyEnum.Default.value} prompt.",
-        UserWarning, stacklevel=2,
+        UserWarning,
+        stacklevel=2,
     )
     return PromptFamily()

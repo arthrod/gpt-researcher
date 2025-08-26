@@ -129,7 +129,6 @@ class GPTResearcher:
         self.complement_source_urls = complement_source_urls
         self.query_domains = query_domains or []
         self.research_sources = []  # The list of scraped sources including title, content and images
-        self._source_id = 1
         self.research_images = []  # The list of selected research images
         self.documents = documents
         self.vector_store = VectorStoreWrapper(vector_store) if vector_store else None
