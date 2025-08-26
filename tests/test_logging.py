@@ -1,9 +1,9 @@
-import os
-import json
-
 import pytest
 from unittest.mock import AsyncMock
+from fastapi import WebSocket
 from backend.server.server_utils import CustomLogsHandler
+import os
+import json
 
 @pytest.mark.asyncio
 async def test_custom_logs_handler():

@@ -22,7 +22,6 @@ class BaseConfig(TypedDict):
     REPORT_FORMAT: str
     CURATE_SOURCES: bool
     MAX_ITERATIONS: int
-    APPEND_SOURCES: bool
     LANGUAGE: str
     AGENT_ROLE: Union[str, None]
     SCRAPER: str

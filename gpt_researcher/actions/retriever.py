@@ -57,10 +57,6 @@ def get_retriever(retriever: str):
             from gpt_researcher.retrievers import PubMedCentralSearch
 
             return PubMedCentralSearch
-        case "jina":
-            from gpt_researcher.retrievers import JinaSearch
-
-            return JinaSearch
         case "custom":
             from gpt_researcher.retrievers import CustomRetriever
 

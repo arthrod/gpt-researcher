@@ -2,7 +2,6 @@ import importlib.util
 import logging
 import os
 import sys
-import requests
 
 logger = logging.getLogger(__name__)
 
@@ -53,45 +52,6 @@ def check_pkg(pkg: str) -> None:
             f"`pip install -U {pkg_kebab}`"
         )
 
-
-def build_domain_query(query: str, domains: list[str] | None) -> str:
-    """Append domain filters to a search query.
-
-    Args:
-        query: The original search query.
-        domains: List of domains to restrict the search to.
-
-    Returns:
-        The query string with ``site:`` filters appended if domains are
-        provided.
-    """
-    if not domains:
-        return query
-    domain_query = " OR ".join([f"site:{domain}" for domain in domains])
-    return f"{query} {domain_query}"
-
-
-def jina_rerank(query: str, documents: list[dict], top_n: int | None = None) -> list[dict]:
-    """Rerank documents using Jina AI reranker API."""
-    api_key = os.environ.get("JINA_API_KEY")
-    if not api_key:
-        return documents
-    try:
-        payload = {
-            "model": "jina-reranker-v1",
-            "query": query,
-            "documents": [d.get("body", "") for d in documents],
-        }
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-        resp = requests.post("https://api.jina.ai/v1/rerank", json=payload, headers=headers, timeout=10)
-        data = resp.json().get("data", [])
-        ranked = sorted(zip(documents, data), key=lambda x: x[1]["relevance_score"], reverse=True)
-        reranked = [doc for doc, _ in ranked]
-        return reranked[:top_n] if top_n else reranked
-    except Exception as e:
-        logger.error(f"Jina rerank failed: {e}")
-        return documents
-
 # Valid retrievers for fallback
 VALID_RETRIEVERS = [
     "tavily",
@@ -108,8 +68,7 @@ VALID_RETRIEVERS = [
     "pubmed_central",
     "exa",
     "mcp",
-    "mock",
-    "jina",
+    "mock"
 ]
 
 def get_all_retriever_names():

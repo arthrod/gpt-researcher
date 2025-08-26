@@ -128,7 +128,6 @@ class GPTResearcher:
         self.complement_source_urls = complement_source_urls
         self.query_domains = query_domains or []
         self.research_sources = []  # The list of scraped sources including title, content and images
-        self._source_id = 1
         self.research_images = []  # The list of selected research images
         self.documents = documents
         self.vector_store = VectorStoreWrapper(vector_store) if vector_store else None
@@ -431,11 +430,6 @@ class GPTResearcher:
         return self.research_sources
 
     def add_research_sources(self, sources: list[dict[str, Any]]) -> None:
-        for src in sources:
-            src_id = self._source_id
-            src["id"] = src_id
-            src.setdefault("metadata", {})["id"] = src_id
-            self._source_id += 1
         self.research_sources.extend(sources)
 
     def add_references(self, report_markdown: str, visited_urls: set) -> str:
