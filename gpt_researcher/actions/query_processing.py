@@ -1,10 +1,10 @@
 import json_repair
 
 from gpt_researcher.llm_provider.generic.base import ReasoningEfforts
-from ..utils.llm import create_chat_completion
-from ..prompts import PromptFamily
+from gpt_researcher.utils.llm import create_chat_completion
+from gpt_researcher.prompts import PromptFamily
 from typing import Any, List, Dict
-from ..config import Config
+from gpt_researcher.config import Config
 import logging
 
 logger = logging.getLogger(__name__)

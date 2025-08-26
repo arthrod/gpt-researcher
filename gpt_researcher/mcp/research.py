@@ -7,6 +7,8 @@ import asyncio
 import logging
 from typing import List, Dict, Any
 
+from ..utils.constants import MCP_SENTINEL_URL
+
 logger = logging.getLogger(__name__)
 
 
@@ -138,7 +140,7 @@ class MCPResearchSkill:
             if hasattr(response, 'content') and response.content:
                 llm_analysis = {
                     "title": f"LLM Analysis: {query}",
-                    "href": "mcp://llm_analysis",
+                    "href": MCP_SENTINEL_URL,
                     "body": response.content
                 }
                 research_results.append(llm_analysis)

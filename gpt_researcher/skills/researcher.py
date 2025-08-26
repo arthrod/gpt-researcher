@@ -9,6 +9,7 @@ from ..document import DocumentLoader, OnlineDocumentLoader, LangChainDocumentLo
 from ..utils.enum import ReportSource
 from ..utils.logging_config import get_json_handler
 from ..actions.agent_creator import choose_agent
+from ..utils.constants import MCP_SENTINEL_URL
 
 
 class ResearchConductor:
@@ -659,7 +660,9 @@ class ResearchConductor:
 
                 if content and content.strip():
                     # Create a well-formatted context entry
-                    if url and url != "mcp://llm_analysis":
+                    # Normalize URL for comparison to handle casing/formatting variations
+                    normalized_url = str(url).strip().lower() if url else ""
+                    if normalized_url and normalized_url != MCP_SENTINEL_URL.lower():
                         citation = f"\n\n*Source: {title} ({url})*"
                     else:
                         citation = f"\n\n*Source: {title}*"

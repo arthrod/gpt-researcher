@@ -55,6 +55,109 @@ asyncio_mode = "auto"
 addopts = "-v"
 testpaths = ["tests"]
 python_files = "test_*.py"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+
+[tool.ruff]
+# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # Pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+    "ARG", # flake8-unused-arguments
+    "C90", # McCabe complexity
+    "T20", # flake8-print
+    "SIM", # flake8-simplify
+    "TCH", # flake8-type-checking
+    "RUF", # Ruff-specific rules
+]
+ignore = [
+    "E501",  # Line too long (handled by formatter)
+    "B008",  # Do not perform function calls in argument defaults
+    "C901",  # Function is too complex
+    "T201",  # `print` found (allow print statements for debugging)
+    "B904",  # Within an `except` clause, raise exceptions with `raise ... from err`
+]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+    "logs",
+    "outputs",
+]
+
+# Same as Black.
+line-length = 88
+indent-width = 4
+
+# Assume Python 3.11
+target-version = "py311"
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+[tool.ruff.lint.isort]
+# Use a single line between direct and from import
+lines-between-types = 1
+
+# Place "closer" imports (fewer `.` characters) before "further" imports
+# (more `.` characters).
+order-by-type = true
+
+known-first-party = ["gpt_researcher", "backend", "multi_agents"]
+
+[tool.ruff.lint.mccabe]
+# Flag errors (`C901`) whenever the complexity level exceeds 15.
+max-complexity = 15
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 88
+
+[tool.ruff.lint.pylint]
+max-args = 10
+max-branches = 20
+max-returns = 10
+max-statements = 80
 
 [tool.uv.sources]
 gpt-researcher = { workspace = true }
@@ -245,4 +348,7 @@ dev = [
     "types-markdown>=3.8.0.20250415",
     "types-requests>=2.32.0.20250515",
     "pytest-asyncio>=1.1.0",
+    "ruff>=0.6.0",
+    "black>=24.0.0",
+    "mypy>=1.0.0",
 ]

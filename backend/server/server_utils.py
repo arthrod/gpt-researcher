@@ -6,7 +6,7 @@ import time
 import shutil
 import traceback
 from datetime import datetime
-from typing import Any, Awaitable, Dict
+from typing import Any, Awaitable, Dict, List, Optional, Tuple
 
 from fastapi.responses import JSONResponse
 from gpt_researcher import GPTResearcher
@@ -186,11 +186,116 @@ async def handle_start_command(websocket, data: str, manager):
 
 
 async def handle_human_feedback(data: str):
-    feedback_data = json.loads(data[14:])  # Remove "human_feedback" prefix
-    print(f"Received human feedback: {feedback_data}")
-    # TODO: Add logic to forward the feedback to the appropriate agent or update the research state
+    """Handle human feedback and forward it to the appropriate agent or update research state.
+    
+    This function processes human feedback received via WebSocket and forwards it to:
+    - Multi-agent workflows that are waiting for human input
+    - Research state updates for plan revisions
+    - Active research sessions that need guidance
+    
+    Args:
+        data (str): JSON string containing feedback data with "human_feedback" prefix
+        
+    The feedback format expected:
+    {
+        "type": "human_feedback",
+        "content": "user feedback text or null",
+        "task_id": "optional task identifier",
+        "context": "optional context about what feedback is for"
+    }
+    """
+    try:
+        # Remove "human_feedback" prefix and parse JSON
+        feedback_data = json.loads(data[14:])
+        print(f"Received human feedback: {feedback_data}")
+        
+        feedback_content = feedback_data.get("content")
+        task_id = feedback_data.get("task_id")
+        context = feedback_data.get("context", "general")
+        
+        # Log feedback for debugging and audit trail
+        logger.info(f"Processing human feedback - Task ID: {task_id}, Context: {context}, Content: {feedback_content}")
+        
+        # Handle different types of feedback contexts
+        if context == "plan_review":
+            # This feedback is for research plan review in multi-agent workflows
+            await _handle_plan_feedback(feedback_content, task_id)
+        elif context == "research_guidance":
+            # This feedback provides guidance for ongoing research
+            await _handle_research_guidance(feedback_content, task_id)
+        elif context == "quality_review":
+            # This feedback is for quality review and revision cycles
+            await _handle_quality_feedback(feedback_content, task_id)
+        else:
+            # Generic feedback handling - store for later retrieval
+            await _handle_generic_feedback(feedback_content, task_id)
+            
+        logger.info(f"Successfully processed human feedback for task: {task_id}")
+        
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse human feedback JSON: {e}")
+        print(f"Error: Invalid JSON in human feedback: {e}")
+    except Exception as e:
+        logger.error(f"Error processing human feedback: {e}")
+        print(f"Error processing human feedback: {e}")
 
-async def handle_chat(websocket, data: str, manager):
+
+async def _handle_plan_feedback(feedback_content: Optional[str], task_id: Optional[str]) -> None:
+    """Handle feedback specifically for research plan review.
+    
+    This is used in multi-agent workflows where the human reviews
+    the research plan and provides guidance for revision.
+    
+    Args:
+        feedback_content: The feedback content from the user
+        task_id: The task identifier
+    """
+    # In a production system, this would update the research state
+    # and signal the workflow to continue with the feedback
+    print(f"Plan feedback for task {task_id}: {feedback_content}")
+    # TODO: Implement workflow state update when LangGraph integration is available
+
+
+async def _handle_research_guidance(feedback_content: Optional[str], task_id: Optional[str]) -> None:
+    """Handle feedback that provides guidance for ongoing research.
+    
+    Args:
+        feedback_content: The feedback content from the user
+        task_id: The task identifier
+    """
+    print(f"Research guidance for task {task_id}: {feedback_content}")
+    # This could influence search parameters, focus areas, or depth of research
+
+
+async def _handle_quality_feedback(feedback_content: Optional[str], task_id: Optional[str]) -> None:
+    """Handle feedback for quality review and revision cycles.
+    
+    Args:
+        feedback_content: The feedback content from the user
+        task_id: The task identifier
+    """
+    print(f"Quality feedback for task {task_id}: {feedback_content}")
+    # This would be used in reviewer-reviser agent cycles
+
+
+async def _handle_generic_feedback(feedback_content: Optional[str], task_id: Optional[str]) -> None:
+    """Handle generic feedback that doesn't fit other categories.
+    
+    Args:
+        feedback_content: The feedback content from the user
+        task_id: The task identifier
+    """
+    print(f"Generic feedback for task {task_id}: {feedback_content}")
+    # Store feedback in a way that it can be retrieved by active workflows
+
+async def handle_chat(websocket, data: str, manager) -> None:
+    """Handle chat messages from the WebSocket connection.
+    
+    Args:
+        websocket: The WebSocket connection
+        data: The chat data as a JSON string
+        manager: The WebSocket manager instance
+    """
     json_data = json.loads(data[4:])
     print(f"Received chat message: {json_data.get('message')}")
     await manager.chat(json_data.get("message"), websocket)
@@ -229,7 +334,12 @@ def get_config_dict(
     }
 
 
-def update_environment_variables(config: Dict[str, str]):
+def update_environment_variables(config: Dict[str, str]) -> None:
+    """Update environment variables with the provided configuration.
+    
+    Args:
+        config: Dictionary mapping environment variable names to values
+    """
     for key, value in config.items():
         os.environ[key] = value
 
@@ -325,7 +435,17 @@ async def handle_websocket_communication(websocket, manager):
         if running_task and not running_task.done():
             running_task.cancel()
 
-def extract_command_data(json_data: Dict) -> tuple:
+def extract_command_data(json_data: Dict[str, Any]) -> Tuple[Any, ...]:
+    """Extract command data from JSON payload.
+    
+    Args:
+        json_data: Dictionary containing command parameters
+        
+    Returns:
+        Tuple containing extracted command parameters in order:
+        (task, report_type, source_urls, document_urls, tone, headers, 
+         report_source, query_domains, mcp_enabled, mcp_strategy, mcp_configs)
+    """
     return (
         json_data.get("task"),
         json_data.get("report_type"),

@@ -287,6 +287,46 @@ class GPTResearcher:
                 logging.getLogger('research').error(f"Error in _log_event: {e}", exc_info=True)
 
     async def conduct_research(self, on_progress=None):
+        """Conduct comprehensive research on the given query.
+        
+        This method orchestrates the entire research process, including:
+        - Agent selection based on the query type
+        - Multi-source information gathering
+        - Content scraping and processing
+        - Context aggregation and filtering
+        - Cost tracking and logging
+        
+        For deep research report types, this method delegates to specialized
+        deep research workflows that provide iterative exploration.
+        
+        Args:
+            on_progress (callable, optional): Callback function to report progress.
+                Called with progress updates during the research process.
+                
+        Returns:
+            list: A list of research context items containing aggregated information
+                  from all sources. Each item typically contains text content,
+                  metadata, and source information.
+                  
+        Raises:
+            Exception: If agent selection or research process fails.
+            
+        Example:
+            ```python
+            researcher = GPTResearcher("What are the latest AI trends?")
+            
+            def progress_callback(progress):
+                print(f"Research progress: {progress}")
+                
+            context = await researcher.conduct_research(on_progress=progress_callback)
+            print(f"Found {len(context)} research items")
+            ```
+            
+        Note:
+            This method automatically selects the appropriate agent and role
+            if not already specified, tracks research costs, and logs all
+            research activities for monitoring and debugging.
+        """
         await self._log_event("research", step="start", details={
             "query": self.query,
             "report_type": self.report_type,
@@ -367,6 +407,56 @@ class GPTResearcher:
         return self.context
 
     async def write_report(self, existing_headers: list = [], relevant_written_contents: list = [], ext_context=None, custom_prompt="") -> str:
+        """Generate a comprehensive research report based on conducted research.
+        
+        This method synthesizes the research context into a well-structured report
+        using the configured report type, tone, and format. It can incorporate
+        existing content and custom prompts for specialized report generation.
+        
+        Args:
+            existing_headers (list, optional): List of existing headers to avoid
+                duplication in multi-section reports. Defaults to [].
+            relevant_written_contents (list, optional): List of previously written
+                content sections to reference or build upon. Defaults to [].
+            ext_context (optional): External context to use instead of the
+                instance's research context. If None, uses self.context.
+            custom_prompt (str, optional): Custom prompt to guide report generation.
+                Overrides default prompts when provided. Defaults to "".
+                
+        Returns:
+            str: A formatted research report in the specified format (markdown, etc.).
+                 The report includes structured sections, citations, and conclusions
+                 based on the research findings.
+                 
+        Raises:
+            Exception: If report generation fails due to insufficient context,
+                      LLM errors, or formatting issues.
+                      
+        Example:
+            ```python
+            researcher = GPTResearcher("AI safety research")
+            await researcher.conduct_research()
+            
+            # Generate basic report
+            report = await researcher.write_report()
+            
+            # Generate report with custom prompt
+            custom_report = await researcher.write_report(
+                custom_prompt="Focus on practical applications and risks"
+            )
+            
+            # Generate incremental report section
+            section_report = await researcher.write_report(
+                existing_headers=["Introduction", "Background"],
+                relevant_written_contents=[previous_section_content]
+            )
+            ```
+            
+        Note:
+            The report format, tone, and structure are determined by the instance
+            configuration. The method automatically handles citation formatting,
+            source attribution, and maintains consistency with the specified tone.
+        """
         await self._log_event("research", step="writing_report", details={
             "existing_headers": existing_headers,
             "context_source": "external" if ext_context else "internal"

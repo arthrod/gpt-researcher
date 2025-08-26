@@ -1,8 +1,8 @@
 import json
 import re
 import json_repair
-from ..utils.llm import create_chat_completion
-from ..prompts import PromptFamily
+from gpt_researcher.utils.llm import create_chat_completion
+from gpt_researcher.prompts import PromptFamily
 
 async def choose_agent(
     query,
