@@ -1,16 +1,26 @@
 # Google Serper Retriever
 
 # libraries
-import os
-import requests
 import json
+import os
+
+import requests
 
 
 class SerperSearch:
     """
     Google Serper Retriever with support for country, language, and date filtering
     """
-    def __init__(self, query, query_domains=None, country=None, language=None, time_range=None, exclude_sites=None):
+
+    def __init__(
+        self,
+        query,
+        query_domains=None,
+        country=None,
+        language=None,
+        time_range=None,
+        exclude_sites=None,
+    ):
         """
         Initializes the SerperSearch object
         Args:
@@ -38,7 +48,9 @@ class SerperSearch:
         exclude_sites_env = os.getenv("SERPER_EXCLUDE_SITES", "")
         if exclude_sites_env:
             # Split by comma and strip whitespace
-            return [site.strip() for site in exclude_sites_env.split(",") if site.strip()]
+            return [
+                site.strip() for site in exclude_sites_env.split(",") if site.strip()
+            ]
         return []
 
     def get_api_key(self):
@@ -49,9 +61,11 @@ class SerperSearch:
         """
         try:
             api_key = os.environ["SERPER_API_KEY"]
-        except:
-            raise Exception("Serper API key not found. Please set the SERPER_API_KEY environment variable. "
-                            "You can get a key at https://serper.dev/")
+        except KeyError:
+            raise Exception(
+                "Serper API key not found. Please set the SERPER_API_KEY environment variable. "
+                "You can get a key at https://serper.dev/"
+            )
         return api_key
 
     def search(self, max_results=7):
@@ -60,16 +74,13 @@ class SerperSearch:
         Returns:
             list: List of search results with title, href, and body
         """
-        print("Searching with query {0}...".format(self.query))
+        print(f"Searching with query {self.query}...")
         """Useful for general internet search queries using the Serper API."""
 
         # Search the query (see https://serper.dev/playground for the format)
         url = "https://google.serper.dev/search"
 
-        headers = {
-            'X-API-KEY': self.api_key,
-            'Content-Type': 'application/json'
-        }
+        headers = {"X-API-KEY": self.api_key, "Content-Type": "application/json"}
 
         # Build search parameters
         query_with_filters = self.query
@@ -85,10 +96,7 @@ class SerperSearch:
             domain_query = " site:" + " OR site:".join(self.query_domains)
             query_with_filters += domain_query
 
-        search_params = {
-            "q": query_with_filters,
-            "num": max_results
-        }
+        search_params = {"q": query_with_filters, "num": max_results}
 
         # Add optional parameters if they exist
         if self.country:

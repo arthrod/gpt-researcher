@@ -1,14 +1,17 @@
-import aiofiles
 import asyncio
 import importlib
 import json
+import os
 import subprocess
 import sys
 import traceback
-from typing import Any
-from colorama import Fore, Style, init
-import os
+
 from enum import Enum
+from typing import Any
+
+import aiofiles
+
+from colorama import Fore, Style, init
 
 _SUPPORTED_PROVIDERS = {
     "openai",
@@ -61,6 +64,7 @@ SUPPORT_REASONING_EFFORT_MODELS = [
     "o4-mini-2025-04-16",
 ]
 
+
 class ReasoningEfforts(Enum):
     High = "high"
     Medium = "medium"
@@ -77,22 +81,34 @@ class ChatLogger:
         self._lock = asyncio.Lock()
 
     async def log_request(self, messages, response):
-        async with self._lock:
-            async with aiofiles.open(self.fname, mode="a", encoding="utf-8") as handle:
-                await handle.write(json.dumps({
+        async with (
+            self._lock,
+            aiofiles.open(self.fname, mode="a", encoding="utf-8") as handle,
+        ):
+            await handle.write(
+                json.dumps({
                     "messages": messages,
                     "response": response,
-                    "stacktrace": traceback.format_exc()
-                }) + "\n")
+                    "stacktrace": traceback.format_exc(),
+                })
+                + "\n"
+            )
+
 
 class GenericLLMProvider:
-
-    def __init__(self, llm, chat_log: str | None = None,  verbose: bool = True):
+    def __init__(self, llm, chat_log: str | None = None, verbose: bool = True):
         self.llm = llm
         self.chat_logger = ChatLogger(chat_log) if chat_log else None
         self.verbose = verbose
+
     @classmethod
-    def from_provider(cls, provider: str, chat_log: str | None = None, verbose: bool=True, **kwargs: Any):
+    def from_provider(
+        cls,
+        provider: str,
+        chat_log: str | None = None,
+        verbose: bool = True,
+        **kwargs: Any,
+    ):
         if provider == "openai":
             _check_pkg("langchain_openai")
             from langchain_openai import ChatOpenAI
@@ -108,7 +124,7 @@ class GenericLLMProvider:
             from langchain_openai import AzureChatOpenAI
 
             if "model" in kwargs:
-                model_name = kwargs.get("model", None)
+                model_name = kwargs.get("model")
                 kwargs = {"azure_deployment": model_name, **kwargs}
 
             llm = AzureChatOpenAI(**kwargs)
@@ -173,10 +189,11 @@ class GenericLLMProvider:
             _check_pkg("langchain_openai")
             from langchain_openai import ChatOpenAI
 
-            llm = ChatOpenAI(openai_api_base='https://dashscope.aliyuncs.com/compatible-mode/v1',
-                     openai_api_key=os.environ["DASHSCOPE_API_KEY"],
-                     **kwargs
-                )
+            llm = ChatOpenAI(
+                openai_api_base="https://dashscope.aliyuncs.com/compatible-mode/v1",
+                openai_api_key=os.environ["DASHSCOPE_API_KEY"],
+                **kwargs,
+            )
         elif provider == "xai":
             _check_pkg("langchain_xai")
             from langchain_xai import ChatXAI
@@ -186,10 +203,11 @@ class GenericLLMProvider:
             _check_pkg("langchain_openai")
             from langchain_openai import ChatOpenAI
 
-            llm = ChatOpenAI(openai_api_base='https://api.deepseek.com',
-                     openai_api_key=os.environ["DEEPSEEK_API_KEY"],
-                     **kwargs
-                )
+            llm = ChatOpenAI(
+                openai_api_base="https://api.deepseek.com",
+                openai_api_key=os.environ["DEEPSEEK_API_KEY"],
+                **kwargs,
+            )
         elif provider == "litellm":
             _check_pkg("langchain_community")
             from langchain_community.chat_models.litellm import ChatLiteLLM
@@ -199,14 +217,18 @@ class GenericLLMProvider:
             _check_pkg("langchain_gigachat")
             from langchain_gigachat.chat_models import GigaChat
 
-            kwargs.pop("model", None) # Use env GIGACHAT_MODEL=GigaChat-Max
+            kwargs.pop("model", None)  # Use env GIGACHAT_MODEL=GigaChat-Max
             llm = GigaChat(**kwargs)
         elif provider == "openrouter":
             _check_pkg("langchain_openai")
-            from langchain_openai import ChatOpenAI
             from langchain_core.rate_limiters import InMemoryRateLimiter
+            from langchain_openai import ChatOpenAI
 
-            rps = float(os.environ["OPENROUTER_LIMIT_RPS"]) if "OPENROUTER_LIMIT_RPS" in os.environ else 1.0
+            rps = (
+                float(os.environ["OPENROUTER_LIMIT_RPS"])
+                if "OPENROUTER_LIMIT_RPS" in os.environ
+                else 1.0
+            )
 
             rate_limiter = InMemoryRateLimiter(
                 requests_per_second=rps,
@@ -214,34 +236,36 @@ class GenericLLMProvider:
                 max_bucket_size=10,
             )
 
-            llm = ChatOpenAI(openai_api_base='https://openrouter.ai/api/v1',
-                     openai_api_key=os.environ["OPENROUTER_API_KEY"],
-                     rate_limiter=rate_limiter,
-                     **kwargs
-                )
+            llm = ChatOpenAI(
+                openai_api_base="https://openrouter.ai/api/v1",
+                openai_api_key=os.environ["OPENROUTER_API_KEY"],
+                rate_limiter=rate_limiter,
+                **kwargs,
+            )
         elif provider == "vllm_openai":
             _check_pkg("langchain_openai")
             from langchain_openai import ChatOpenAI
+
             llm = ChatOpenAI(
                 openai_api_key=os.environ["VLLM_OPENAI_API_KEY"],
                 openai_api_base=os.environ["VLLM_OPENAI_API_BASE"],
-                **kwargs
+                **kwargs,
             )
         elif provider == "aimlapi":
             _check_pkg("langchain_openai")
             from langchain_openai import ChatOpenAI
 
-            llm = ChatOpenAI(openai_api_base='https://api.aimlapi.com/v1',
-                             openai_api_key=os.environ["AIMLAPI_API_KEY"],
-                             **kwargs
-                             )
+            llm = ChatOpenAI(
+                openai_api_base="https://api.aimlapi.com/v1",
+                openai_api_key=os.environ["AIMLAPI_API_KEY"],
+                **kwargs,
+            )
         else:
             supported = ", ".join(_SUPPORTED_PROVIDERS)
             raise ValueError(
                 f"Unsupported {provider}.\n\nSupported model providers are: {supported}"
             )
         return cls(llm, chat_log, verbose=verbose)
-
 
     async def get_chat_response(self, messages, stream, websocket=None, **kwargs):
         if not stream:
@@ -292,7 +316,14 @@ def _check_pkg(pkg: str) -> None:
 
         try:
             print(f"{Fore.YELLOW}Installing {pkg_kebab}...{Style.RESET_ALL}")
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "-U", pkg_kebab])
+            subprocess.check_call([
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "-U",
+                pkg_kebab,
+            ])
             print(f"{Fore.GREEN}Successfully installed {pkg_kebab}{Style.RESET_ALL}")
 
             # Try importing again after install
@@ -300,6 +331,7 @@ def _check_pkg(pkg: str) -> None:
 
         except subprocess.CalledProcessError:
             raise ImportError(
-                Fore.RED + f"Failed to install {pkg_kebab}. Please install manually with "
+                Fore.RED
+                + f"Failed to install {pkg_kebab}. Please install manually with "
                 f"`pip install -U {pkg_kebab}`"
             )

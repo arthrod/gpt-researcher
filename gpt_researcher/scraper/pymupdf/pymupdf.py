@@ -1,12 +1,14 @@
 import os
-import requests
 import tempfile
+
 from urllib.parse import urlparse
+
+import requests
+
 from langchain_community.document_loaders import PyMuPDFLoader
 
 
 class PyMuPDFScraper:
-
     def __init__(self, link, session=None):
         """
         Initialize the scraper with a link and an optional session.
@@ -27,7 +29,9 @@ class PyMuPDFScraper:
         """
         try:
             result = urlparse(self.link)
-            return all([result.scheme, result.netloc])  # Check for valid scheme and network location
+            return all(
+                [result.scheme, result.netloc]
+            )  # Check for valid scheme and network location
         except Exception:
             return False
 
@@ -44,10 +48,14 @@ class PyMuPDFScraper:
                 response = requests.get(self.link, timeout=5, stream=True)
                 response.raise_for_status()
 
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+                with tempfile.NamedTemporaryFile(
+                    delete=False, suffix=".pdf"
+                ) as temp_file:
                     temp_filename = temp_file.name  # Get the temporary file name
                     for chunk in response.iter_content(chunk_size=8192):
-                        temp_file.write(chunk)  # Write the downloaded content to the temporary file
+                        temp_file.write(
+                            chunk
+                        )  # Write the downloaded content to the temporary file
 
                 loader = PyMuPDFLoader(temp_filename)
                 doc = loader.load()

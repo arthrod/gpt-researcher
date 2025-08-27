@@ -9,7 +9,9 @@ except Exception as e:
     print("Failed to load PDF:", e)
 
 # Test UnstructuredCSVLoader
-csv_loader = UnstructuredCSVLoader("my-docs/active_braze_protocols_from_bq.csv", mode="elements")
+csv_loader = UnstructuredCSVLoader(
+    "my-docs/active_braze_protocols_from_bq.csv", mode="elements"
+)
 try:
     csv_data = csv_loader.load()
     print("CSV Data:", csv_data)

@@ -1,7 +1,8 @@
 import logging
 import sys
+
 from copy import copy
-from typing import Literal
+from typing import Any, ClassVar, Literal
 
 import click
 
@@ -21,8 +22,7 @@ def get_formatted_logger():
 
         # Create a formatter using DefaultFormatter
         formatter = DefaultFormatter(
-            "%(levelprefix)s [%(asctime)s] %(message)s",
-            datefmt="%H:%M:%S"
+            "%(levelprefix)s [%(asctime)s] %(message)s", datefmt="%H:%M:%S"
         )
 
         # Set the formatter for the handler
@@ -46,13 +46,15 @@ class ColourizedFormatter(logging.Formatter):
       for formatting the output, instead of the plain text message.
     """
 
-    level_name_colors = {
+    level_name_colors: ClassVar[dict[int, Any]] = {
         TRACE_LOG_LEVEL: lambda level_name: click.style(str(level_name), fg="blue"),
         logging.DEBUG: lambda level_name: click.style(str(level_name), fg="cyan"),
         logging.INFO: lambda level_name: click.style(str(level_name), fg="green"),
         logging.WARNING: lambda level_name: click.style(str(level_name), fg="yellow"),
         logging.ERROR: lambda level_name: click.style(str(level_name), fg="red"),
-        logging.CRITICAL: lambda level_name: click.style(str(level_name), fg="bright_red"),
+        logging.CRITICAL: lambda level_name: click.style(
+            str(level_name), fg="bright_red"
+        ),
     }
 
     def __init__(

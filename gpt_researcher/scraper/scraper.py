@@ -1,23 +1,24 @@
 import asyncio
-from colorama import Fore, init
-
-import requests
-import subprocess
-import sys
 import importlib
 import logging
+import subprocess
+import sys
+
+import requests
+
+from colorama import Fore, init
 
 from gpt_researcher.utils.workers import WorkerPool
 
 from . import (
     ArxivScraper,
     BeautifulSoupScraper,
-    PyMuPDFScraper,
-    WebBaseLoaderScraper,
     BrowserScraper,
-    NoDriverScraper,
-    TavilyExtract,
     FireCrawl,
+    NoDriverScraper,
+    PyMuPDFScraper,
+    TavilyExtract,
+    WebBaseLoaderScraper,
 )
 
 
@@ -76,9 +77,13 @@ class Scraper:
             init(autoreset=True)
             print(Fore.YELLOW + f"{pkg_inst_name} not found. Attempting to install...")
             try:
-                subprocess.check_call(
-                    [sys.executable, "-m", "pip", "install", pkg_inst_name]
-                )
+                subprocess.check_call([
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                    pkg_inst_name,
+                ])
                 print(Fore.GREEN + f"{pkg_inst_name} installed successfully.")
             except subprocess.CalledProcessError:
                 raise ImportError(

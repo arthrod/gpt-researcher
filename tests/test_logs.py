@@ -1,14 +1,17 @@
 import os
-from pathlib import Path
 import sys
+
+from pathlib import Path
+
+from backend.server.server_utils import CustomLogsHandler
 
 # Add the project root to Python path
 project_root = Path(__file__).parent.parent
 sys.path.append(str(project_root))
 
-from backend.server.server_utils import CustomLogsHandler
 
-def test_logs_creation():
+@pytest.mark.asyncio
+async def test_logs_creation():
     # Print current working directory
     print(f"Current working directory: {os.getcwd()}")
 
@@ -26,7 +29,7 @@ def test_logs_creation():
 
         # Test file creation
         test_file = logs_dir / "test.txt"
-        with open(test_file, 'w') as f:
+        with open(test_file, "w") as f:
             f.write("Test log entry")
         print(f"✓ Created test file: {test_file}")
 
@@ -40,9 +43,12 @@ def test_logs_creation():
 
     except Exception as e:
         print(f"❌ Error: {e!s}")
+        print(f"❌ Error: {e!s}")
         print(f"Error type: {type(e)}")
         import traceback
+
         print(f"Traceback: {traceback.format_exc()}")
+
 
 if __name__ == "__main__":
     test_logs_creation()

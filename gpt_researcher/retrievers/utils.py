@@ -4,10 +4,13 @@ import os
 
 logger = logging.getLogger(__name__)
 
-async def stream_output(log_type, step, content, websocket=None, with_data=False, data=None):
+
+async def stream_output(
+    log_type, step, content, websocket=None, with_data=False, data=None
+):
     """
     Stream output to the client.
-    
+
     Args:
         log_type (str): The type of log
         step (str): The step being performed
@@ -23,24 +26,25 @@ async def stream_output(log_type, step, content, websocket=None, with_data=False
                     "type": log_type,
                     "step": step,
                     "content": content,
-                    "data": data
+                    "data": data,
                 })
             else:
                 await websocket.send_json({
                     "type": log_type,
                     "step": step,
-                    "content": content
+                    "content": content,
                 })
         except Exception as e:
             logger.error(f"Error streaming output: {e}")
 
+
 def check_pkg(pkg: str) -> None:
     """
     Checks if a package is installed and raises an error if not.
-    
+
     Args:
         pkg (str): The package name
-    
+
     Raises:
         ImportError: If the package is not installed
     """
@@ -50,6 +54,7 @@ def check_pkg(pkg: str) -> None:
             f"Unable to import {pkg_kebab}. Please install with "
             f"`pip install -U {pkg_kebab}`"
         )
+
 
 # Valid retrievers for fallback
 VALID_RETRIEVERS = [
@@ -66,9 +71,11 @@ VALID_RETRIEVERS = [
     "semantic_scholar",
     "pubmed_central",
     "exa",
+    "jina",
     "mcp",
-    "mock"
+    "mock",
 ]
+
 
 def get_all_retriever_names():
     """
@@ -84,8 +91,10 @@ def get_all_retriever_names():
 
         # Filter out only the directories, excluding __pycache__
         retrievers = [
-            item for item in all_items
-            if os.path.isdir(os.path.join(current_dir, item)) and not item.startswith('__')
+            item
+            for item in all_items
+            if os.path.isdir(os.path.join(current_dir, item))
+            and not item.startswith("__")
         ]
 
         return retrievers

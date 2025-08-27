@@ -1,7 +1,6 @@
-import pytest
 from pathlib import Path
-import sys
-import logging
+
+import pytest
 
 # Add the project root to Python path
 project_root = Path(__file__).parent.parent
@@ -10,6 +9,7 @@ sys.path.append(str(project_root))
 # Configure basic logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 @pytest.mark.asyncio
 async def test_researcher_logging():  # Renamed function to be more specific
@@ -20,12 +20,12 @@ async def test_researcher_logging():  # Renamed function to be more specific
     try:
         # Import here to catch any import errors
         from backend.server.server_utils import Researcher
+
         logger.info("Successfully imported Researcher class")
 
         # Create a researcher instance with a logging-focused query
         researcher = Researcher(
-            query="Test query for logging verification",
-            report_type="research_report"
+            query="Test query for logging verification", report_type="research_report"
         )
         logger.info("Created Researcher instance")
 
@@ -65,6 +65,7 @@ async def test_researcher_logging():  # Renamed function to be more specific
     except Exception as e:
         logger.error(f"Error during research: {e}")
         raise
+
 
 if __name__ == "__main__":
     pytest.main([__file__])

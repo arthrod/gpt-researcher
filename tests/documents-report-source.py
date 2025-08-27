@@ -1,8 +1,12 @@
 import os
+
 import pytest
+
+from dotenv import load_dotenv
+
 # Ensure this path is correct
 from gpt_researcher import GPTResearcher
-from dotenv import load_dotenv
+
 load_dotenv()
 
 # Define the report types to test
@@ -12,7 +16,7 @@ report_types = [
     "subtopic_report",
     "summary_report",
     "detailed_report",
-    "quick_report"
+    "quick_report",
 ]
 
 # Define a common query and sources for testing
@@ -31,15 +35,16 @@ async def test_gpt_researcher(report_type):
 
     # Create an instance of GPTResearcher with report_source set to "documents"
     researcher = GPTResearcher(
-        query=query, report_type=report_type, report_source="documents")
+        query=query, report_type=report_type, report_source="documents"
+    )
 
     # Conduct research and write the report
     await researcher.conduct_research()
-    report = await researcher.write_report()
+    _report = await researcher.write_report()
 
     # Define the expected output filenames
-    pdf_filename = os.path.join(output_dir, f"{report_type}.pdf")
-    docx_filename = os.path.join(output_dir, f"{report_type}.docx")
+    _pdf_filename = os.path.join(output_dir, f"{report_type}.pdf")
+    _docx_filename = os.path.join(output_dir, f"{report_type}.docx")
 
     # Check if the PDF and DOCX files are created
     # assert os.path.exists(pdf_filename), f"PDF file not found for report type: {report_type}"
@@ -48,6 +53,7 @@ async def test_gpt_researcher(report_type):
     # Clean up the generated files (optional)
     # os.remove(pdf_filename)
     # os.remove(docx_filename)
+
 
 if __name__ == "__main__":
     pytest.main()

@@ -1,6 +1,7 @@
-import pytest
 from unittest.mock import AsyncMock
-from gpt_researcher.agent import GPTResearcher
+
+import pytest
+
 from backend.server.server_utils import CustomLogsHandler
 
 # Define the report types to test

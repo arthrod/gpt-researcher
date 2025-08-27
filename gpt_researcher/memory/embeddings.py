@@ -1,4 +1,5 @@
 import os
+
 from typing import Any
 
 OPENAI_EMBEDDING_MODEL = os.environ.get(
@@ -124,13 +125,15 @@ class Memory:
                 _embeddings = OpenAIEmbeddings(
                     model=model,
                     openai_api_key=os.getenv("AIMLAPI_API_KEY"),
-                    openai_api_base=os.getenv("AIMLAPI_BASE_URL", "https://api.aimlapi.com/v1"),
+                    openai_api_base=os.getenv(
+                        "AIMLAPI_BASE_URL", "https://api.aimlapi.com/v1"
+                    ),
                     **embdding_kwargs,
                 )
             case _:
                 raise Exception("Embedding not found.")
 
-        self._embeddings = _embeddings
+        self._embeddings = embeddings
 
     def get_embeddings(self):
         return self._embeddings
