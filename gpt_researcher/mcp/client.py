@@ -51,7 +51,11 @@ class MCPClientManager:
 
         for i, config in enumerate(self.mcp_configs):
             # Generate server name
+<<<<<<< HEAD
             server_name = config.get("name", f"mcp_server_{i + 1}")
+=======
+            server_name = config.get("name", f"mcp_server_{i+1}")
+>>>>>>> 1027e1d0 (Fix linting issues)
 
             # Build the server config
             server_config = {}
@@ -77,6 +81,7 @@ class MCPClientManager:
                 server_config["transport"] = connection_type
 
             # Handle stdio transport configuration
+<<<<<<< HEAD
             if server_config.get("transport") == "stdio" and config.get("command"):
                 server_config["command"] = config["command"]
 
@@ -90,6 +95,22 @@ class MCPClientManager:
                 server_env = config.get("env", {})
                 if server_env:
                     server_config["env"] = server_env
+=======
+            if server_config.get("transport") == "stdio":
+                if config.get("command"):
+                    server_config["command"] = config["command"]
+
+                    # Handle server_args
+                    server_args = config.get("args", [])
+                    if isinstance(server_args, str):
+                        server_args = server_args.split()
+                    server_config["args"] = server_args
+
+                    # Handle environment variables
+                    server_env = config.get("env", {})
+                    if server_env:
+                        server_config["env"] = server_env
+>>>>>>> 1027e1d0 (Fix linting issues)
 
             # Add authentication if provided
             if config.get("connection_token"):
@@ -173,4 +194,8 @@ class MCPClientManager:
 
         except Exception as e:
             logger.error(f"Error getting MCP tools: {e}")
+<<<<<<< HEAD
             return []
+=======
+            return []
+>>>>>>> 1027e1d0 (Fix linting issues)

@@ -9,12 +9,18 @@ class ArxivSearch:
     def __init__(self, query, sort="Relevance", query_domains=None):
         self.arxiv = arxiv
         self.query = query
+<<<<<<< HEAD
         assert sort in ["Relevance", "SubmittedDate"], "Invalid sort criterion"
         self.sort = (
             arxiv.SortCriterion.SubmittedDate
             if sort == "SubmittedDate"
             else arxiv.SortCriterion.Relevance
         )
+=======
+        assert sort in ['Relevance', 'SubmittedDate'], "Invalid sort criterion"
+        self.sort = arxiv.SortCriterion.SubmittedDate if sort == 'SubmittedDate' else arxiv.SortCriterion.Relevance
+
+>>>>>>> 1027e1d0 (Fix linting issues)
 
     def search(self, max_results=5):
         """
@@ -45,4 +51,14 @@ class ArxivSearch:
                 }
             )
 
+<<<<<<< HEAD
         return search_result
+=======
+            search_result.append({
+                "title": result.title,
+                "href": result.pdf_url,
+                "body": result.summary,
+            })
+
+        return search_result
+>>>>>>> 1027e1d0 (Fix linting issues)

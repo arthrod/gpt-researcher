@@ -44,11 +44,19 @@ class BatchResearchManager:
         self.all_urls = set()
         self.max_concurrent = max_concurrent
         self.semaphore = asyncio.Semaphore(max_concurrent)
+<<<<<<< HEAD
         self.progress_callback: Callable | None = None
 
     async def conduct_batch_research(
         self,
         research_instructions: list[str],
+=======
+        self.progress_callback: Optional[Callable] = None
+
+    async def conduct_batch_research(
+        self,
+        research_instructions: List[str],
+>>>>>>> 1027e1d0 (Fix linting issues)
         parallel: bool = False,
         on_progress: Callable | None = None,
     ) -> dict[str, Any]:
@@ -110,9 +118,13 @@ class BatchResearchManager:
 
         return self._format_results(results, len(research_instructions))
 
+<<<<<<< HEAD
     async def _conduct_sequential_research(
         self, instructions: list[str]
     ) -> list[ResearchIteration]:
+=======
+    async def _conduct_sequential_research(self, instructions: List[str]) -> List[ResearchIteration]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Conduct research iterations sequentially."""
         results = []
 
@@ -127,9 +139,13 @@ class BatchResearchManager:
 
         return results
 
+<<<<<<< HEAD
     async def _conduct_parallel_research(
         self, instructions: list[str]
     ) -> list[ResearchIteration]:
+=======
+    async def _conduct_parallel_research(self, instructions: List[str]) -> List[ResearchIteration]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Conduct research iterations in parallel with concurrency control."""
         tasks = []
 
@@ -160,16 +176,24 @@ class BatchResearchManager:
 
         return processed_results
 
+<<<<<<< HEAD
     async def _execute_with_semaphore(
         self, instruction: str, iteration: int, total: int
     ) -> ResearchIteration:
+=======
+    async def _execute_with_semaphore(self, instruction: str, iteration: int, total: int) -> ResearchIteration:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Execute research with semaphore for concurrency control."""
         async with self.semaphore:
             return await self._execute_single_research(instruction, iteration, total)
 
+<<<<<<< HEAD
     async def _execute_single_research(
         self, instruction: str, iteration: int, total: int
     ) -> ResearchIteration:
+=======
+    async def _execute_single_research(self, instruction: str, iteration: int, total: int) -> ResearchIteration:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Execute a single research iteration with comprehensive error handling."""
         start_time = datetime.now()
 
@@ -219,7 +243,11 @@ class BatchResearchManager:
 
             return result
 
+<<<<<<< HEAD
         except TimeoutError:
+=======
+        except asyncio.TimeoutError:
+>>>>>>> 1027e1d0 (Fix linting issues)
             error_msg = f"Timeout after {timeout}s"
             logger.error(f"Research iteration {iteration} timed out: {error_msg}")
 
@@ -259,7 +287,11 @@ class BatchResearchManager:
             # Always restore original query
             self.researcher.query = original_query
 
+<<<<<<< HEAD
     def _combine_contexts_intelligently(self, results: list[ResearchIteration]) -> str:
+=======
+    def _combine_contexts_intelligently(self, results: List[ResearchIteration]) -> str:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """
         Combine contexts with intelligent deduplication and organization.
 
@@ -313,9 +345,13 @@ class BatchResearchManager:
 
         return "\n\n".join(combined)
 
+<<<<<<< HEAD
     def _format_results(
         self, results: list[ResearchIteration], total_planned: int
     ) -> dict[str, Any]:
+=======
+    def _format_results(self, results: List[ResearchIteration], total_planned: int) -> Dict[str, Any]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Format results with comprehensive metadata."""
         successful_results = [r for r in results if r.success]
         failed_results = [r for r in results if not r.success]
@@ -372,13 +408,18 @@ class BatchResearchManager:
             # Fallback if stream_output is not available
             logger.info(f"{event_type}: {message}")
 
+<<<<<<< HEAD
     def get_iteration_result(self, iteration: int) -> ResearchIteration | None:
+=======
+    def get_iteration_result(self, iteration: int) -> Optional[ResearchIteration]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Get results from a specific iteration."""
         for result in self.research_results:
             if result.iteration == iteration:
                 return result
         return None
 
+<<<<<<< HEAD
     def get_successful_results(self) -> list[ResearchIteration]:
         """Get only successful research iterations."""
         return [r for r in self.research_results if r.success]
@@ -388,6 +429,17 @@ class BatchResearchManager:
         return [r for r in self.research_results if not r.success]
 
     def get_statistics(self) -> dict[str, Any]:
+=======
+    def get_successful_results(self) -> List[ResearchIteration]:
+        """Get only successful research iterations."""
+        return [r for r in self.research_results if r.success]
+
+    def get_failed_results(self) -> List[ResearchIteration]:
+        """Get only failed research iterations."""
+        return [r for r in self.research_results if not r.success]
+
+    def get_statistics(self) -> Dict[str, Any]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Get comprehensive statistics about the batch research."""
         if not self.research_results:
             return {}

@@ -1,3 +1,15 @@
+<<<<<<< HEAD
+=======
+from contextlib import asynccontextmanager
+import math
+from pathlib import Path
+import random
+import traceback
+from urllib.parse import urlparse
+from bs4 import BeautifulSoup
+from typing import Dict, Literal, cast, Tuple
+import requests
+>>>>>>> 1027e1d0 (Fix linting issues)
 import asyncio
 import logging
 import math
@@ -126,7 +138,13 @@ class NoDriverScraper:
 
             except Exception as e:
                 # Log error but don't block the request
+<<<<<<< HEAD
                 NoDriverScraper.logger.warning(f"Rate limiting error for {url}: {e!s}")
+=======
+                NoDriverScraper.logger.warning(
+                    f"Rate limiting error for {url}: {e!s}"
+                )
+>>>>>>> 1027e1d0 (Fix linting issues)
 
         async def stop(self):
             if self.stopping:

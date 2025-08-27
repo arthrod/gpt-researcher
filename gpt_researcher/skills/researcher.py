@@ -1,8 +1,16 @@
 import asyncio
 import logging
 import os
+<<<<<<< HEAD
 import random
 
+=======
+from ..actions.utils import stream_output
+from ..actions.query_processing import plan_research_outline, get_search_results
+from ..document import DocumentLoader, OnlineDocumentLoader, LangChainDocumentLoader
+from ..utils.enum import ReportSource
+from ..utils.logging_config import get_json_handler
+>>>>>>> 1027e1d0 (Fix linting issues)
 from ..actions.agent_creator import choose_agent
 from ..actions.query_processing import get_search_results, plan_research_outline
 from ..actions.utils import stream_output
@@ -183,12 +191,17 @@ class ResearchConductor:
                 connection_string=os.getenv("AZURE_CONNECTION_STRING"),
             )
             azure_files = await azure_loader.load()
+<<<<<<< HEAD
             document_data = await DocumentLoader(
                 azure_files
             ).load()  # Reuse existing loader
             research_data = await self._get_context_by_web_search(
                 self.researcher.query, document_data
             )
+=======
+            document_data = await DocumentLoader(azure_files).load()  # Reuse existing loader
+            research_data = await self._get_context_by_web_search(self.researcher.query, document_data)
+>>>>>>> 1027e1d0 (Fix linting issues)
 
         elif self.researcher.report_source == ReportSource.LangChainDocuments.value:
             langchain_documents_data = await LangChainDocumentLoader(
@@ -299,11 +312,15 @@ class ResearchConductor:
             query_domains = []
 
         # **CONFIGURABLE MCP OPTIMIZATION: Control MCP strategy**
+<<<<<<< HEAD
         mcp_retrievers = [
             r
             for r in self.researcher.retrievers
             if "mcpretriever" in r.__name__.lower()
         ]
+=======
+        mcp_retrievers = [r for r in self.researcher.retrievers if "mcpretriever" in r.__name__.lower()]
+>>>>>>> 1027e1d0 (Fix linting issues)
 
         # Get MCP strategy configuration
         mcp_strategy = self._get_mcp_strategy()
@@ -443,9 +460,13 @@ class ResearchConductor:
         all_mcp_context = []
 
         for i, query in enumerate(queries, 1):
+<<<<<<< HEAD
             self.logger.info(
                 f"Executing MCP research for query {i}/{len(queries)}: {query}"
             )
+=======
+            self.logger.info(f"Executing MCP research for query {i}/{len(queries)}: {query}")
+>>>>>>> 1027e1d0 (Fix linting issues)
 
             for retriever in mcp_retrievers:
                 try:
@@ -466,9 +487,13 @@ class ResearchConductor:
                                 }
                                 all_mcp_context.append(context_entry)
 
+<<<<<<< HEAD
                         self.logger.info(
                             f"Added {len(mcp_results)} MCP results for query: {query}"
                         )
+=======
+                        self.logger.info(f"Added {len(mcp_results)} MCP results for query: {query}")
+>>>>>>> 1027e1d0 (Fix linting issues)
 
                         if self.researcher.verbose:
                             await stream_output(
@@ -501,10 +526,17 @@ class ResearchConductor:
         if scraped_data is None:
             scraped_data = []
         if self.json_handler:
+<<<<<<< HEAD
             self.json_handler.log_event(
                 "sub_query",
                 {"query": sub_query, "scraped_data_size": len(scraped_data)},
             )
+=======
+            self.json_handler.log_event("sub_query", {
+                "query": sub_query,
+                "scraped_data_size": len(scraped_data)
+            })
+>>>>>>> 1027e1d0 (Fix linting issues)
 
         if self.researcher.verbose:
             await stream_output(
@@ -516,11 +548,16 @@ class ResearchConductor:
 
         try:
             # Identify MCP retrievers
+<<<<<<< HEAD
             mcp_retrievers = [
                 r
                 for r in self.researcher.retrievers
                 if "mcpretriever" in r.__name__.lower()
             ]
+=======
+            mcp_retrievers = [r for r in self.researcher.retrievers if "mcpretriever" in r.__name__.lower()]
+            non_mcp_retrievers = [r for r in self.researcher.retrievers if "mcpretriever" not in r.__name__.lower()]
+>>>>>>> 1027e1d0 (Fix linting issues)
 
             # Initialize context components
             mcp_context = []
@@ -546,9 +583,13 @@ class ResearchConductor:
                             self.researcher.websocket,
                         )
 
+<<<<<<< HEAD
                     self.logger.info(
                         f"Reused {len(mcp_context)} cached MCP results for sub-query: {sub_query}"
                     )
+=======
+                    self.logger.info(f"Reused {len(mcp_context)} cached MCP results for sub-query: {sub_query}")
+>>>>>>> 1027e1d0 (Fix linting issues)
                 elif mcp_strategy == "deep":
                     # Deep: Run MCP for every sub-query
                     self.logger.info(f"Running deep MCP research for: {sub_query}")
@@ -560,9 +601,13 @@ class ResearchConductor:
                             self.researcher.websocket,
                         )
 
+<<<<<<< HEAD
                     mcp_context = await self._execute_mcp_research_for_queries(
                         [sub_query], mcp_retrievers
                     )
+=======
+                    mcp_context = await self._execute_mcp_research_for_queries([sub_query], mcp_retrievers)
+>>>>>>> 1027e1d0 (Fix linting issues)
                 else:
                     # Fallback: if no cache and not deep mode, run MCP for this query
                     self.logger.warning(
@@ -576,9 +621,13 @@ class ResearchConductor:
                             self.researcher.websocket,
                         )
 
+<<<<<<< HEAD
                     mcp_context = await self._execute_mcp_research_for_queries(
                         [sub_query], mcp_retrievers
                     )
+=======
+                    mcp_context = await self._execute_mcp_research_for_queries([sub_query], mcp_retrievers)
+>>>>>>> 1027e1d0 (Fix linting issues)
 
             # Get web search context using non-MCP retrievers (if no scraped data provided)
             if not scraped_data:
@@ -597,16 +646,24 @@ class ResearchConductor:
                 )
 
             # Combine MCP context with web context intelligently
+<<<<<<< HEAD
             combined_context = self._combine_mcp_and_web_context(
                 mcp_context, web_context, sub_query
             )
+=======
+            combined_context = self._combine_mcp_and_web_context(mcp_context, web_context, sub_query)
+>>>>>>> 1027e1d0 (Fix linting issues)
 
             # Log context combination results
             if combined_context:
                 context_length = len(str(combined_context))
+<<<<<<< HEAD
                 self.logger.info(
                     f"Combined context for '{sub_query}': {context_length} chars"
                 )
+=======
+                self.logger.info(f"Combined context for '{sub_query}': {context_length} chars")
+>>>>>>> 1027e1d0 (Fix linting issues)
 
                 if self.researcher.verbose:
                     mcp_count = len(mcp_context)
@@ -636,6 +693,7 @@ class ResearchConductor:
                     )
 
             if combined_context and self.json_handler:
+<<<<<<< HEAD
                 self.json_handler.log_event(
                     "content_found",
                     {
@@ -645,6 +703,14 @@ class ResearchConductor:
                         "web_content": bool(web_context),
                     },
                 )
+=======
+                self.json_handler.log_event("content_found", {
+                    "sub_query": sub_query,
+                    "content_size": len(str(combined_context)),
+                    "mcp_sources": len(mcp_context),
+                    "web_content": bool(web_context)
+                })
+>>>>>>> 1027e1d0 (Fix linting issues)
 
             return combined_context
 
@@ -674,9 +740,13 @@ class ResearchConductor:
         """
         retriever_name = retriever.__name__
 
+<<<<<<< HEAD
         self.logger.info(
             f"Executing MCP research with {retriever_name} for query: {query}"
         )
+=======
+        self.logger.info(f"Executing MCP research with {retriever_name} for query: {query}")
+>>>>>>> 1027e1d0 (Fix linting issues)
 
         try:
             # Instantiate the MCP retriever with proper parameters
@@ -704,9 +774,13 @@ class ResearchConductor:
 
             if results:
                 result_count = len(results)
+<<<<<<< HEAD
                 self.logger.info(
                     f"MCP research completed: {result_count} results from {retriever_name}"
                 )
+=======
+                self.logger.info(f"MCP research completed: {result_count} results from {retriever_name}")
+>>>>>>> 1027e1d0 (Fix linting issues)
 
                 if self.researcher.verbose:
                     await stream_output(
@@ -769,6 +843,7 @@ class ResearchConductor:
             for i, item in enumerate(mcp_context):
                 content = item.get("content", "")
                 url = item.get("url", "")
+<<<<<<< HEAD
                 title = item.get("title", f"MCP Result {i + 1}")
 
                 if content and content.strip():
@@ -776,6 +851,13 @@ class ResearchConductor:
                     # Normalize URL for comparison to handle casing/formatting variations
                     normalized_url = str(url).strip().lower() if url else ""
                     if normalized_url and normalized_url != MCP_SENTINEL_URL.lower():
+=======
+                title = item.get("title", f"MCP Result {i+1}")
+
+                if content and content.strip():
+                    # Create a well-formatted context entry
+                    if url and url != "mcp://llm_analysis":
+>>>>>>> 1027e1d0 (Fix linting issues)
                         citation = f"\n\n*Source: {title} ({url})*"
                     else:
                         citation = f"\n\n*Source: {title}*"
@@ -971,9 +1053,13 @@ class ResearchConductor:
                 # Log result information
                 if results:
                     result_count = len(results)
+<<<<<<< HEAD
                     self.logger.info(
                         f"Received {result_count} results from {retriever_name}"
                     )
+=======
+                    self.logger.info(f"Received {result_count} results from {retriever_name}")
+>>>>>>> 1027e1d0 (Fix linting issues)
 
                     # Special logging for MCP retriever
                     if is_mcp_retriever:
@@ -989,12 +1075,17 @@ class ResearchConductor:
                         for i, result in enumerate(results[:3]):  # Log first 3 results
                             title = result.get("title", "No title")
                             url = result.get("href", "No URL")
+<<<<<<< HEAD
                             content_length = (
                                 len(result.get("body", "")) if result.get("body") else 0
                             )
                             self.logger.info(
                                 f"MCP result {i + 1}: '{title}' from {url} ({content_length} chars)"
                             )
+=======
+                            content_length = len(result.get("body", "")) if result.get("body") else 0
+                            self.logger.info(f"MCP result {i+1}: '{title}' from {url} ({content_length} chars)")
+>>>>>>> 1027e1d0 (Fix linting issues)
 
                         if result_count > 3:
                             self.logger.info(

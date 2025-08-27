@@ -31,7 +31,10 @@ def generate_structured_json(schema: BaseModel, data: dict[str, Any]) -> str:
         return json.dumps(structured_data.dict(), indent=2)
     except Exception as e:
         return f"Error generating JSON: {e!s}"
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1027e1d0 (Fix linting issues)
 
 # Example usage
 if __name__ == "__main__":

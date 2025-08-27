@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+import pytest
+from pathlib import Path
+>>>>>>> 1027e1d0 (Fix linting issues)
 import json
 import logging
 
@@ -33,7 +38,10 @@ class TestWebSocket(WebSocket):
 async def test_log_output_file():
     """Test to verify logs are properly written to output file"""
     from backend.server.server_utils import CustomLogsHandler
+<<<<<<< HEAD
     from gpt_researcher.agent import GPTResearcher
+=======
+>>>>>>> 1027e1d0 (Fix linting issues)
 
     # 1. Setup like the main app
     websocket = TestWebSocket()
@@ -59,7 +67,11 @@ async def test_log_output_file():
 
     with open(output_files[-1]) as f:
         data = json.load(f)
+<<<<<<< HEAD
         assert len(data.get("events", [])) > 0, "No events in output file"
+=======
+        assert len(data.get('events', [])) > 0, "No events in output file"
+>>>>>>> 1027e1d0 (Fix linting issues)
 
     # Clean up the output files
     for output_file in output_files:

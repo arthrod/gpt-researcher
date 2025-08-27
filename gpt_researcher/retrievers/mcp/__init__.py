@@ -32,4 +32,8 @@ except Exception as e:
     # Catch any other exception that might occur
     logger.error(f"Unexpected error importing MCPRetriever: {e}")
     MCPRetriever = None
+<<<<<<< HEAD
     __all__ = []
+=======
+    __all__ = []
+>>>>>>> 1027e1d0 (Fix linting issues)

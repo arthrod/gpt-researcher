@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 from typing import TypedDict
+=======
+from typing import TypedDict, List
+>>>>>>> 1027e1d0 (Fix linting issues)
 
 
 class ResearchState(TypedDict):

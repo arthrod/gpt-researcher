@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 from typing import Any
 
+=======
+from typing import List, Dict, Set, Optional, Any
+>>>>>>> 1027e1d0 (Fix linting issues)
 from fastapi import WebSocket
 
 from gpt_researcher import GPTResearcher

@@ -51,12 +51,23 @@ async def evaluate_single_query(query: str, evaluator: SimpleQAEval) -> dict:
     report = await researcher.write_report()
 
     # Get the correct answer and evaluate
+<<<<<<< HEAD
     example = next(ex for ex in evaluator.examples if ex["problem"] == query)
     correct_answer = example["answer"]
 
     eval_result = evaluator.evaluate_example(
         {"problem": query, "answer": correct_answer, "predicted": report}
     )
+=======
+    example = next(ex for ex in evaluator.examples if ex['problem'] == query)
+    correct_answer = example['answer']
+
+    eval_result = evaluator.evaluate_example({
+        "problem": query,
+        "answer": correct_answer,
+        "predicted": report
+    })
+>>>>>>> 1027e1d0 (Fix linting issues)
 
     result = {
         "query": query,
@@ -101,7 +112,11 @@ async def main(num_examples: int):
                 print(f"Warning: Skipping example without 'problem' key: {example}")
                 continue
 
+<<<<<<< HEAD
             query = example["problem"]
+=======
+            query = example['problem']
+>>>>>>> 1027e1d0 (Fix linting issues)
             print(f"\nEvaluating query: {query}")
             try:
                 result = await evaluate_single_query(query, evaluator)
@@ -117,7 +132,14 @@ async def main(num_examples: int):
 
             except Exception as e:
                 print(f"✗ Error evaluating query: {e!s}")
+<<<<<<< HEAD
                 results.append({"query": query, "error": str(e)})
+=======
+                results.append({
+                    'query': query,
+                    'error': str(e)
+                })
+>>>>>>> 1027e1d0 (Fix linting issues)
 
         if not results:
             raise ValueError("No results generated")
@@ -132,6 +154,7 @@ async def main(num_examples: int):
 
             if successful > 0:
                 # Count the different grades
+<<<<<<< HEAD
                 correct = sum(
                     1 for r in results if r.get("evaluation_grade") == "CORRECT"
                 )
@@ -141,6 +164,11 @@ async def main(num_examples: int):
                 not_attempted = sum(
                     1 for r in results if r.get("evaluation_grade") == "NOT_ATTEMPTED"
                 )
+=======
+                correct = sum(1 for r in results if r.get('evaluation_grade') == "CORRECT")
+                incorrect = sum(1 for r in results if r.get('evaluation_grade') == "INCORRECT")
+                not_attempted = sum(1 for r in results if r.get('evaluation_grade') == "NOT_ATTEMPTED")
+>>>>>>> 1027e1d0 (Fix linting issues)
 
                 print("\n=== AGGREGATE METRICS ===")
                 metrics = {
@@ -165,9 +193,13 @@ async def main(num_examples: int):
                 )
 
                 # Precision = correct / attempted
+<<<<<<< HEAD
                 precision = (
                     correct / (correct + incorrect) if (correct + incorrect) > 0 else 0
                 )
+=======
+                precision = correct / (correct + incorrect) if (correct + incorrect) > 0 else 0
+>>>>>>> 1027e1d0 (Fix linting issues)
 
                 # Recall = correct / total
                 recall = correct / successful if successful > 0 else 0
@@ -187,7 +219,11 @@ async def main(num_examples: int):
                 # Print cost metrics
                 total_cost = sum(r["cost"] for r in results if "error" not in r)
                 print(f"\nTotal cost: ${total_cost:.4f}")
+<<<<<<< HEAD
                 print(f"Average cost per query: ${total_cost / successful:.4f}")
+=======
+                print(f"Average cost per query: ${total_cost/successful:.4f}")
+>>>>>>> 1027e1d0 (Fix linting issues)
 
     except Exception as e:
         print(f"Fatal error in main: {e!s}")
@@ -209,4 +245,8 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\nEvaluation interrupted by user")
     except Exception as e:
+<<<<<<< HEAD
         print(f"Fatal error: {e!s}")
+=======
+        print(f"Fatal error: {e!s}")
+>>>>>>> 1027e1d0 (Fix linting issues)

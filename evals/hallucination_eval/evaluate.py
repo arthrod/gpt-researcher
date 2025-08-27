@@ -1,9 +1,15 @@
 """
 Evaluate model outputs for hallucination using the judges library.
 """
+<<<<<<< HEAD
 
 import logging
 
+=======
+import logging
+from typing import Dict
+
+>>>>>>> 1027e1d0 (Fix linting issues)
 from judges.classifiers.hallucination import HaluEvalDocumentSummaryNonFactual
 
 # Configure logging
@@ -21,7 +27,11 @@ class HallucinationEvaluator:
 
         self.summary_judge = HaluEvalDocumentSummaryNonFactual(model=model)
 
+<<<<<<< HEAD
     def evaluate_response(self, model_output: str, source_text: str) -> dict:
+=======
+    def evaluate_response(self, model_output: str, source_text: str) -> Dict:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """
         Evaluate a single model response for hallucination against source documents.
 
@@ -72,4 +82,8 @@ def main():
 
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     main()
+=======
+    main()
+>>>>>>> 1027e1d0 (Fix linting issues)

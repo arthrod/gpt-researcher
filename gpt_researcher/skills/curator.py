@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 import json
 
+=======
+from typing import List
+import json
+from ..utils.llm import create_chat_completion
+>>>>>>> 1027e1d0 (Fix linting issues)
 from ..actions import stream_output
 from ..utils.llm import create_chat_completion
 

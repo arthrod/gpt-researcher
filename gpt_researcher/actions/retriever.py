@@ -105,9 +105,13 @@ def get_retrievers(headers: dict[str, str], cfg):
 
     # Convert retriever names to actual retriever classes
     # Use get_default_retriever() as a fallback for any invalid retriever names
+<<<<<<< HEAD
     retriever_classes = [
         get_retriever(r) or get_default_retriever() for r in retrievers
     ]
+=======
+    retriever_classes = [get_retriever(r) or get_default_retriever() for r in retrievers]
+>>>>>>> 1027e1d0 (Fix linting issues)
 
     return retriever_classes
 

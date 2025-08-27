@@ -6,7 +6,10 @@ Handles websocket streaming and logging for MCP operations.
 
 import asyncio
 import logging
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1027e1d0 (Fix linting issues)
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -116,4 +119,8 @@ class MCPStreamer:
 
     async def stream_info(self, info_msg: str):
         """Stream informational messages."""
+<<<<<<< HEAD
         await self.stream_log(f"i {info_msg}")
+=======
+        await self.stream_log(f"ℹ️ {info_msg}")
+>>>>>>> 1027e1d0 (Fix linting issues)

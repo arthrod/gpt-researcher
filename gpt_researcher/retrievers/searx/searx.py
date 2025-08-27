@@ -5,7 +5,10 @@ from urllib.parse import urljoin
 
 import requests
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1027e1d0 (Fix linting issues)
 class SearxSearch:
     """
     SearxNG API Retriever
@@ -50,7 +53,11 @@ class SearxSearch:
         # TODO: Add support for query domains
         params = {
             # The search query.
+<<<<<<< HEAD
             "q": query,
+=======
+            'q': self.query,
+>>>>>>> 1027e1d0 (Fix linting issues)
             # Output format of results. Format needs to be activated in searxng config.
             "format": "json",
         }

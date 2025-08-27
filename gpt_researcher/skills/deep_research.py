@@ -6,7 +6,12 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from gpt_researcher.llm_provider.generic.base import ReasoningEfforts
+<<<<<<< HEAD
 
+=======
+from ..utils.llm import create_chat_completion
+from ..utils.enum import ReportType, ReportSource
+>>>>>>> 1027e1d0 (Fix linting issues)
 from ..actions.query_processing import get_search_results
 from ..utils.enum import ReportSource, ReportType
 from ..utils.llm import create_chat_completion
@@ -311,9 +316,13 @@ Format each question on a new line starting with 'Question: '""",
                     }
 
                 except Exception as e:
+<<<<<<< HEAD
                     logger.error(
                         f"Error processing query '{serp_query['query']}': {e!s}"
                     )
+=======
+                    logger.error(f"Error processing query '{serp_query['query']}': {e!s}")
+>>>>>>> 1027e1d0 (Fix linting issues)
                     return None
 
         # Process queries concurrently with limit

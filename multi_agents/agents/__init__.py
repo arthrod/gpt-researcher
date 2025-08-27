@@ -17,5 +17,9 @@ __all__ = [
     "ResearchAgent",
     "ReviewerAgent",
     "ReviserAgent",
+<<<<<<< HEAD
     "WriterAgent",
+=======
+    "WriterAgent"
+>>>>>>> 1027e1d0 (Fix linting issues)
 ]

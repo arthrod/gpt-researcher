@@ -3,9 +3,15 @@ MCP Tool Selection Module
 
 Handles intelligent tool selection using LLM analysis.
 """
+<<<<<<< HEAD
 
 import json
 import logging
+=======
+import json
+import logging
+from typing import List
+>>>>>>> 1027e1d0 (Fix linting issues)
 
 logger = logging.getLogger(__name__)
 
@@ -51,9 +57,13 @@ class MCPToolSelector:
         if len(all_tools) < max_tools:
             max_tools = len(all_tools)
 
+<<<<<<< HEAD
         logger.info(
             f"Using LLM to select {max_tools} most relevant tools from {len(all_tools)} available"
         )
+=======
+        logger.info(f"Using LLM to select {max_tools} most relevant tools from {len(all_tools)} available")
+>>>>>>> 1027e1d0 (Fix linting issues)
 
         # Create tool descriptions for LLM analysis
         tools_info = []
@@ -116,9 +126,13 @@ class MCPToolSelector:
 
                 if tool_index is not None and 0 <= tool_index < len(all_tools):
                     selected_tools.append(all_tools[tool_index])
+<<<<<<< HEAD
                     logger.info(
                         f"Selected tool '{tool_name}' (score: {relevance_score}): {reason}"
                     )
+=======
+                    logger.info(f"Selected tool '{tool_name}' (score: {relevance_score}): {reason}")
+>>>>>>> 1027e1d0 (Fix linting issues)
 
             if len(selected_tools) == 0:
                 logger.warning("No tools selected by LLM, using fallback selection")
@@ -187,6 +201,7 @@ class MCPToolSelector:
         """
         # Define patterns for research-relevant tools
         research_patterns = [
+<<<<<<< HEAD
             "search",
             "get",
             "read",
@@ -200,6 +215,10 @@ class MCPToolSelector:
             "view",
             "show",
             "describe",
+=======
+            'search', 'get', 'read', 'fetch', 'find', 'list', 'query',
+            'lookup', 'retrieve', 'browse', 'view', 'show', 'describe'
+>>>>>>> 1027e1d0 (Fix linting issues)
         ]
 
         scored_tools = []
@@ -224,6 +243,12 @@ class MCPToolSelector:
         selected_tools = [tool for tool, score in scored_tools[:max_tools]]
 
         for i, (tool, score) in enumerate(scored_tools[:max_tools]):
+<<<<<<< HEAD
             logger.info(f"Fallback selected tool {i + 1}: {tool.name} (score: {score})")
 
         return selected_tools
+=======
+            logger.info(f"Fallback selected tool {i+1}: {tool.name} (score: {score})")
+
+        return selected_tools
+>>>>>>> 1027e1d0 (Fix linting issues)

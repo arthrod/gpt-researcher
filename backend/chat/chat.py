@@ -62,7 +62,10 @@ class ChatAgentWithMemory:
 
     def vector_store_tool(self, vector_store) -> Tool:
         """Create Vector Store Tool"""
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1027e1d0 (Fix linting issues)
         @tool
         def retrieve_info(query):
             """

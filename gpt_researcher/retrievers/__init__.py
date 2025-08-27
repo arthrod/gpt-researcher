@@ -16,8 +16,11 @@ from .tavily.tavily_search import TavilySearch
 
 __all__ = [
     "ArxivSearch",
+<<<<<<< HEAD
     "ArxivSearch",
     "BingSearch",
+=======
+>>>>>>> 1027e1d0 (Fix linting issues)
     "BingSearch",
     "CustomRetriever",
     "Duckduckgo",
@@ -30,4 +33,8 @@ __all__ = [
     "SemanticScholarSearch",
     "SerpApiSearch",
     "SerperSearch",
+<<<<<<< HEAD
+=======
+    "TavilySearch"
+>>>>>>> 1027e1d0 (Fix linting issues)
 ]

@@ -48,8 +48,13 @@ class MCPRetriever:
     def __init__(
         self,
         query: str,
+<<<<<<< HEAD
         headers: dict[str, str] | None = None,
         query_domains: list[str] | None = None,
+=======
+        headers: Optional[Dict[str, str]] = None,
+        query_domains: Optional[List[str]] = None,
+>>>>>>> 1027e1d0 (Fix linting issues)
         websocket=None,
         researcher=None,
         **kwargs,
@@ -120,6 +125,13 @@ class MCPRetriever:
         """
         if self.researcher and hasattr(self.researcher, "cfg"):
             return self.researcher.cfg
+<<<<<<< HEAD
+=======
+
+        # If no config available, this is a critical error
+        logger.error("No config found in researcher instance. MCPRetriever requires a researcher instance with cfg attribute.")
+        raise ValueError("MCPRetriever requires a researcher instance with cfg attribute containing LLM configuration")
+>>>>>>> 1027e1d0 (Fix linting issues)
 
         # If no config available, this is a critical error
         logger.error(
@@ -165,12 +177,17 @@ class MCPRetriever:
                 return []
 
             # Stage 2: Select most relevant tools
+<<<<<<< HEAD
             await self.streamer.stream_stage_start(
                 "Stage 2", "Selecting most relevant tools"
             )
             selected_tools = await self.tool_selector.select_relevant_tools(
                 self.query, all_tools, max_tools=3
             )
+=======
+            await self.streamer.stream_stage_start("Stage 2", "Selecting most relevant tools")
+            selected_tools = await self.tool_selector.select_relevant_tools(self.query, all_tools, max_tools=3)
+>>>>>>> 1027e1d0 (Fix linting issues)
 
             if not selected_tools:
                 await self.streamer.stream_warning(
@@ -179,12 +196,17 @@ class MCPRetriever:
                 return []
 
             # Stage 3: Conduct research with selected tools
+<<<<<<< HEAD
             await self.streamer.stream_stage_start(
                 "Stage 3", "Conducting research with selected tools"
             )
             results = await self.mcp_researcher.conduct_research_with_tools(
                 self.query, selected_tools
             )
+=======
+            await self.streamer.stream_stage_start("Stage 3", "Conducting research with selected tools")
+            results = await self.mcp_researcher.conduct_research_with_tools(self.query, selected_tools)
+>>>>>>> 1027e1d0 (Fix linting issues)
 
             # Limit the number of results
             if len(results) > max_results:
@@ -195,12 +217,17 @@ class MCPRetriever:
             logger.info(f"MCPRetriever returning {len(results)} results")
 
             # Calculate total content length for summary
+<<<<<<< HEAD
             total_content_length = sum(
                 len(result.get("body", "")) for result in results
             )
             await self.streamer.stream_research_results(
                 len(results), total_content_length
             )
+=======
+            total_content_length = sum(len(result.get("body", "")) for result in results)
+            await self.streamer.stream_research_results(len(results), total_content_length)
+>>>>>>> 1027e1d0 (Fix linting issues)
 
             # Log detailed content samples for debugging
             if results:
@@ -210,6 +237,7 @@ class MCPRetriever:
                     url = result.get("href", "No URL")
                     content = result.get("body", "")
                     content_length = len(content)
+<<<<<<< HEAD
                     content_sample = (
                         content[:400] + "..." if len(content) > 400 else content
                     )
@@ -228,6 +256,18 @@ class MCPRetriever:
                     logger.debug(
                         f"... and {remaining_results} more results ({remaining_content:,} chars)"
                     )
+=======
+                    content_sample = content[:400] + "..." if len(content) > 400 else content
+
+                    logger.debug(f"Result {i+1}/{len(results)}: '{title}'")
+                    logger.debug(f"URL: {url}")
+                    logger.debug(f"Content ({content_length:,} chars): {content_sample}")
+
+                if len(results) > 3:
+                    remaining_results = len(results) - 3
+                    remaining_content = sum(len(result.get("body", "")) for result in results[3:])
+                    logger.debug(f"... and {remaining_results} more results ({remaining_content:,} chars)")
+>>>>>>> 1027e1d0 (Fix linting issues)
 
             return results
 
@@ -378,4 +418,8 @@ class MCPRetriever:
         except Exception as e:
             logger.error(f"Error getting MCP tools: {e}")
             await self.streamer.stream_error(f"Error getting MCP tools: {e!s}")
+<<<<<<< HEAD
             return []
+=======
+            return []
+>>>>>>> 1027e1d0 (Fix linting issues)

@@ -64,7 +64,12 @@ class MCPResearchSkill:
             }
 
             llm_provider = GenericLLMProvider.from_provider(
+<<<<<<< HEAD
                 self.cfg.strategic_llm_provider, **provider_kwargs
+=======
+                self.cfg.strategic_llm_provider,
+                **provider_kwargs
+>>>>>>> 1027e1d0 (Fix linting issues)
             )
 
             # Bind tools to LLM
@@ -97,9 +102,13 @@ class MCPResearchSkill:
                     tool_name = tool_call.get("name", "unknown")
                     tool_args = tool_call.get("args", {})
 
+<<<<<<< HEAD
                     logger.info(
                         f"Executing tool {i}/{len(response.tool_calls)}: {tool_name}"
                     )
+=======
+                    logger.info(f"Executing tool {i}/{len(response.tool_calls)}: {tool_name}")
+>>>>>>> 1027e1d0 (Fix linting issues)
 
                     # Log the tool arguments for transparency
                     if tool_args:
@@ -123,6 +132,7 @@ class MCPResearchSkill:
                         elif hasattr(tool, "invoke"):
                             result = tool.invoke(tool_args)
                         else:
+<<<<<<< HEAD
                             result = (
                                 await tool(tool_args)
                                 if asyncio.iscoroutinefunction(tool)
@@ -139,15 +149,27 @@ class MCPResearchSkill:
                             logger.debug(
                                 f"Tool {tool_name} response preview: {result_preview}"
                             )
+=======
+                            result = await tool(tool_args) if asyncio.iscoroutinefunction(tool) else tool(tool_args)
+
+                        # Log the actual tool response for debugging
+                        if result:
+                            result_preview = str(result)[:500] + "..." if len(str(result)) > 500 else str(result)
+                            logger.debug(f"Tool {tool_name} response preview: {result_preview}")
+>>>>>>> 1027e1d0 (Fix linting issues)
 
                             # Process the result
                             formatted_results = self._process_tool_result(
                                 tool_name, result
                             )
                             research_results.extend(formatted_results)
+<<<<<<< HEAD
                             logger.info(
                                 f"Tool {tool_name} returned {len(formatted_results)} formatted results"
                             )
+=======
+                            logger.info(f"Tool {tool_name} returned {len(formatted_results)} formatted results")
+>>>>>>> 1027e1d0 (Fix linting issues)
 
                             # Log details of each formatted result
                             for j, formatted_result in enumerate(formatted_results):
@@ -185,9 +207,13 @@ class MCPResearchSkill:
                 logger.debug(f"LLM Analysis: {analysis_preview}")
                 logger.info("Added LLM analysis to results")
 
+<<<<<<< HEAD
             logger.info(
                 f"Research completed with {len(research_results)} total results"
             )
+=======
+            logger.info(f"Research completed with {len(research_results)} total results")
+>>>>>>> 1027e1d0 (Fix linting issues)
             return research_results
 
         except Exception as e:
@@ -259,4 +285,8 @@ class MCPResearchSkill:
             }
             search_results.append(search_result)
 
+<<<<<<< HEAD
         return search_results
+=======
+        return search_results
+>>>>>>> 1027e1d0 (Fix linting issues)

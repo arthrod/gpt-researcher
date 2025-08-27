@@ -14,7 +14,11 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from gpt_researcher.agent import GPTResearcher
+<<<<<<< HEAD
 from gpt_researcher.utils.enum import ReportSource, ReportType, Tone
+=======
+from gpt_researcher.utils.enum import ReportType, ReportSource, Tone
+>>>>>>> 1027e1d0 (Fix linting issues)
 
 from .evaluate import HallucinationEvaluator
 
@@ -46,7 +50,11 @@ class ResearchEvaluator:
         self.queries_file = Path(queries_file)
         self.hallucination_evaluator = HallucinationEvaluator()
 
+<<<<<<< HEAD
     def load_queries(self, num_queries: int | None = None) -> list[str]:
+=======
+    def load_queries(self, num_queries: Optional[int] = None) -> List[str]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """
         Load and optionally sample queries from the JSONL file.
 
@@ -66,7 +74,11 @@ class ResearchEvaluator:
             return random.sample(queries, num_queries)
         return queries
 
+<<<<<<< HEAD
     async def run_research(self, query: str) -> dict:
+=======
+    async def run_research(self, query: str) -> Dict:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """
         Run a single query through GPT-Researcher.
 
@@ -190,9 +202,13 @@ async def main(num_queries: int = 5, output_dir: str = DEFAULT_OUTPUT_DIR):
             continue
 
     # Calculate hallucination rate
+<<<<<<< HEAD
     hallucination_rate = (
         (total_hallucinated / total_evaluated) if total_evaluated > 0 else None
     )
+=======
+    hallucination_rate = (total_hallucinated / total_evaluated) if total_evaluated > 0 else None
+>>>>>>> 1027e1d0 (Fix linting issues)
 
     # Save aggregate results
     aggregate_results = {
@@ -235,4 +251,8 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+<<<<<<< HEAD
     asyncio.run(main(args.num_queries, args.output_dir))
+=======
+    asyncio.run(main(args.num_queries, args.output_dir))
+>>>>>>> 1027e1d0 (Fix linting issues)

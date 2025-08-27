@@ -1,10 +1,15 @@
 """
 Enhanced dual curation system with multi-stage quality assessment and intelligent filtering
 """
+<<<<<<< HEAD
 
 import hashlib
 import logging
 
+=======
+import logging
+from typing import List, Any, Dict, Optional
+>>>>>>> 1027e1d0 (Fix linting issues)
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -45,9 +50,13 @@ class SourceMetadata:
 class DualCuratorManager:
     """Enhanced dual curation manager with comprehensive source assessment."""
 
+<<<<<<< HEAD
     def __init__(
         self, researcher, strategy: CurationStrategy = CurationStrategy.BALANCED
     ):
+=======
+    def __init__(self, researcher, strategy: CurationStrategy = CurationStrategy.BALANCED):
+>>>>>>> 1027e1d0 (Fix linting issues)
         """
         Initialize the dual curator manager.
 
@@ -63,7 +72,11 @@ class DualCuratorManager:
         self.source_metadata: dict[str, SourceMetadata] = {}
         self.quality_thresholds = self._initialize_thresholds()
 
+<<<<<<< HEAD
     def _initialize_thresholds(self) -> dict[str, float]:
+=======
+    def _initialize_thresholds(self) -> Dict[str, float]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Initialize quality thresholds based on strategy."""
         if self.strategy == CurationStrategy.STRICT:
             return {
@@ -92,7 +105,11 @@ class DualCuratorManager:
 
     async def curate_sources(
         self,
+<<<<<<< HEAD
         research_data: list[Any],
+=======
+        research_data: List[Any],
+>>>>>>> 1027e1d0 (Fix linting issues)
         min_sources: int = 3,
         max_sources: int | None = None,
         custom_criteria: dict | None = None,
@@ -132,7 +149,14 @@ class DualCuratorManager:
 
             # Stage 4: Final selection based on strategy
             final_results = await self._final_selection_stage(
+<<<<<<< HEAD
                 stage3_results, min_sources, max_sources, custom_criteria
+=======
+                stage3_results,
+                min_sources,
+                max_sources,
+                custom_criteria
+>>>>>>> 1027e1d0 (Fix linting issues)
             )
 
             # Log curation statistics
@@ -145,16 +169,26 @@ class DualCuratorManager:
             # Fallback to simple curation
             return await self._single_curation(research_data)
 
+<<<<<<< HEAD
     async def _single_curation(self, research_data: list[Any]) -> list[Any]:
+=======
+    async def _single_curation(self, research_data: List[Any]) -> List[Any]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Fallback single curation when dual curation is disabled or fails."""
         try:
             return await self.primary_curator.curate_sources(research_data)
         except Exception as e:
             print(f"Primary curator failed: {e}")
             # Ultimate fallback - return top N sources
+<<<<<<< HEAD
             return research_data[: min(10, len(research_data))]
 
     async def _primary_curation_stage(self, sources: list[Any]) -> list[Any]:
+=======
+            return research_data[:min(10, len(research_data))]
+
+    async def _primary_curation_stage(self, sources: List[Any]) -> List[Any]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """
         Primary curation stage focusing on relevance.
 
@@ -191,7 +225,11 @@ class DualCuratorManager:
 
         return curated
 
+<<<<<<< HEAD
     async def _secondary_curation_stage(self, sources: list[Any]) -> list[Any]:
+=======
+    async def _secondary_curation_stage(self, sources: List[Any]) -> List[Any]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """
         Secondary curation stage focusing on quality and credibility.
 
@@ -231,7 +269,11 @@ class DualCuratorManager:
 
         return curated
 
+<<<<<<< HEAD
     async def _apply_secondary_curator(self, sources: list[Any]) -> list[Any]:
+=======
+    async def _apply_secondary_curator(self, sources: List[Any]) -> List[Any]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Apply external secondary curator if configured."""
         try:
             if hasattr(self.secondary_curator, "curate_sources"):
@@ -247,7 +289,11 @@ class DualCuratorManager:
             logger.error(f"Secondary curator failed: {e}")
             return await self._apply_quality_assessment(sources)
 
+<<<<<<< HEAD
     async def _apply_quality_assessment(self, sources: list[Any]) -> list[Any]:
+=======
+    async def _apply_quality_assessment(self, sources: List[Any]) -> List[Any]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """
         Built-in quality assessment for sources.
 
@@ -265,9 +311,15 @@ class DualCuratorManager:
 
             if source_id in self.source_metadata:
                 metadata = self.source_metadata[source_id]
+<<<<<<< HEAD
                 metadata.quality_score = scores["quality"]
                 metadata.credibility_score = scores["credibility"]
                 metadata.freshness_score = scores["freshness"]
+=======
+                metadata.quality_score = scores['quality']
+                metadata.credibility_score = scores['credibility']
+                metadata.freshness_score = scores['freshness']
+>>>>>>> 1027e1d0 (Fix linting issues)
 
                 # Calculate combined score based on strategy
                 metadata.combined_score = self._calculate_combined_score(metadata)
@@ -276,6 +328,7 @@ class DualCuratorManager:
                 if metadata.combined_score >= self.quality_thresholds["combined"]:
                     assessed_sources.append(source)
                 else:
+<<<<<<< HEAD
                     metadata.rejection_reason = (
                         f"Combined score {metadata.combined_score:.2f} below threshold"
                     )
@@ -283,6 +336,13 @@ class DualCuratorManager:
         return assessed_sources
 
     async def _calculate_quality_scores(self, source: Any) -> dict[str, float]:
+=======
+                    metadata.rejection_reason = f"Combined score {metadata.combined_score:.2f} below threshold"
+
+        return assessed_sources
+
+    async def _calculate_quality_scores(self, source: Any) -> Dict[str, float]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Calculate quality scores for a source."""
         scores = {
             "quality": 0.5,  # Default scores
@@ -306,10 +366,15 @@ class DualCuratorManager:
                 "foundation",
                 "organization",
             ]
+<<<<<<< HEAD
             quality_count = sum(
                 1 for ind in quality_indicators if ind in source_text.lower()
             )
             scores["quality"] = min(1.0, 0.3 + (quality_count * 0.1))
+=======
+            quality_count = sum(1 for ind in quality_indicators if ind in source_text.lower())
+            scores['quality'] = min(1.0, 0.3 + (quality_count * 0.1))
+>>>>>>> 1027e1d0 (Fix linting issues)
 
             # Credibility indicators
             credibility_indicators = [
@@ -322,10 +387,15 @@ class DualCuratorManager:
                 "official",
                 "authoritative",
             ]
+<<<<<<< HEAD
             cred_count = sum(
                 1 for ind in credibility_indicators if ind in source_text.lower()
             )
             scores["credibility"] = min(1.0, 0.4 + (cred_count * 0.15))
+=======
+            cred_count = sum(1 for ind in credibility_indicators if ind in source_text.lower())
+            scores['credibility'] = min(1.0, 0.4 + (cred_count * 0.15))
+>>>>>>> 1027e1d0 (Fix linting issues)
 
             # Freshness (simplified - would need actual date parsing)
             current_year = datetime.now().year
@@ -334,14 +404,22 @@ class DualCuratorManager:
             elif str(current_year - 2) in source_text:
                 scores["freshness"] = 0.7
             else:
+<<<<<<< HEAD
                 scores["freshness"] = 0.5
+=======
+                scores['freshness'] = 0.5
+>>>>>>> 1027e1d0 (Fix linting issues)
 
         except Exception as e:
             logger.debug(f"Error calculating quality scores: {e}")
 
         return scores
 
+<<<<<<< HEAD
     async def _diversity_optimization_stage(self, sources: list[Any]) -> list[Any]:
+=======
+    async def _diversity_optimization_stage(self, sources: List[Any]) -> List[Any]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """
         Optimize source diversity to avoid echo chambers.
 
@@ -365,11 +443,17 @@ class DualCuratorManager:
 
         # Select diverse sources
         diverse_sources = []
+<<<<<<< HEAD
         sources_per_group = (
             max(1, len(sources) // len(source_groups)) if source_groups else 1
         )
 
         for _group_name, group_sources in source_groups.items():
+=======
+        sources_per_group = max(1, len(sources) // len(source_groups)) if source_groups else 1
+
+        for group_name, group_sources in source_groups.items():
+>>>>>>> 1027e1d0 (Fix linting issues)
             # Take top sources from each group
             selected = group_sources[:sources_per_group]
             diverse_sources.extend(selected)
@@ -379,6 +463,7 @@ class DualCuratorManager:
                 source_id = self._get_source_id(source)
                 if source_id in self.source_metadata:
                     # Higher diversity score for sources from smaller groups
+<<<<<<< HEAD
                     self.source_metadata[source_id].diversity_score = 1.0 / len(
                         source_groups
                     )
@@ -386,6 +471,13 @@ class DualCuratorManager:
         return diverse_sources
 
     def _group_sources_by_domain(self, sources: list[Any]) -> dict[str, list[Any]]:
+=======
+                    self.source_metadata[source_id].diversity_score = 1.0 / len(source_groups)
+
+        return diverse_sources
+
+    def _group_sources_by_domain(self, sources: List[Any]) -> Dict[str, List[Any]]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Group sources by domain or type."""
         groups = {}
 
@@ -394,7 +486,11 @@ class DualCuratorManager:
             domain = "general"
             source_str = str(source).lower()
 
+<<<<<<< HEAD
             if any(term in source_str for term in [".edu", "university", "academic"]):
+=======
+            if any(term in source_str for term in ['.edu', 'university', 'academic']):
+>>>>>>> 1027e1d0 (Fix linting issues)
                 domain = "academic"
             elif any(term in source_str for term in [".gov", "government", "official"]):
                 domain = "government"
@@ -469,9 +565,13 @@ class DualCuratorManager:
 
         return selected
 
+<<<<<<< HEAD
     async def _relax_thresholds_and_reselect(
         self, sources: list[Any], min_sources: int
     ):
+=======
+    async def _relax_thresholds_and_reselect(self, sources: List[Any], min_sources: int):
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Relax quality thresholds if minimum sources not met."""
         logger.info("Relaxing thresholds to meet minimum source requirement")
 
@@ -482,6 +582,7 @@ class DualCuratorManager:
         # Re-evaluate sources with relaxed thresholds
         # This would trigger a partial re-curation with new thresholds
 
+<<<<<<< HEAD
     def _apply_custom_criteria(self, sources: list[Any], criteria: dict) -> list[Any]:
         """Apply custom filtering criteria."""
         filtered = sources
@@ -495,6 +596,19 @@ class DualCuratorManager:
             filtered = [
                 s for s in filtered if any(k in str(s).lower() for k in keywords)
             ]
+=======
+    def _apply_custom_criteria(self, sources: List[Any], criteria: Dict) -> List[Any]:
+        """Apply custom filtering criteria."""
+        filtered = sources
+
+        if 'exclude_domains' in criteria:
+            excluded = criteria['exclude_domains']
+            filtered = [s for s in filtered if not any(d in str(s) for d in excluded)]
+
+        if 'require_keywords' in criteria:
+            keywords = criteria['require_keywords']
+            filtered = [s for s in filtered if any(k in str(s).lower() for k in keywords)]
+>>>>>>> 1027e1d0 (Fix linting issues)
 
         return filtered
 
@@ -535,7 +649,11 @@ class DualCuratorManager:
 
         return min(1.0, score)
 
+<<<<<<< HEAD
     def _initialize_source_metadata(self, sources: list[Any]):
+=======
+    def _initialize_source_metadata(self, sources: List[Any]):
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Initialize metadata for all sources."""
         for source in sources:
             source_id = self._get_source_id(source)
@@ -551,7 +669,11 @@ class DualCuratorManager:
         source_str = str(source)
         return hashlib.md5(source_str.encode()).hexdigest()[:16]
 
+<<<<<<< HEAD
     def _extract_url(self, source: Any) -> str | None:
+=======
+    def _extract_url(self, source: Any) -> Optional[str]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Extract URL from source if available."""
         source_str = str(source)
         # Simplified URL extraction
@@ -563,12 +685,20 @@ class DualCuratorManager:
             return source_str[start:end]
         return None
 
+<<<<<<< HEAD
     def _extract_title(self, source: Any) -> str | None:
+=======
+    def _extract_title(self, source: Any) -> Optional[str]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Extract title from source if available."""
         # This would need proper implementation based on source structure
         return None
 
+<<<<<<< HEAD
     def _log_curation_statistics(self, original: list[Any], final: list[Any]):
+=======
+    def _log_curation_statistics(self, original: List[Any], final: List[Any]):
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Log curation statistics for analysis."""
         stats = {
             "timestamp": datetime.now().isoformat(),
@@ -582,12 +712,19 @@ class DualCuratorManager:
         self.curation_history.append(stats)
 
         if self.researcher.verbose:
+<<<<<<< HEAD
             logger.info(
                 f"Curation complete: {stats['original_count']} → {stats['final_count']} sources "
                 f"({stats['reduction_rate']:.1%} reduction)"
             )
 
     def _calculate_stage_metrics(self) -> dict[str, int]:
+=======
+            logger.info(f"Curation complete: {stats['original_count']} → {stats['final_count']} sources "
+                       f"({stats['reduction_rate']:.1%} reduction)")
+
+    def _calculate_stage_metrics(self) -> Dict[str, int]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Calculate metrics for each curation stage."""
         metrics = {
             "uncurated": 0,
@@ -608,7 +745,11 @@ class DualCuratorManager:
         if self.researcher.verbose:
             logger.info(message)
 
+<<<<<<< HEAD
         if hasattr(self.researcher, "websocket") and self.researcher.websocket:
+=======
+        if hasattr(self.researcher, 'websocket') and self.researcher.websocket:
+>>>>>>> 1027e1d0 (Fix linting issues)
             try:
 <<<<<<< HEAD
                 from ..actions.utils import stream_output
@@ -633,7 +774,11 @@ class DualCuratorManager:
         self.strategy = strategy
         self.quality_thresholds = self._initialize_thresholds()
 
+<<<<<<< HEAD
     def get_curation_report(self) -> dict[str, Any]:
+=======
+    def get_curation_report(self) -> Dict[str, Any]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Get comprehensive curation report."""
         return {
             "total_sources_processed": len(self.source_metadata),
@@ -643,7 +788,11 @@ class DualCuratorManager:
             "curation_history": self.curation_history[-10:],  # Last 10 curations
         }
 
+<<<<<<< HEAD
     def _calculate_average_scores(self) -> dict[str, float]:
+=======
+    def _calculate_average_scores(self) -> Dict[str, float]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Calculate average scores across all sources."""
         if not self.source_metadata:
             return {}
@@ -658,6 +807,7 @@ class DualCuratorManager:
 
         count = len(self.source_metadata)
         for metadata in self.source_metadata.values():
+<<<<<<< HEAD
             totals["relevance"] += metadata.relevance_score
             totals["quality"] += metadata.quality_score
             totals["credibility"] += metadata.credibility_score
@@ -667,6 +817,17 @@ class DualCuratorManager:
         return {k: v / count for k, v in totals.items()}
 
     def _get_rejection_summary(self) -> dict[str, int]:
+=======
+            totals['relevance'] += metadata.relevance_score
+            totals['quality'] += metadata.quality_score
+            totals['credibility'] += metadata.credibility_score
+            totals['freshness'] += metadata.freshness_score
+            totals['combined'] += metadata.combined_score
+
+        return {k: v / count for k, v in totals.items()}
+
+    def _get_rejection_summary(self) -> Dict[str, int]:
+>>>>>>> 1027e1d0 (Fix linting issues)
         """Get summary of rejection reasons."""
         reasons = {}
         for metadata in self.source_metadata.values():

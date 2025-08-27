@@ -189,8 +189,11 @@ The response should contain ONLY the list.
         reference_prompt = ""
         if report_source == ReportSource.Web.value:
             reference_prompt = """
+<<<<<<< HEAD
 You MUST write all used source urls at the end of the report as references, each preceded by its id in square brackets (e.g., [1]).
             reference_prompt = f"""
+=======
+>>>>>>> 1027e1d0 (Fix linting issues)
 You MUST write all used source urls at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each.
 Every url should be hyperlinked: [url website](url)
 Additionally, you MUST include hyperlinks to the relevant URLs wherever they are referenced in the report:
@@ -290,7 +293,11 @@ The response MUST not contain any markdown format or additional text (like ```js
             """
         else:
             reference_prompt = """
+<<<<<<< HEAD
             You MUST write all used source document names at the end of the report as references, each preceded by its id in square brackets, and make sure to not add duplicated sources."
+=======
+            You MUST write all used source document names at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each."
+>>>>>>> 1027e1d0 (Fix linting issues)
         """
 
         return (
@@ -370,7 +377,11 @@ The response MUST not contain any markdown format or additional text (like ```js
         reference_prompt = ""
         if report_source == ReportSource.Web.value:
             reference_prompt = """
+<<<<<<< HEAD
 You MUST write all used source urls at the end of the report as references, each preceded by its id in square brackets (e.g., [1]).
+=======
+You MUST write all used source urls at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each.
+>>>>>>> 1027e1d0 (Fix linting issues)
 Every url should be hyperlinked: [url website](url)
 Additionally, you MUST include hyperlinks to the relevant URLs wherever they are referenced in the report:
 
@@ -378,7 +389,11 @@ eg: Author, A. A. (Year, Month Date). Title of web page. Website Name. [url webs
 """
         else:
             reference_prompt = """
+<<<<<<< HEAD
 You MUST write all used source document names at the end of the report as references, each preceded by its id in square brackets, and make sure to not add duplicated sources."
+=======
+You MUST write all used source document names at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each."
+>>>>>>> 1027e1d0 (Fix linting issues)
 """
 
         tone_prompt = f"Write the report in a {tone.value} tone." if tone else ""
@@ -462,6 +477,7 @@ response:
     @staticmethod
     def pretty_print_docs(docs: list[Document], top_n: int | None = None) -> str:
         """Compress the list of documents into a context string"""
+<<<<<<< HEAD
         return "\n".join(
             f"Source: {d.metadata.get('source')}\n"
             f"Title: {d.metadata.get('title')}\n"
@@ -469,6 +485,13 @@ response:
             for i, d in enumerate(docs)
             if top_n is None or i < top_n
         )
+=======
+        return "\n".join(f"Source: {d.metadata.get('source')}\n"
+                          f"Title: {d.metadata.get('title')}\n"
+                          f"Content: {d.page_content}\n"
+                          for i, d in enumerate(docs)
+                          if top_n is None or i < top_n)
+>>>>>>> 1027e1d0 (Fix linting issues)
 
     @staticmethod
     def join_local_web_documents(docs_context: str, web_context: str) -> str:

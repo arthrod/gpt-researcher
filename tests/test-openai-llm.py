@@ -1,5 +1,9 @@
 import asyncio
+<<<<<<< HEAD
 
+=======
+from gpt_researcher.utils.llm import get_llm
+>>>>>>> 1027e1d0 (Fix linting issues)
 from dotenv import load_dotenv
 
 from gpt_researcher.utils.llm import get_llm

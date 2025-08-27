@@ -14,6 +14,10 @@ from .actions import (
 )
 from .config import Config
 from .memory import Memory
+<<<<<<< HEAD
+=======
+from .utils.enum import ReportSource, ReportType, Tone
+>>>>>>> 1027e1d0 (Fix linting issues)
 from .prompts import get_prompt_family
 from .skills.browser import BrowserManager
 from .skills.context_manager import ContextManager
@@ -144,9 +148,13 @@ class GPTResearcher:
         self.headers = headers or {}
         self.research_costs = 0.0
         self.log_handler = log_handler
+<<<<<<< HEAD
         self.prompt_family = get_prompt_family(
             prompt_family or self.cfg.prompt_family, self.cfg
         )
+=======
+        self.prompt_family = get_prompt_family(prompt_family or self.cfg.prompt_family, self.cfg)
+>>>>>>> 1027e1d0 (Fix linting issues)
 
         # Process MCP configurations if provided
         self.mcp_configs = mcp_configs
@@ -226,10 +234,14 @@ class GPTResearcher:
         # Priority 2: Convert mcp_max_iterations for backwards compatibility
         if mcp_max_iterations is not None:
             import logging
+<<<<<<< HEAD
 
             logging.getLogger(__name__).warning(
                 "mcp_max_iterations is deprecated, use mcp_strategy instead"
             )
+=======
+            logging.getLogger(__name__).warning("mcp_max_iterations is deprecated, use mcp_strategy instead")
+>>>>>>> 1027e1d0 (Fix linting issues)
 
             if mcp_max_iterations == 0:
                 return "disabled"

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 from typing import ClassVar
+=======
+from typing import Dict, List
+>>>>>>> 1027e1d0 (Fix linting issues)
 
 from langchain.callbacks.manager import CallbackManagerForRetrieverRun
 from langchain.schema import Document

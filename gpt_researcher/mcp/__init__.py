@@ -23,15 +23,22 @@ try:
     from .client import MCPClientManager
     from .research import MCPResearchSkill
     from .streaming import MCPStreamer
+<<<<<<< HEAD
     from .tool_selector import MCPToolSelector
+=======
+>>>>>>> 1027e1d0 (Fix linting issues)
 
     __all__ = [
         "HAS_MCP_ADAPTERS",
         "MCPClientManager",
         "MCPResearchSkill",
         "MCPStreamer",
+<<<<<<< HEAD
         "MCPToolSelector",
         "MultiServerMCPClient",
+=======
+        "MCPToolSelector"
+>>>>>>> 1027e1d0 (Fix linting issues)
     ]
 
 except ImportError as e:
@@ -42,4 +49,8 @@ except ImportError as e:
 except Exception as e:
     logger.error(f"Unexpected error importing MCP components: {e}")
     HAS_MCP_ADAPTERS = False
+<<<<<<< HEAD
     __all__ = ["HAS_MCP_ADAPTERS"]
+=======
+    __all__ = ["HAS_MCP_ADAPTERS"]
+>>>>>>> 1027e1d0 (Fix linting issues)

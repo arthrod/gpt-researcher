@@ -29,7 +29,11 @@ async def main():
             print("Setting default embedding provider: openai")
             cfg.embedding_provider = "openai"
 
+<<<<<<< HEAD
         if not hasattr(cfg, "embedding_model") or not cfg.embedding_model:
+=======
+        if not hasattr(cfg, 'embedding_model') or not cfg.embedding_model:
+>>>>>>> 1027e1d0 (Fix linting issues)
             print("Setting default embedding model: text-embedding-3-small")
             cfg.embedding_model = "text-embedding-3-small"
 

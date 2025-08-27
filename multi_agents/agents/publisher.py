@@ -11,9 +11,13 @@ class PublisherAgent:
         self.output_dir = output_dir.strip()
         self.headers = headers or {}
 
+<<<<<<< HEAD
     async def publish_research_report(
         self, research_state: dict, publish_formats: dict
     ):
+=======
+    async def publish_research_report(self, research_state: dict, publish_formats: dict):
+>>>>>>> 1027e1d0 (Fix linting issues)
         layout = self.generate_layout(research_state)
         await self.write_report_by_formats(layout, publish_formats)
 
@@ -30,10 +34,15 @@ class PublisherAgent:
                 # Handle string case
                 sections.append(f"{subheader}")
 
+<<<<<<< HEAD
         sections_text = "\n\n".join(sections)
         references = "\n".join(
             f"{reference}" for reference in research_state.get("sources", [])
         )
+=======
+        sections_text = '\n\n'.join(sections)
+        references = '\n'.join(f"{reference}" for reference in research_state.get("sources", []))
+>>>>>>> 1027e1d0 (Fix linting issues)
         headers = research_state.get("headers", {})
         layout = f"""# {headers.get("title")}
 #### {headers.get("date")}: {research_state.get("date")}
@@ -66,12 +75,16 @@ class PublisherAgent:
         task = research_state.get("task")
         publish_formats = task.get("publish_formats")
         if self.websocket and self.stream_output:
+<<<<<<< HEAD
             await self.stream_output(
                 "logs",
                 "publishing",
                 "Publishing final research report based on retrieved data...",
                 self.websocket,
             )
+=======
+            await self.stream_output("logs", "publishing", "Publishing final research report based on retrieved data...", self.websocket)
+>>>>>>> 1027e1d0 (Fix linting issues)
         else:
             print_agent_output(
                 output="Publishing final research report based on retrieved data...",

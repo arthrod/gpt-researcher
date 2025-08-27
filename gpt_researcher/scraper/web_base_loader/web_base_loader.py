@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+from bs4 import BeautifulSoup
+>>>>>>> 1027e1d0 (Fix linting issues)
 import requests
 
 from bs4 import BeautifulSoup

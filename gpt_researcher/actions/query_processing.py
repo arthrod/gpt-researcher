@@ -86,9 +86,13 @@ async def generate_sub_queries(
             **kwargs,
         )
     except Exception as e:
+<<<<<<< HEAD
         logger.warning(
             f"Error with strategic LLM: {e}. Retrying with max_tokens={cfg.strategic_token_limit}."
         )
+=======
+        logger.warning(f"Error with strategic LLM: {e}. Retrying with max_tokens={cfg.strategic_token_limit}.")
+>>>>>>> 1027e1d0 (Fix linting issues)
         logger.warning("See https://github.com/assafelovic/gpt-researcher/issues/1022")
         try:
             response = await create_chat_completion(
@@ -155,12 +159,18 @@ async def plan_research_outline(
 
     # For MCP retrievers, we may want to skip sub-query generation
     # Check if MCP is the only retriever or one of multiple retrievers
+<<<<<<< HEAD
     if retriever_names and (
         "mcp" in retriever_names or "MCPRetriever" in retriever_names
     ):
         mcp_only = len(retriever_names) == 1 and (
             "mcp" in retriever_names or "MCPRetriever" in retriever_names
         )
+=======
+    if retriever_names and ("mcp" in retriever_names or "MCPRetriever" in retriever_names):
+        mcp_only = (len(retriever_names) == 1 and
+                   ("mcp" in retriever_names or "MCPRetriever" in retriever_names))
+>>>>>>> 1027e1d0 (Fix linting issues)
 
         if mcp_only:
             # If MCP is the only retriever, skip sub-query generation

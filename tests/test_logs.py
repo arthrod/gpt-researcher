@@ -49,4 +49,8 @@ def test_logs_creation():
 
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     test_logs_creation()
+=======
+    test_logs_creation()
+>>>>>>> 1027e1d0 (Fix linting issues)

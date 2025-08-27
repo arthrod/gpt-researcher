@@ -125,10 +125,15 @@ class Config:
             try:
                 self.validate_doc_path()
             except Exception as e:
+<<<<<<< HEAD
                 print(
                     f"Warning: Error validating doc_path: {e!s}. Using default doc_path."
                 )
                 self.doc_path = DEFAULT_CONFIG["DOC_PATH"]
+=======
+                print(f"Warning: Error validating doc_path: {e!s}. Using default doc_path.")
+                self.doc_path = DEFAULT_CONFIG['DOC_PATH']
+>>>>>>> 1027e1d0 (Fix linting issues)
 
     @classmethod
     def load_config(cls, config_path: str | None) -> dict[str, Any]:
@@ -167,7 +172,12 @@ class Config:
         """Parse the retriever string into a list of retrievers and validate them."""
         from ..retrievers.utils import get_all_retriever_names
 
+<<<<<<< HEAD
         retrievers = [retriever.strip() for retriever in retriever_str.split(",")]
+=======
+        retrievers = [retriever.strip()
+                      for retriever in retriever_str.split(",")]
+>>>>>>> 1027e1d0 (Fix linting issues)
         valid_retrievers = get_all_retriever_names() or []
         invalid_retrievers = [r for r in retrievers if r not in valid_retrievers]
         if invalid_retrievers:
@@ -285,4 +295,8 @@ class Config:
             if isinstance(server, dict) and server.get("name") == name:
                 return server
 
+<<<<<<< HEAD
         return {}
+=======
+        return {}
+>>>>>>> 1027e1d0 (Fix linting issues)

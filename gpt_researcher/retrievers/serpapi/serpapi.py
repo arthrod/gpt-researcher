@@ -6,7 +6,10 @@ import urllib.parse
 
 import requests
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1027e1d0 (Fix linting issues)
 class SerpApiSearch:
     """
     SerpApi Retriever

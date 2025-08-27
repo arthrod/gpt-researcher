@@ -42,7 +42,11 @@ def get_relevant_images(soup: BeautifulSoup, url: str) -> list:
 
     try:
         # Find all img tags with src attribute
+<<<<<<< HEAD
         all_images = soup.find_all("img", src=True)
+=======
+        all_images = soup.find_all('img', src=True)
+>>>>>>> 1027e1d0 (Fix linting issues)
 
         for img in all_images:
             img_src = urljoin(url, img["src"])
@@ -77,10 +81,17 @@ def get_relevant_images(soup: BeautifulSoup, url: str) -> list:
                         else:
                             continue  # Skip small images
 
+<<<<<<< HEAD
                 image_urls.append({"url": img_src, "score": score})
 
         # Sort images by score (highest first)
         sorted_images = sorted(image_urls, key=lambda x: x["score"], reverse=True)
+=======
+                image_urls.append({'url': img_src, 'score': score})
+
+        # Sort images by score (highest first)
+        sorted_images = sorted(image_urls, key=lambda x: x['score'], reverse=True)
+>>>>>>> 1027e1d0 (Fix linting issues)
 
         return sorted_images[:10]  # Ensure we don't return more than 10 images in total
 
@@ -111,6 +122,7 @@ def get_image_hash(image_url: str) -> str:
         parsed_url = urlparse(image_url)
 
         # Extract the filename
+<<<<<<< HEAD
         filename = parsed_url.path.split("/")[-1]
 
         # Extract essential query parameters (e.g., 'url' for CDN-served images)
@@ -119,6 +131,16 @@ def get_image_hash(image_url: str) -> str:
 
         # Combine filename and essential parameters
         image_identifier = filename + "".join(essential_params)
+=======
+        filename = parsed_url.path.split('/')[-1]
+
+        # Extract essential query parameters (e.g., 'url' for CDN-served images)
+        query_params = parse_qs(parsed_url.query)
+        essential_params = query_params.get('url', [])
+
+        # Combine filename and essential parameters
+        image_identifier = filename + ''.join(essential_params)
+>>>>>>> 1027e1d0 (Fix linting issues)
 
         # Calculate hash
         return hashlib.md5(image_identifier.encode()).hexdigest()

@@ -1,5 +1,8 @@
 from .utils.llms import call_model
+<<<<<<< HEAD
 from .utils.views import print_agent_output
+=======
+>>>>>>> 1027e1d0 (Fix linting issues)
 
 sample_revision_notes = """
 {

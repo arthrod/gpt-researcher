@@ -1,6 +1,10 @@
 import asyncio
+<<<<<<< HEAD
 import contextlib
 import logging
+=======
+from typing import Dict, List
+>>>>>>> 1027e1d0 (Fix linting issues)
 
 from fastapi import WebSocket
 
@@ -103,6 +107,7 @@ class WebSocketManager:
 
         # Pass MCP parameters to run_agent
         report = await run_agent(
+<<<<<<< HEAD
             task,
             report_type,
             report_source,
@@ -116,6 +121,11 @@ class WebSocketManager:
             mcp_enabled=mcp_enabled,
             mcp_strategy=mcp_strategy,
             mcp_configs=mcp_configs,
+=======
+            task, report_type, report_source, source_urls, document_urls, tone, websocket,
+            headers=headers, query_domains=query_domains, config_path=config_path,
+            mcp_enabled=mcp_enabled, mcp_strategy=mcp_strategy, mcp_configs=mcp_configs
+>>>>>>> 1027e1d0 (Fix linting issues)
         )
 
         # Create new Chat Agent whenever a new report is written
@@ -132,6 +142,7 @@ class WebSocketManager:
                 "content": "Knowledge empty, please run the research first to obtain knowledge",
             })
 
+<<<<<<< HEAD
 
 async def run_agent(
     task,
@@ -150,6 +161,9 @@ async def run_agent(
     mcp_strategy="fast",
     mcp_configs=None,
 ):
+=======
+async def run_agent(task, report_type, report_source, source_urls, document_urls, tone: Tone, websocket, stream_output=stream_output, headers=None, query_domains=[], config_path="", return_researcher=False, mcp_enabled=False, mcp_strategy="fast", mcp_configs=[]):
+>>>>>>> 1027e1d0 (Fix linting issues)
     """Run the agent."""
     # Create logs handler for this research task
     if mcp_configs is None:
@@ -170,9 +184,13 @@ async def run_agent(
         # Set MCP strategy
         os.environ["MCP_STRATEGY"] = mcp_strategy
 
+<<<<<<< HEAD
         print(
             f"🔧 MCP enabled with strategy '{mcp_strategy}' and {len(mcp_configs)} server(s)"
         )
+=======
+        print(f"🔧 MCP enabled with strategy '{mcp_strategy}' and {len(mcp_configs)} server(s)")
+>>>>>>> 1027e1d0 (Fix linting issues)
         await logs_handler.send_json({
             "type": "logs",
             "content": "mcp_init",
@@ -186,7 +204,11 @@ async def run_agent(
             websocket=logs_handler,  # Use logs_handler instead of raw websocket
             stream_output=stream_output,
             tone=tone,
+<<<<<<< HEAD
             headers=headers,
+=======
+            headers=headers
+>>>>>>> 1027e1d0 (Fix linting issues)
         )
         report = report.get("report", "")
 

@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+=======
+import pytest
+from pathlib import Path
+import sys
+>>>>>>> 1027e1d0 (Fix linting issues)
 import logging
 import sys
 
@@ -71,4 +77,8 @@ async def test_researcher_logging():  # Renamed function to be more specific
 
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     pytest.main([__file__])
+=======
+    pytest.main([__file__])
+>>>>>>> 1027e1d0 (Fix linting issues)

@@ -90,10 +90,15 @@ def get_all_retriever_names():
 
         # Filter out only the directories, excluding __pycache__
         retrievers = [
+<<<<<<< HEAD
             item
             for item in all_items
             if os.path.isdir(os.path.join(current_dir, item))
             and not item.startswith("__")
+=======
+            item for item in all_items
+            if os.path.isdir(os.path.join(current_dir, item)) and not item.startswith('__')
+>>>>>>> 1027e1d0 (Fix linting issues)
         ]
 
         return retrievers

@@ -1,3 +1,10 @@
+<<<<<<< HEAD
+=======
+import pytest
+from unittest.mock import AsyncMock
+from backend.server.server_utils import CustomLogsHandler
+import os
+>>>>>>> 1027e1d0 (Fix linting issues)
 import json
 import os
 
@@ -21,7 +28,14 @@ async def test_custom_logs_handler():
     assert os.path.exists(handler.log_file)
 
     # Test sending log data
+<<<<<<< HEAD
     test_data = {"type": "logs", "message": "Test log message"}
+=======
+    test_data = {
+        "type": "logs",
+        "message": "Test log message"
+    }
+>>>>>>> 1027e1d0 (Fix linting issues)
 
     await handler.send_json(test_data)
 
@@ -31,9 +45,14 @@ async def test_custom_logs_handler():
     # Verify log file contents
     with open(handler.log_file) as f:
         log_data = json.load(f)
+<<<<<<< HEAD
         assert len(log_data["events"]) == 1
         assert log_data["events"][0]["data"] == test_data
 
+=======
+        assert len(log_data['events']) == 1
+        assert log_data['events'][0]['data'] == test_data
+>>>>>>> 1027e1d0 (Fix linting issues)
 
 @pytest.mark.asyncio
 async def test_content_update():

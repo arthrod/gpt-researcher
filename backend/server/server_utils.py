@@ -6,6 +6,7 @@ import re
 import shutil
 import time
 import traceback
+<<<<<<< HEAD
 
 from collections.abc import Awaitable
 from datetime import datetime
@@ -18,6 +19,15 @@ from gpt_researcher import GPTResearcher
 from gpt_researcher.actions import stream_output
 from gpt_researcher.document.document import DocumentLoader
 from multi_agents.main import run_research_task
+=======
+from typing import Awaitable, Dict, Any
+from fastapi.responses import JSONResponse
+from gpt_researcher.document.document import DocumentLoader
+from gpt_researcher import GPTResearcher
+from backend.utils import write_md_to_pdf, write_md_to_word, write_text_to_md
+from datetime import datetime
+import logging
+>>>>>>> 1027e1d0 (Fix linting issues)
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -70,7 +80,11 @@ class CustomLogsHandler:
             })
         else:
             # Update content section for other types of data
+<<<<<<< HEAD
             log_data["content"].update(data)
+=======
+            log_data['content'].update(data)
+>>>>>>> 1027e1d0 (Fix linting issues)
 
         # Save updated log file
         with open(self.log_file, "w") as f:
@@ -112,6 +126,7 @@ class Researcher:
 
 def sanitize_filename(filename: str) -> str:
     # Split into components
+<<<<<<< HEAD
     prefix, timestamp, *task_parts = filename.split("_")
     task = "_".join(task_parts)
 
@@ -120,6 +135,14 @@ def sanitize_filename(filename: str) -> str:
     max_task_length = (
         255 - len(os.getcwd()) - 24 - 5 - 10 - 6 - 5
     )  # ~189 chars for task
+=======
+    prefix, timestamp, *task_parts = filename.split('_')
+    task = '_'.join(task_parts)
+
+    # Calculate max length for task portion
+    # 255 - len(os.getcwd()) - len("\\gpt-researcher\\outputs\\") - len("task_") - len(timestamp) - len("_.json") - safety_margin
+    max_task_length = 255 - len(os.getcwd()) - 24 - 5 - 10 - 6 - 5  # ~189 chars for task
+>>>>>>> 1027e1d0 (Fix linting issues)
 
     # Truncate task if needed (by bytes)
     truncated_task = ""
@@ -158,7 +181,11 @@ async def handle_start_command(websocket, data: str, manager):
         await websocket.send_json({
             "type": "logs",
             "content": "error",
+<<<<<<< HEAD
             "output": f"Missing required parameters - task: {task}, report_type: {report_type}",
+=======
+            "output": f"Missing required parameters - task: {task}, report_type: {report_type}"
+>>>>>>> 1027e1d0 (Fix linting issues)
         })
         return
 
