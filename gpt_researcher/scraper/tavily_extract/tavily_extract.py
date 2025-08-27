@@ -1,13 +1,16 @@
-from bs4 import BeautifulSoup
 import os
-from ..utils import get_relevant_images, extract_title
+
+from bs4 import BeautifulSoup
+
+from ..utils import extract_title, get_relevant_images
+
 
 class TavilyExtract:
-
     def __init__(self, link, session=None):
         self.link = link
         self.session = session
         from tavily import TavilyClient
+
         self.tavily_client = TavilyClient(api_key=self.get_api_key())
 
     def get_api_key(self) -> str:
@@ -20,7 +23,8 @@ class TavilyExtract:
             api_key = os.environ["TAVILY_API_KEY"]
         except KeyError:
             raise Exception(
-                "Tavily API key not found. Please set the TAVILY_API_KEY environment variable.")
+                "Tavily API key not found. Please set the TAVILY_API_KEY environment variable."
+            )
         return api_key
 
     def scrape(self) -> tuple:
@@ -37,7 +41,7 @@ class TavilyExtract:
 
         try:
             response = self.tavily_client.extract(urls=self.link)
-            if response['failed_results']:
+            if response["failed_results"]:
                 return "", [], ""
 
             # Parse the HTML content of the response to create a BeautifulSoup object for the utility functions
@@ -47,7 +51,7 @@ class TavilyExtract:
             )
 
             # Since only a single link is provided to tavily_client, the results will contain only one entry.
-            content = response['results'][0]['raw_content']
+            content = response["results"][0]["raw_content"]
 
             # Get relevant images using the utility function
             image_urls = get_relevant_images(soup, self.link)

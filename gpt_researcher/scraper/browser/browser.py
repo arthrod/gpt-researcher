@@ -1,23 +1,30 @@
 from __future__ import annotations
 
-import traceback
+import os
 import pickle
-from pathlib import Path
-from sys import platform
-import time
 import random
 import string
-import os
+import time
+import traceback
+
+from pathlib import Path
+from sys import platform
 
 from bs4 import BeautifulSoup
 
+<<<<<<< HEAD
 from .processing.scrape_skills import (scrape_pdf_with_pymupdf,
                                        scrape_pdf_with_arxiv)
 
 
 from ..utils import get_relevant_images, extract_title, get_text_from_soup, clean_soup
+=======
+from ..utils import clean_soup, extract_title, get_relevant_images, get_text_from_soup
+from .processing.scrape_skills import scrape_pdf_with_arxiv, scrape_pdf_with_pymupdf
+>>>>>>> newdev
 
 FILE_DIR = Path(__file__).parent.parent
+
 
 class BrowserScraper:
     def __init__(self, url: str, session=None):
@@ -25,9 +32,11 @@ class BrowserScraper:
         self.session = session
         self.selenium_web_browser = "chrome"
         self.headless = False
-        self.user_agent = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                           "AppleWebKit/537.36 (KHTML, like Gecko) "
-                           "Chrome/128.0.0.0 Safari/537.36")
+        self.user_agent = (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/128.0.0.0 Safari/537.36"
+        )
         self.driver = None
         self.use_browser_cookies = False
         self._import_selenium()  # Import only if used to avoid unnecessary dependencies
@@ -43,7 +52,11 @@ class BrowserScraper:
         """
         if not self.url:
             print("URL not specified")
-            return "A URL was not specified, cancelling request to browse website.", [], ""
+            return (
+                "A URL was not specified, cancelling request to browse website.",
+                [],
+                "",
+            )
 
         try:
             self.setup_driver()
@@ -57,7 +70,15 @@ class BrowserScraper:
             print(f"An error occurred during scraping: {e!s}")
             print("Full stack trace:")
             print(traceback.format_exc())
+<<<<<<< HEAD
             return f"An error occurred: {e!s}\n\nStack trace:\n{traceback.format_exc()}", [], ""
+=======
+            return (
+                f"An error occurred: {e!s}\n\nStack trace:\n{traceback.format_exc()}",
+                [],
+                "",
+            )
+>>>>>>> newdev
         finally:
             if self.driver:
                 self.driver.quit()
@@ -73,12 +94,18 @@ class BrowserScraper:
         If Selenium is not installed, prints brief installation guidance and re-raises ImportError with a descriptive message.
         """
         try:
-            global webdriver, By, EC, WebDriverWait, TimeoutException, WebDriverException
+            global \
+                webdriver, \
+                By, \
+                EC, \
+                WebDriverWait, \
+                TimeoutException, \
+                WebDriverException
             from selenium import webdriver
+            from selenium.common.exceptions import TimeoutException, WebDriverException
             from selenium.webdriver.common.by import By
             from selenium.webdriver.support import expected_conditions as EC
             from selenium.webdriver.support.wait import WebDriverWait
-            from selenium.common.exceptions import TimeoutException, WebDriverException
 
             global ChromeOptions, FirefoxOptions, SafariOptions
             from selenium.webdriver.chrome.options import Options as ChromeOptions
@@ -91,7 +118,8 @@ class BrowserScraper:
             print("    pip install selenium")
             print("If you're using a virtual environment, make sure it's activated.")
             raise ImportError(
-                "Selenium is required but not installed. See error message above for installation instructions.") from e
+                "Selenium is required but not installed. See error message above for installation instructions."
+            ) from e
 
     def setup_driver(self) -> None:
         # print(f"Setting up {self.selenium_web_browser} driver...")
@@ -144,7 +172,8 @@ class BrowserScraper:
         """Load saved cookies before visiting the target URL"""
         cookie_file = Path(self.cookie_filename)
         if cookie_file.exists():
-            cookies = pickle.load(open(self.cookie_filename, "rb"))
+            with open(self.cookie_filename, "rb") as f:
+                cookies = pickle.load(f)
             for cookie in cookies:
                 self.driver.add_cookie(cookie)
         else:
@@ -169,7 +198,11 @@ class BrowserScraper:
             return
 
         for cookie in cookies:
-            self.driver.add_cookie({'name': cookie.name, 'value': cookie.value, 'domain': cookie.domain})
+            self.driver.add_cookie({
+                "name": cookie.name,
+                "value": cookie.value,
+                "domain": cookie.domain,
+            })
 
     def _cleanup_cookie_file(self):
         """
@@ -210,7 +243,8 @@ class BrowserScraper:
 
             # Save cookies to a file
             cookies = self.driver.get_cookies()
-            pickle.dump(cookies, open(self.cookie_filename, "wb"))
+            with open(self.cookie_filename, "wb") as f:
+                pickle.dump(cookies, f)
 
             # print("Google cookies saved successfully.")
         except Exception as e:
@@ -271,7 +305,9 @@ class BrowserScraper:
         """Scroll to the bottom of the page to load all content"""
         last_height = self.driver.execute_script("return document.body.scrollHeight")
         while True:
-            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            self.driver.execute_script(
+                "window.scrollTo(0, document.body.scrollHeight);"
+            )
             time.sleep(2)  # Wait for content to load
             new_height = self.driver.execute_script("return document.body.scrollHeight")
             if new_height == last_height:
@@ -282,8 +318,11 @@ class BrowserScraper:
         """Scroll to a percentage of the page"""
         if ratio < 0 or ratio > 1:
             raise ValueError("Percentage should be between 0 and 1")
-        self.driver.execute_script(f"window.scrollTo(0, document.body.scrollHeight * {ratio});")
+        self.driver.execute_script(
+            f"window.scrollTo(0, document.body.scrollHeight * {ratio});"
+        )
 
     def _add_header(self) -> None:
         """Add a header to the website"""
-        self.driver.execute_script(open(f"{FILE_DIR}/browser/js/overlay.js", "r").read())
+        with open(f"{FILE_DIR}/browser/js/overlay.js") as f:
+            self.driver.execute_script(f.read())

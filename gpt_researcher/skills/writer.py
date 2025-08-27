@@ -1,13 +1,13 @@
 import json
 
-from ..utils.llm import construct_subtopics
 from ..actions import (
-    stream_output,
-    generate_report,
     generate_draft_section_titles,
+    generate_report,
+    stream_output,
+    write_conclusion,
     write_report_introduction,
-    write_conclusion
 )
+from ..utils.llm import construct_subtopics
 
 
 class ReportGenerator:
@@ -26,7 +26,13 @@ class ReportGenerator:
             "headers": self.researcher.headers,
         }
 
-    async def write_report(self, existing_headers: list = [], relevant_written_contents: list = [], ext_context=None, custom_prompt="") -> str:
+    async def write_report(
+        self,
+        existing_headers: list | None = None,
+        relevant_written_contents: list | None = None,
+        ext_context=None,
+        custom_prompt="",
+    ) -> str:
         """
         Write a report based on existing headers and relevant contents.
 
@@ -40,6 +46,10 @@ class ReportGenerator:
             str: The generated report.
         """
         # send the selected images prior to writing report
+        if relevant_written_contents is None:
+            relevant_written_contents = []
+        if existing_headers is None:
+            existing_headers = []
         research_images = self.researcher.get_research_images()
         if research_images:
             await stream_output(
@@ -48,7 +58,7 @@ class ReportGenerator:
                 json.dumps(research_images),
                 self.researcher.websocket,
                 True,
-                research_images
+                research_images,
             )
 
         context = ext_context or self.researcher.context
@@ -75,6 +85,20 @@ class ReportGenerator:
             report_params["cost_callback"] = self.researcher.add_costs
 
         report = await generate_report(**report_params, **self.researcher.kwargs)
+
+        if (
+            getattr(self.researcher.cfg, "append_sources", False)
+            and self.researcher.research_sources
+        ):
+            lines = ["", "", "Sources:", ""]
+            for src in self.researcher.research_sources:
+                url = src.get("url", "")
+                title = src.get("title") or url
+                src_id = src.get("id")
+                if not url or src_id is None:
+                    continue
+                lines.append(f"[{src_id}] {title} - {url}")
+            report = report.rstrip() + "\n" + "\n".join(lines) + "\n"
 
         if self.researcher.verbose:
             await stream_output(
@@ -112,7 +136,7 @@ class ReportGenerator:
             cost_callback=self.researcher.add_costs,
             websocket=self.researcher.websocket,
             prompt_family=self.researcher.prompt_family,
-            **self.researcher.kwargs
+            **self.researcher.kwargs,
         )
 
         if self.researcher.verbose:
@@ -143,7 +167,7 @@ class ReportGenerator:
             websocket=self.researcher.websocket,
             cost_callback=self.researcher.add_costs,
             prompt_family=self.researcher.prompt_family,
-            **self.researcher.kwargs
+            **self.researcher.kwargs,
         )
 
         if self.researcher.verbose:
@@ -172,7 +196,7 @@ class ReportGenerator:
             config=self.researcher.cfg,
             subtopics=self.researcher.subtopics,
             prompt_family=self.researcher.prompt_family,
-            **self.researcher.kwargs
+            **self.researcher.kwargs,
         )
 
         if self.researcher.verbose:
@@ -204,7 +228,7 @@ class ReportGenerator:
             config=self.researcher.cfg,
             cost_callback=self.researcher.add_costs,
             prompt_family=self.researcher.prompt_family,
-            **self.researcher.kwargs
+            **self.researcher.kwargs,
         )
 
         if self.researcher.verbose:

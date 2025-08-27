@@ -1,8 +1,19 @@
+<<<<<<< HEAD
 import pytest
 from unittest.mock import AsyncMock
 from backend.server.server_utils import CustomLogsHandler
 import os
+=======
+>>>>>>> newdev
 import json
+import os
+
+from unittest.mock import AsyncMock
+
+import pytest
+
+from backend.server.server_utils import CustomLogsHandler
+
 
 @pytest.mark.asyncio
 async def test_custom_logs_handler():
@@ -17,10 +28,14 @@ async def test_custom_logs_handler():
     assert os.path.exists(handler.log_file)
 
     # Test sending log data
+<<<<<<< HEAD
     test_data = {
         "type": "logs",
         "message": "Test log message"
     }
+=======
+    test_data = {"type": "logs", "message": "Test log message"}
+>>>>>>> newdev
 
     await handler.send_json(test_data)
 
@@ -28,10 +43,16 @@ async def test_custom_logs_handler():
     mock_websocket.send_json.assert_called_once_with(test_data)
 
     # Verify log file contents
-    with open(handler.log_file, 'r') as f:
+    with open(handler.log_file) as f:
         log_data = json.load(f)
+<<<<<<< HEAD
         assert len(log_data['events']) == 1
         assert log_data['events'][0]['data'] == test_data
+=======
+        assert len(log_data["events"]) == 1
+        assert log_data["events"][0]["data"] == test_data
+
+>>>>>>> newdev
 
 @pytest.mark.asyncio
 async def test_content_update():
@@ -45,7 +66,7 @@ async def test_content_update():
     content_data = {
         "query": "test query",
         "sources": ["source1", "source2"],
-        "report": "test report"
+        "report": "test report",
     }
 
     await handler.send_json(content_data)
@@ -53,8 +74,8 @@ async def test_content_update():
     mock_websocket.send_json.assert_called_once_with(content_data)
 
     # Verify log file contents
-    with open(handler.log_file, 'r') as f:
+    with open(handler.log_file) as f:
         log_data = json.load(f)
-        assert log_data['content']['query'] == "test query"
-        assert log_data['content']['sources'] == ["source1", "source2"]
-        assert log_data['content']['report'] == "test report"
+        assert log_data["content"]["query"] == "test query"
+        assert log_data["content"]["sources"] == ["source1", "source2"]
+        assert log_data["content"]["report"] == "test report"

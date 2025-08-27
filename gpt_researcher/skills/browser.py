@@ -80,11 +80,11 @@ class BrowserManager:
 
         # Process images in descending order of their scores
         for img in sorted(images, key=lambda im: im["score"], reverse=True):
-            img_hash = get_image_hash(img['url'])
+            img_hash = get_image_hash(img["url"])
             if (
                 img_hash
                 and img_hash not in seen_hashes
-                and img['url'] not in current_research_images
+                and img["url"] not in current_research_images
             ):
                 seen_hashes.add(img_hash)
                 unique_images.append(img["url"])

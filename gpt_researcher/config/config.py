@@ -1,11 +1,13 @@
 import json
 import os
 import warnings
-from typing import Dict, Any, List, Union, Type, get_origin, get_args
+
+from typing import Any, Union, get_args, get_origin
 
 from gpt_researcher.llm_provider.generic.base import ReasoningEfforts
-from .variables.default import DEFAULT_CONFIG
+
 from .variables.base import BaseConfig
+from .variables.default import DEFAULT_CONFIG
 
 
 class Config:
@@ -16,27 +18,28 @@ class Config:
     def __init__(self, config_path: str | None = None):
         """Initialize the config class."""
         self.config_path = config_path
-        self.llm_kwargs: Dict[str, Any] = {}
-        self.embedding_kwargs: Dict[str, Any] = {}
+        self.llm_kwargs: dict[str, Any] = {}
+        self.embedding_kwargs: dict[str, Any] = {}
 
         config_to_use = self.load_config(config_path)
         self._set_attributes(config_to_use)
         self._set_embedding_attributes()
         self._set_llm_attributes()
         self._handle_deprecated_attributes()
-        if config_to_use['REPORT_SOURCE'] != 'web':
-          self._set_doc_path(config_to_use)
+        if config_to_use["REPORT_SOURCE"] != "web":
+            self._set_doc_path(config_to_use)
 
         # MCP support configuration
         self.mcp_servers = []  # List of MCP server configurations
         self.mcp_allowed_root_paths = []  # Allowed root paths for MCP servers
 
         # Read from config
-        if hasattr(self, 'mcp_servers'):
+        if hasattr(self, "mcp_servers"):
             self.mcp_servers = self.mcp_servers
-        if hasattr(self, 'mcp_allowed_root_paths'):
+        if hasattr(self, "mcp_allowed_root_paths"):
             self.mcp_allowed_root_paths = self.mcp_allowed_root_paths
 
+<<<<<<< HEAD
     def _set_attributes(self, config: Dict[str, Any]) -> None:
         """
         Set instance attributes from a configuration mapping, applying environment overrides and special handling for the RETRIEVER setting.
@@ -46,10 +49,15 @@ class Config:
         Parameters:
             config (Dict[str, Any]): Configuration mapping whose keys are configuration names (matching environment variable names).
         """
+=======
+    def _set_attributes(self, config: dict[str, Any]) -> None:
+>>>>>>> newdev
         for key, value in config.items():
             env_value = os.getenv(key)
             if env_value is not None:
-                value = self.convert_env_value(key, env_value, BaseConfig.__annotations__[key])
+                value = self.convert_env_value(
+                    key, env_value, BaseConfig.__annotations__[key]
+                )
             setattr(self, key.lower(), value)
 
         # Handle RETRIEVER with default value
@@ -77,8 +85,12 @@ class Config:
     def _set_llm_attributes(self) -> None:
         self.fast_llm_provider, self.fast_llm_model = self.parse_llm(self.fast_llm)
         self.smart_llm_provider, self.smart_llm_model = self.parse_llm(self.smart_llm)
-        self.strategic_llm_provider, self.strategic_llm_model = self.parse_llm(self.strategic_llm)
-        self.reasoning_effort = self.parse_reasoning_effort(os.getenv("REASONING_EFFORT"))
+        self.strategic_llm_provider, self.strategic_llm_model = self.parse_llm(
+            self.strategic_llm
+        )
+        self.reasoning_effort = self.parse_reasoning_effort(
+            os.getenv("REASONING_EFFORT")
+        )
 
     def _handle_deprecated_attributes(self) -> None:
         if os.getenv("EMBEDDING_PROVIDER") is not None:
@@ -109,12 +121,12 @@ class Config:
                 case _:
                     raise Exception("Embedding provider not found.")
 
-        _deprecation_warning = (
+        deprecation_warning = (
             "LLM_PROVIDER, FAST_LLM_MODEL and SMART_LLM_MODEL are deprecated and "
             "will be removed soon. Use FAST_LLM and SMART_LLM instead."
         )
         if os.getenv("LLM_PROVIDER") is not None:
-            warnings.warn(_deprecation_warning, FutureWarning, stacklevel=2)
+            warnings.warn(deprecation_warning, FutureWarning, stacklevel=2)
             self.fast_llm_provider = (
                 os.environ["LLM_PROVIDER"] or self.fast_llm_provider
             )
@@ -122,12 +134,13 @@ class Config:
                 os.environ["LLM_PROVIDER"] or self.smart_llm_provider
             )
         if os.getenv("FAST_LLM_MODEL") is not None:
-            warnings.warn(_deprecation_warning, FutureWarning, stacklevel=2)
+            warnings.warn(deprecation_warning, FutureWarning, stacklevel=2)
             self.fast_llm_model = os.environ["FAST_LLM_MODEL"] or self.fast_llm_model
         if os.getenv("SMART_LLM_MODEL") is not None:
-            warnings.warn(_deprecation_warning, FutureWarning, stacklevel=2)
+            warnings.warn(deprecation_warning, FutureWarning, stacklevel=2)
             self.smart_llm_model = os.environ["SMART_LLM_MODEL"] or self.smart_llm_model
 
+<<<<<<< HEAD
     def _set_doc_path(self, config: Dict[str, Any]) -> None:
         """
         Set and validate the documentation path from the given configuration.
@@ -138,15 +151,26 @@ class Config:
             config (Dict[str, Any]): Configuration mapping expected to contain the 'DOC_PATH' key.
         """
         self.doc_path = config['DOC_PATH']
+=======
+    def _set_doc_path(self, config: dict[str, Any]) -> None:
+        self.doc_path = config["DOC_PATH"]
+>>>>>>> newdev
         if self.doc_path:
             try:
                 self.validate_doc_path()
             except Exception as e:
+<<<<<<< HEAD
                 print(f"Warning: Error validating doc_path: {e!s}. Using default doc_path.")
                 self.doc_path = DEFAULT_CONFIG['DOC_PATH']
+=======
+                print(
+                    f"Warning: Error validating doc_path: {e!s}. Using default doc_path."
+                )
+                self.doc_path = DEFAULT_CONFIG["DOC_PATH"]
+>>>>>>> newdev
 
     @classmethod
-    def load_config(cls, config_path: str | None) -> Dict[str, Any]:
+    def load_config(cls, config_path: str | None) -> dict[str, Any]:
         """Load a configuration by name."""
         if config_path is None:
             return DEFAULT_CONFIG
@@ -154,12 +178,14 @@ class Config:
         # config_path = os.path.join(cls.CONFIG_DIR, config_path)
         if not os.path.exists(config_path):
             if config_path and config_path != "default":
-                print(f"Warning: Configuration not found at '{config_path}'. Using default configuration.")
+                print(
+                    f"Warning: Configuration not found at '{config_path}'. Using default configuration."
+                )
                 if not config_path.endswith(".json"):
                     print(f"Do you mean '{config_path}.json'?")
             return DEFAULT_CONFIG
 
-        with open(config_path, "r") as f:
+        with open(config_path) as f:
             custom_config = json.load(f)
 
         # Merge with default config to ensure all keys are present
@@ -168,7 +194,7 @@ class Config:
         return merged_config
 
     @classmethod
-    def list_available_configs(cls) -> List[str]:
+    def list_available_configs(cls) -> list[str]:
         """List all available configuration names."""
         configs = ["default"]
         for file in os.listdir(cls.CONFIG_DIR):
@@ -176,6 +202,7 @@ class Config:
                 configs.append(file[:-5])  # Remove .json extension
         return configs
 
+<<<<<<< HEAD
     def parse_retrievers(self, retriever_str: str) -> List[str]:
         """
         Parse a comma-separated retriever string into a validated list of retriever names.
@@ -197,6 +224,13 @@ class Config:
 
         retrievers = [retriever.strip()
                       for retriever in retriever_str.split(",")]
+=======
+    def parse_retrievers(self, retriever_str: str) -> list[str]:
+        """Parse the retriever string into a list of retrievers and validate them."""
+        from ..retrievers.utils import get_all_retriever_names
+
+        retrievers = [retriever.strip() for retriever in retriever_str.split(",")]
+>>>>>>> newdev
         valid_retrievers = get_all_retriever_names() or []
         invalid_retrievers = [r for r in retrievers if r not in valid_retrievers]
         if invalid_retrievers:
@@ -232,7 +266,9 @@ class Config:
         if reasoning_effort_str is None:
             return ReasoningEfforts.Medium.value
         if reasoning_effort_str not in [effort.value for effort in ReasoningEfforts]:
-            raise ValueError(f"Invalid reasoning effort: {reasoning_effort_str}. Valid options are: {', '.join([effort.value for effort in ReasoningEfforts])}")
+            raise ValueError(
+                f"Invalid reasoning effort: {reasoning_effort_str}. Valid options are: {', '.join([effort.value for effort in ReasoningEfforts])}"
+            )
         return reasoning_effort_str
 
     @staticmethod
@@ -260,7 +296,7 @@ class Config:
         os.makedirs(self.doc_path, exist_ok=True)
 
     @staticmethod
-    def convert_env_value(key: str, env_value: str, type_hint: Type) -> Any:
+    def convert_env_value(key: str, env_value: str, type_hint: type) -> Any:
         """Convert environment variable to the appropriate type based on the type hint."""
         origin = get_origin(type_hint)
         args = get_args(type_hint)
@@ -286,13 +322,10 @@ class Config:
             return float(env_value)
         elif type_hint in (str, Any):
             return env_value
-        elif origin is list or origin is List:
-            return json.loads(env_value)
-        elif type_hint is dict:
+        elif origin is list or origin is list or type_hint is dict:
             return json.loads(env_value)
         else:
             raise ValueError(f"Unsupported type {type_hint} for key {key}")
-
 
     def set_verbose(self, verbose: bool) -> None:
         """Set the verbosity level."""
@@ -300,10 +333,20 @@ class Config:
 
     def get_mcp_server_config(self, name: str) -> dict:
         """
+<<<<<<< HEAD
         Return the configuration dict for an MCP server with the given name.
         
         If name is falsy, there are no configured servers, or no server with a matching
         exact "name" key is found, an empty dict is returned.
+=======
+        Get the configuration for an MCP server.
+
+        Args:
+            name (str): The name of the MCP server to get the config for.
+
+        Returns:
+            dict: The server configuration, or an empty dict if the server is not found.
+>>>>>>> newdev
         """
         if not name or not self.mcp_servers:
             return {}
@@ -312,4 +355,8 @@ class Config:
             if isinstance(server, dict) and server.get("name") == name:
                 return server
 
+<<<<<<< HEAD
         return {}
+=======
+        return {}
+>>>>>>> newdev

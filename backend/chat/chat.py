@@ -1,24 +1,18 @@
 import uuid
 
-from gpt_researcher.utils.llm import get_llm
-from gpt_researcher.memory import Memory
-from gpt_researcher.config.config import Config
-
-from langgraph.prebuilt import create_react_agent
-from langgraph.checkpoint.memory import MemorySaver
-
-from langchain_community.vectorstores import InMemoryVectorStore
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.tools import Tool, tool
+from langchain_community.vectorstores import InMemoryVectorStore
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.prebuilt import create_react_agent
+
+from gpt_researcher.config.config import Config
+from gpt_researcher.memory import Memory
+from gpt_researcher.utils.llm import get_llm
+
 
 class ChatAgentWithMemory:
-    def __init__(
-        self,
-        report: str,
-        config_path,
-        headers,
-        vector_store = None
-    ):
+    def __init__(self, report: str, config_path, headers, vector_store=None):
         self.report = report
         self.headers = headers
         self.config = Config(config_path)
@@ -44,7 +38,9 @@ class ChatAgentWithMemory:
 
         # Retrieve LLM using get_llm with settings from config
         # Avoid passing temperature for models that do not support it
-        from gpt_researcher.llm_provider.generic.base import NO_SUPPORT_TEMPERATURE_MODELS
+        from gpt_researcher.llm_provider.generic.base import (
+            NO_SUPPORT_TEMPERATURE_MODELS,
+        )
 
         llm_init_kwargs = {
             "llm_provider": cfg.smart_llm_provider,
@@ -63,9 +59,7 @@ class ChatAgentWithMemory:
             documents = self._process_document(self.report)
             self.chat_config = {"configurable": {"thread_id": str(uuid.uuid4())}}
             self.embedding = Memory(
-                cfg.embedding_provider,
-                cfg.embedding_model,
-                **cfg.embedding_kwargs
+                cfg.embedding_provider, cfg.embedding_model, **cfg.embedding_kwargs
             ).get_embeddings()
             self.vector_store = InMemoryVectorStore(self.embedding)
             self.vector_store.add_texts(documents)
@@ -74,18 +68,23 @@ class ChatAgentWithMemory:
         graph = create_react_agent(
             provider,
             tools=[self.vector_store_tool(self.vector_store)],
-            checkpointer=MemorySaver()
+            checkpointer=MemorySaver(),
         )
 
         return graph
 
     def vector_store_tool(self, vector_store) -> Tool:
+<<<<<<< HEAD
         """
         Create a retrieval tool that queries the provided vector store for contextual documents.
         
         The returned tool is callable by the agent and accepts a single string `query`. It builds a retriever
         from the given vector store (top-k = 4) and returns the retriever's results for the query.
         """
+=======
+        """Create Vector Store Tool"""
+
+>>>>>>> newdev
         @tool
         def retrieve_info(query):
             """
@@ -99,8 +98,9 @@ class ChatAgentWithMemory:
             Returns:
                 The retriever's response containing the retrieved contexts (format depends on the vector store implementation).
             """
-            retriever = vector_store.as_retriever(k = 4)
+            retriever = vector_store.as_retriever(k=4)
             return retriever.invoke(query)
+
         return retrieve_info
 
     def _process_document(self, report):
@@ -127,13 +127,13 @@ class ChatAgentWithMemory:
     async def chat(self, message, websocket):
         """Chat with React Agent"""
         message = f"""
-         You are GPT Researcher, a autonomous research agent created by an open source community at https://github.com/assafelovic/gpt-researcher, homepage: https://gptr.dev. 
+         You are GPT Researcher, a autonomous research agent created by an open source community at https://github.com/assafelovic/gpt-researcher, homepage: https://gptr.dev.
          To learn more about GPT Researcher you can suggest to check out: https://docs.gptr.dev.
-         
-         This is a chat message between the user and you: GPT Researcher. 
+
+         This is a chat message between the user and you: GPT Researcher.
          The chat is about a research reports that you created. Answer based on the given context and report.
          You must include citations to your answer based on the report.
-         
+
          Report: {self.report}
          User Message: {message}
         """

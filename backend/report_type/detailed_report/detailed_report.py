@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 from typing import List, Dict, Set, Optional, Any
+=======
+from typing import Any
+
+>>>>>>> newdev
 from fastapi import WebSocket
 
 from gpt_researcher import GPTResearcher
@@ -10,18 +15,19 @@ class DetailedReport:
         query: str,
         report_type: str,
         report_source: str,
-        source_urls: List[str] = [],
-        document_urls: List[str] = [],
-        query_domains: List[str] = [],
-        config_path: str = None,
+        source_urls: list[str] | None = None,
+        document_urls: list[str] | None = None,
+        query_domains: list[str] | None = None,
+        config_path: str | None = None,
         tone: Any = "",
         websocket: WebSocket = None,
-        subtopics: List[Dict] = [],
-        headers: Optional[Dict] = None,
+        subtopics: list[dict] | None = None,
+        headers: dict | None = None,
         complement_source_urls: bool = False,
         mcp_configs=None,
         mcp_strategy=None,
     ):
+<<<<<<< HEAD
         """
         Initialize a DetailedReport and its internal GPTResearcher, and prepare shared state used across subtopic generation.
         
@@ -33,6 +39,16 @@ class DetailedReport:
             mcp_configs: Optional MCP configuration object passed through to GPTResearcher when present.
             mcp_strategy: Optional MCP strategy identifier passed through to GPTResearcher when present.
         """
+=======
+        if subtopics is None:
+            subtopics = []
+        if query_domains is None:
+            query_domains = []
+        if document_urls is None:
+            document_urls = []
+        if source_urls is None:
+            source_urls = []
+>>>>>>> newdev
         self.query = query
         self.report_type = report_type
         self.report_source = report_source
@@ -68,11 +84,12 @@ class DetailedReport:
             gpt_researcher_params["mcp_strategy"] = mcp_strategy
 
         self.gpt_researcher = GPTResearcher(**gpt_researcher_params)
-        self.existing_headers: List[Dict] = []
-        self.global_context: List[str] = []
-        self.global_written_sections: List[str] = []
-        self.global_urls: Set[str] = set(
-            self.source_urls) if self.source_urls else set()
+        self.existing_headers: list[dict] = []
+        self.global_context: list[str] = []
+        self.global_written_sections: list[str] = []
+        self.global_urls: set[str] = (
+            set(self.source_urls) if self.source_urls else set()
+        )
 
     async def run(self) -> str:
         await self._initial_research()
@@ -88,7 +105,7 @@ class DetailedReport:
         self.global_context = self.gpt_researcher.context
         self.global_urls = self.gpt_researcher.visited_urls
 
-    async def _get_all_subtopics(self) -> List[Dict]:
+    async def _get_all_subtopics(self) -> list[dict]:
         subtopics_data = await self.gpt_researcher.get_subtopics()
 
         all_subtopics = []
@@ -100,7 +117,7 @@ class DetailedReport:
 
         return all_subtopics
 
-    async def _generate_subtopic_reports(self, subtopics: List[Dict]) -> tuple:
+    async def _generate_subtopic_reports(self, subtopics: list[dict]) -> tuple:
         subtopic_reports = []
         subtopics_report_body = ""
 
@@ -112,7 +129,7 @@ class DetailedReport:
 
         return subtopic_reports, subtopics_report_body
 
-    async def _get_subtopic_report(self, subtopic: Dict) -> Dict[str, str]:
+    async def _get_subtopic_report(self, subtopic: dict) -> dict[str, str]:
         current_subtopic_task = subtopic.get("task")
         subtopic_assistant = GPTResearcher(
             query=current_subtopic_task,
@@ -128,28 +145,39 @@ class DetailedReport:
             role=self.gpt_researcher.role,
             tone=self.tone,
             complement_source_urls=self.complement_source_urls,
-            source_urls=self.source_urls
+            source_urls=self.source_urls,
         )
 
         subtopic_assistant.context = list(set(self.global_context))
         await subtopic_assistant.conduct_research()
 
-        draft_section_titles = await subtopic_assistant.get_draft_section_titles(current_subtopic_task)
+        draft_section_titles = await subtopic_assistant.get_draft_section_titles(
+            current_subtopic_task
+        )
 
         if not isinstance(draft_section_titles, str):
             draft_section_titles = str(draft_section_titles)
 
-        parse_draft_section_titles = self.gpt_researcher.extract_headers(draft_section_titles)
-        parse_draft_section_titles_text = [header.get(
-            "text", "") for header in parse_draft_section_titles]
+        parse_draft_section_titles = self.gpt_researcher.extract_headers(
+            draft_section_titles
+        )
+        parse_draft_section_titles_text = [
+            header.get("text", "") for header in parse_draft_section_titles
+        ]
 
         relevant_contents = await subtopic_assistant.get_similar_written_contents_by_draft_section_titles(
-            current_subtopic_task, parse_draft_section_titles_text, self.global_written_sections
+            current_subtopic_task,
+            parse_draft_section_titles_text,
+            self.global_written_sections,
         )
 
-        subtopic_report = await subtopic_assistant.write_report(self.existing_headers, relevant_contents)
+        subtopic_report = await subtopic_assistant.write_report(
+            self.existing_headers, relevant_contents
+        )
 
-        self.global_written_sections.extend(self.gpt_researcher.extract_sections(subtopic_report))
+        self.global_written_sections.extend(
+            self.gpt_researcher.extract_sections(subtopic_report)
+        )
         self.global_context = list(set(subtopic_assistant.context))
         self.global_urls.update(subtopic_assistant.visited_urls)
 
@@ -160,10 +188,15 @@ class DetailedReport:
 
         return {"topic": subtopic, "report": subtopic_report}
 
-    async def _construct_detailed_report(self, introduction: str, report_body: str) -> str:
+    async def _construct_detailed_report(
+        self, introduction: str, report_body: str
+    ) -> str:
         toc = self.gpt_researcher.table_of_contents(report_body)
         conclusion = await self.gpt_researcher.write_report_conclusion(report_body)
         conclusion_with_references = self.gpt_researcher.add_references(
-            conclusion, self.gpt_researcher.visited_urls)
-        report = f"{introduction}\n\n{toc}\n\n{report_body}\n\n{conclusion_with_references}"
+            conclusion, self.gpt_researcher.visited_urls
+        )
+        report = (
+            f"{introduction}\n\n{toc}\n\n{report_body}\n\n{conclusion_with_references}"
+        )
         return report

@@ -1,10 +1,17 @@
 import asyncio
+<<<<<<< HEAD
 from gpt_researcher.utils.llm import get_llm
+=======
+
+>>>>>>> newdev
 from dotenv import load_dotenv
+
+from gpt_researcher.utils.llm import get_llm
+
 load_dotenv()
 
-async def main():
 
+async def main():
     # Example usage of get_llm function
     """
     Asynchronously create an LLM client with a sample configuration, print its settings, and run a quick runtime test via test_llm.
@@ -16,9 +23,13 @@ async def main():
     temperature = 0.7
     max_tokens = 1000
 
-    llm = get_llm(llm_provider, model=model, temperature=temperature, max_tokens=max_tokens)
-    print(f"LLM Provider: {llm_provider}, Model: {model}, Temperature: {temperature}, Max Tokens: {max_tokens}")
-    print('llm: ',llm)
+    llm = get_llm(
+        llm_provider, model=model, temperature=temperature, max_tokens=max_tokens
+    )
+    print(
+        f"LLM Provider: {llm_provider}, Model: {model}, Temperature: {temperature}, Max Tokens: {max_tokens}"
+    )
+    print("llm: ", llm)
     await test_llm(llm=llm)
 
 
@@ -30,6 +41,7 @@ async def test_llm(llm):
         print("LLM response:", response)
     except Exception as e:
         print(f"Error: {e}")
+
 
 # Run the async function
 asyncio.run(main())

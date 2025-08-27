@@ -1,22 +1,28 @@
-import asyncio
-import os
 import argparse
-from typing import Callable, List, TypeVar
-from tqdm import tqdm
-from dotenv import load_dotenv
-from gpt_researcher.agent import GPTResearcher
-from gpt_researcher.utils.enum import ReportType, ReportSource, Tone
-from evals.simple_evals.simpleqa_eval import SimpleQAEval
-from langchain_openai import ChatOpenAI
+import asyncio
 import json
+import os
+
+from collections.abc import Callable
+from typing import TypeVar
+
+from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
+from tqdm import tqdm
+
+from evals.simple_evals.simpleqa_eval import SimpleQAEval
+from gpt_researcher.agent import GPTResearcher
+from gpt_researcher.utils.enum import ReportSource, ReportType, Tone
 
 # Type variables for generic function
-T = TypeVar('T')
-R = TypeVar('R')
+T = TypeVar("T")
+R = TypeVar("R")
 
-def map_with_progress(fn: Callable[[T], R], items: List[T]) -> List[R]:
+
+def map_with_progress(fn: Callable[[T], R], items: list[T]) -> list[R]:
     """Map function over items with progress bar."""
     return [fn(item) for item in tqdm(items)]
+
 
 # Load environment variables from .env file
 load_dotenv()
@@ -27,7 +33,9 @@ for var in required_env_vars:
     if not os.getenv(var):
         raise ValueError(f"{var} not found in environment variables")
 
+
 async def evaluate_single_query(query: str, evaluator: SimpleQAEval) -> dict:
+<<<<<<< HEAD
     """
     Run a single query through the researcher pipeline, evaluate the generated report against the ground-truth answer, and return summary metrics.
     
@@ -43,6 +51,9 @@ async def evaluate_single_query(query: str, evaluator: SimpleQAEval) -> dict:
             - evaluation_score (float): Numeric score returned by the evaluator.
             - evaluation_grade (str): Categorical grade (e.g., "CORRECT", "INCORRECT", "NOT_ATTEMPTED") from the evaluator metrics.
     """
+=======
+    """Run a single evaluation query and return results"""
+>>>>>>> newdev
     print(f"\nEvaluating query: {query}")
 
     # Run the researcher and get report
@@ -52,12 +63,13 @@ async def evaluate_single_query(query: str, evaluator: SimpleQAEval) -> dict:
         report_format="markdown",
         report_source=ReportSource.Web.value,
         tone=Tone.Objective,
-        verbose=True
+        verbose=True,
     )
     context = await researcher.conduct_research()
     report = await researcher.write_report()
 
     # Get the correct answer and evaluate
+<<<<<<< HEAD
     example = next(ex for ex in evaluator.examples if ex['problem'] == query)
     correct_answer = example['answer']
 
@@ -66,15 +78,23 @@ async def evaluate_single_query(query: str, evaluator: SimpleQAEval) -> dict:
         "answer": correct_answer,
         "predicted": report
     })
+=======
+    example = next(ex for ex in evaluator.examples if ex["problem"] == query)
+    correct_answer = example["answer"]
+
+    eval_result = evaluator.evaluate_example(
+        {"problem": query, "answer": correct_answer, "predicted": report}
+    )
+>>>>>>> newdev
 
     result = {
-        'query': query,
-        'context_length': len(context),
-        'report_length': len(report),
-        'cost': researcher.get_costs(),
-        'sources': researcher.get_source_urls(),
-        'evaluation_score': eval_result["score"],
-        'evaluation_grade': eval_result["metrics"]["grade"]
+        "query": query,
+        "context_length": len(context),
+        "report_length": len(report),
+        "cost": researcher.get_costs(),
+        "sources": researcher.get_source_urls(),
+        "evaluation_score": eval_result["score"],
+        "evaluation_grade": eval_result["metrics"]["grade"],
     }
 
     # Print just the essential info
@@ -84,6 +104,7 @@ async def evaluate_single_query(query: str, evaluator: SimpleQAEval) -> dict:
     print(f"  - Cost: ${result['cost']:.4f}")
 
     return result
+
 
 async def main(num_examples: int):
     """
@@ -112,7 +133,7 @@ async def main(num_examples: int):
         grader_model = ChatOpenAI(
             temperature=0,
             model_name="gpt-4-turbo",
-            openai_api_key=os.getenv("OPENAI_API_KEY")
+            openai_api_key=os.getenv("OPENAI_API_KEY"),
         )
         evaluator = SimpleQAEval(grader_model=grader_model, num_examples=num_examples)
 
@@ -123,11 +144,15 @@ async def main(num_examples: int):
 
         results = []
         for example in evaluator.examples:
-            if 'problem' not in example:
+            if "problem" not in example:
                 print(f"Warning: Skipping example without 'problem' key: {example}")
                 continue
 
+<<<<<<< HEAD
             query = example['problem']
+=======
+            query = example["problem"]
+>>>>>>> newdev
             print(f"\nEvaluating query: {query}")
             try:
                 result = await evaluate_single_query(query, evaluator)
@@ -143,10 +168,14 @@ async def main(num_examples: int):
 
             except Exception as e:
                 print(f"✗ Error evaluating query: {e!s}")
+<<<<<<< HEAD
                 results.append({
                     'query': query,
                     'error': str(e)
                 })
+=======
+                results.append({"query": query, "error": str(e)})
+>>>>>>> newdev
 
         if not results:
             raise ValueError("No results generated")
@@ -155,15 +184,27 @@ async def main(num_examples: int):
         if num_examples > 0:  # Changed from > 1
             print("\n=== Evaluation Summary ===")
             print(f"Total queries tested: {len(evaluator.examples)}")
-            successful = len([r for r in results if 'error' not in r])
+            successful = len([r for r in results if "error" not in r])
             print(f"Successful queries: {successful}")
             print(f"Failed queries: {len(evaluator.examples) - successful}")
 
             if successful > 0:
                 # Count the different grades
+<<<<<<< HEAD
                 correct = sum(1 for r in results if r.get('evaluation_grade') == "CORRECT")
                 incorrect = sum(1 for r in results if r.get('evaluation_grade') == "INCORRECT")
                 not_attempted = sum(1 for r in results if r.get('evaluation_grade') == "NOT_ATTEMPTED")
+=======
+                correct = sum(
+                    1 for r in results if r.get("evaluation_grade") == "CORRECT"
+                )
+                incorrect = sum(
+                    1 for r in results if r.get("evaluation_grade") == "INCORRECT"
+                )
+                not_attempted = sum(
+                    1 for r in results if r.get("evaluation_grade") == "NOT_ATTEMPTED"
+                )
+>>>>>>> newdev
 
                 print("\n=== AGGREGATE METRICS ===")
                 metrics = {
@@ -188,7 +229,13 @@ async def main(num_examples: int):
                 )
 
                 # Precision = correct / attempted
+<<<<<<< HEAD
                 precision = correct / (correct + incorrect) if (correct + incorrect) > 0 else 0
+=======
+                precision = (
+                    correct / (correct + incorrect) if (correct + incorrect) > 0 else 0
+                )
+>>>>>>> newdev
 
                 # Recall = correct / total
                 recall = correct / successful if successful > 0 else 0
@@ -206,18 +253,27 @@ async def main(num_examples: int):
                 print(f"F1 Score: {metrics['f1']:.3f}")
 
                 # Print cost metrics
-                total_cost = sum(r['cost'] for r in results if 'error' not in r)
+                total_cost = sum(r["cost"] for r in results if "error" not in r)
                 print(f"\nTotal cost: ${total_cost:.4f}")
+<<<<<<< HEAD
                 print(f"Average cost per query: ${total_cost/successful:.4f}")
+=======
+                print(f"Average cost per query: ${total_cost / successful:.4f}")
+>>>>>>> newdev
 
     except Exception as e:
         print(f"Fatal error in main: {e!s}")
         raise
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Run GPT-Researcher evaluation')
-    parser.add_argument('--num_examples', type=int, default=1,
-                      help='Number of examples to evaluate. Default is 1 example.')
+    parser = argparse.ArgumentParser(description="Run GPT-Researcher evaluation")
+    parser.add_argument(
+        "--num_examples",
+        type=int,
+        default=1,
+        help="Number of examples to evaluate. Default is 1 example.",
+    )
     args = parser.parse_args()
 
     try:
@@ -225,4 +281,8 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\nEvaluation interrupted by user")
     except Exception as e:
+<<<<<<< HEAD
         print(f"Fatal error: {e!s}")
+=======
+        print(f"Fatal error: {e!s}")
+>>>>>>> newdev

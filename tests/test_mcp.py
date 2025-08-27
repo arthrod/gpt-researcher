@@ -23,8 +23,11 @@ Prerequisites:
 """
 
 import asyncio
-import os
 import logging
+<<<<<<< HEAD
+=======
+import os
+>>>>>>> newdev
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -35,6 +38,7 @@ GITHUB_TOKEN = os.environ.get("GITHUB_PERSONAL_ACCESS_TOKEN")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 TAVILY_API_KEY = os.environ.get("TAVILY_API_KEY")
 
+
 # Test configuration using environment variables
 def get_mcp_config():
     """Get MCP configuration with environment variables."""
@@ -43,11 +47,10 @@ def get_mcp_config():
             "name": "tavily",
             "command": "npx",
             "args": ["-y", "tavily-mcp@0.1.2"],
-            "env": {
-                "TAVILY_API_KEY": TAVILY_API_KEY
-            }
+            "env": {"TAVILY_API_KEY": TAVILY_API_KEY},
         }
     ]
+
 
 def get_github_mcp_config():
     """Get GitHub MCP configuration with environment variables."""
@@ -56,11 +59,10 @@ def get_github_mcp_config():
             "name": "github",
             "command": "npx",
             "args": ["-y", "@modelcontextprotocol/server-github"],
-            "env": {
-                "GITHUB_PERSONAL_ACCESS_TOKEN": GITHUB_TOKEN
-            }
+            "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": GITHUB_TOKEN},
         }
     ]
+
 
 def setup_environment():
     """
@@ -76,7 +78,7 @@ def setup_environment():
     required_vars = {
         "GITHUB_PERSONAL_ACCESS_TOKEN": GITHUB_TOKEN,
         "OPENAI_API_KEY": OPENAI_API_KEY,
-        "TAVILY_API_KEY": TAVILY_API_KEY
+        "TAVILY_API_KEY": TAVILY_API_KEY,
     }
 
     missing_vars = []
@@ -98,6 +100,7 @@ def setup_environment():
     print("✅ All required environment variables are set")
     return True
 
+
 async def test_web_search_mcp():
     """Test MCP integration with web search (Tavily) for news and general topics."""
     print("\n🌐 Testing Web Search MCP Integration")
@@ -111,10 +114,14 @@ async def test_web_search_mcp():
 
         # Create researcher with web search query
         query = "What is the latest updates in the NBA playoffs?"
+<<<<<<< HEAD
         researcher = GPTResearcher(
             query=query,
             mcp_configs=mcp_configs
         )
+=======
+        researcher = GPTResearcher(query=query, mcp_configs=mcp_configs)
+>>>>>>> newdev
 
         print("✅ GPTResearcher initialized with web search MCP")
         print(f"🔧 MCP servers configured: {len(mcp_configs)} (Tavily)")
@@ -160,6 +167,7 @@ async def test_web_search_mcp():
         logger.exception("Web search MCP test error:")
         return False
 
+
 async def test_github_mcp():
     """
     Run an asynchronous integration test of the GitHub MCP (Model Context Protocol) for a code-related query.
@@ -184,10 +192,14 @@ async def test_github_mcp():
 
         # Create researcher with code-related query
         query = "What are the key features and implementation of React's useState hook? How has it evolved in recent versions?"
+<<<<<<< HEAD
         researcher = GPTResearcher(
             query=query,
             mcp_configs=mcp_configs
         )
+=======
+        researcher = GPTResearcher(query=query, mcp_configs=mcp_configs)
+>>>>>>> newdev
 
         print("✅ GPTResearcher initialized with GitHub MCP")
         print(f"🔧 MCP servers configured: {len(mcp_configs)} (GitHub)")
@@ -232,6 +244,7 @@ async def test_github_mcp():
         print(f"❌ Error in GitHub MCP test: {e}")
         logger.exception("GitHub MCP test error:")
         return False
+
 
 async def main():
     """
@@ -282,14 +295,23 @@ async def main():
 
     if passed == total:
         print("🎉 All MCP integration tests completed successfully!")
-        print("⚡ Both Web Search (news) and GitHub (code) MCP servers work seamlessly!")
+        print(
+            "⚡ Both Web Search (news) and GitHub (code) MCP servers work seamlessly!"
+        )
     else:
         print("⚠️ Some tests failed. Check the output above for details.")
+
 
 if __name__ == "__main__":
     print("🔧 MCP Integration Tests")
     print("=" * 30)
-    print("Testing Web Search (Tavily) and GitHub MCP integrations with optimal default settings.")
+    print(
+        "Testing Web Search (Tavily) and GitHub MCP integrations with optimal default settings."
+    )
     print()
 
+<<<<<<< HEAD
     asyncio.run(main())
+=======
+    asyncio.run(main())
+>>>>>>> newdev

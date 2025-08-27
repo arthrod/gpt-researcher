@@ -1,12 +1,9 @@
-from .utils.file_formats import \
-    write_md_to_pdf, \
-    write_md_to_word, \
-    write_text_to_md
-
+from .utils.file_formats import write_md_to_pdf, write_md_to_word, write_text_to_md
 from .utils.views import print_agent_output
 
 
 class PublisherAgent:
+<<<<<<< HEAD
     def __init__(self, output_dir: str, websocket=None, stream_output=None, headers=None):
         """
         Initialize the PublisherAgent.
@@ -18,11 +15,17 @@ class PublisherAgent:
         Notes:
             Stores websocket and stream_output on the instance for optional live streaming; these are passed through without modification.
         """
+=======
+    def __init__(
+        self, output_dir: str, websocket=None, stream_output=None, headers=None
+    ):
+>>>>>>> newdev
         self.websocket = websocket
         self.stream_output = stream_output
         self.output_dir = output_dir.strip()
         self.headers = headers or {}
 
+<<<<<<< HEAD
     async def publish_research_report(self, research_state: dict, publish_formats: dict):
         """
         Generate the final report layout from research state and write it to the requested formats.
@@ -34,6 +37,11 @@ class PublisherAgent:
         Returns:
             str: The generated Markdown layout string.
         """
+=======
+    async def publish_research_report(
+        self, research_state: dict, publish_formats: dict
+    ):
+>>>>>>> newdev
         layout = self.generate_layout(research_state)
         await self.write_report_by_formats(layout, publish_formats)
 
@@ -56,35 +64,42 @@ class PublisherAgent:
         for subheader in research_state.get("research_data", []):
             if isinstance(subheader, dict):
                 # Handle dictionary case
-                for key, value in subheader.items():
+                for _key, value in subheader.items():
                     sections.append(f"{value}")
             else:
                 # Handle string case
                 sections.append(f"{subheader}")
 
+<<<<<<< HEAD
         sections_text = '\n\n'.join(sections)
         references = '\n'.join(f"{reference}" for reference in research_state.get("sources", []))
+=======
+        sections_text = "\n\n".join(sections)
+        references = "\n".join(
+            f"{reference}" for reference in research_state.get("sources", [])
+        )
+>>>>>>> newdev
         headers = research_state.get("headers", {})
-        layout = f"""# {headers.get('title')}
-#### {headers.get("date")}: {research_state.get('date')}
+        layout = f"""# {headers.get("title")}
+#### {headers.get("date")}: {research_state.get("date")}
 
 ## {headers.get("introduction")}
-{research_state.get('introduction')}
+{research_state.get("introduction")}
 
 ## {headers.get("table_of_contents")}
-{research_state.get('table_of_contents')}
+{research_state.get("table_of_contents")}
 
 {sections_text}
 
 ## {headers.get("conclusion")}
-{research_state.get('conclusion')}
+{research_state.get("conclusion")}
 
 ## {headers.get("references")}
 {references}
 """
         return layout
 
-    async def write_report_by_formats(self, layout:str, publish_formats: dict):
+    async def write_report_by_formats(self, layout: str, publish_formats: dict):
         if publish_formats.get("pdf"):
             await write_md_to_pdf(layout, self.output_dir)
         if publish_formats.get("docx"):
@@ -109,8 +124,22 @@ class PublisherAgent:
         task = research_state.get("task")
         publish_formats = task.get("publish_formats")
         if self.websocket and self.stream_output:
+<<<<<<< HEAD
             await self.stream_output("logs", "publishing", "Publishing final research report based on retrieved data...", self.websocket)
+=======
+            await self.stream_output(
+                "logs",
+                "publishing",
+                "Publishing final research report based on retrieved data...",
+                self.websocket,
+            )
+>>>>>>> newdev
         else:
-            print_agent_output(output="Publishing final research report based on retrieved data...", agent="PUBLISHER")
-        final_research_report = await self.publish_research_report(research_state, publish_formats)
+            print_agent_output(
+                output="Publishing final research report based on retrieved data...",
+                agent="PUBLISHER",
+            )
+        final_research_report = await self.publish_research_report(
+            research_state, publish_formats
+        )
         return {"report": final_research_report}

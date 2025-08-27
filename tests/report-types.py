@@ -1,7 +1,16 @@
+<<<<<<< HEAD
 import pytest
+=======
+>>>>>>> newdev
 from unittest.mock import AsyncMock
-from gpt_researcher.agent import GPTResearcher
+
+import pytest
+
 from backend.server.server_utils import CustomLogsHandler
+<<<<<<< HEAD
+=======
+from gpt_researcher.agent import GPTResearcher
+>>>>>>> newdev
 
 # Define the report types to test
 report_types = ["research_report", "subtopic_report"]

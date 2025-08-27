@@ -1,15 +1,17 @@
 import warnings
-from datetime import date, datetime, timezone
+
+from collections.abc import Callable
+from datetime import UTC, date, datetime
+from typing import Any
 
 from langchain.docstore.document import Document
 
 from .config import Config
-from .utils.enum import ReportSource, ReportType, Tone
 from .utils.enum import PromptFamily as PromptFamilyEnum
-from typing import Callable, List, Dict, Any
-
+from .utils.enum import ReportSource, ReportType, Tone
 
 ## Prompt Families #############################################################
+
 
 class PromptFamily:
     """General purpose class for prompt formatting.
@@ -37,8 +39,11 @@ class PromptFamily:
 
     # MCP-specific prompts
     @staticmethod
-    def generate_mcp_tool_selection_prompt(query: str, tools_info: List[Dict], max_tools: int = 3) -> str:
+    def generate_mcp_tool_selection_prompt(
+        query: str, tools_info: list[dict], max_tools: int = 3
+    ) -> str:
         """
+<<<<<<< HEAD
         Generate a natural-language prompt that instructs an LLM-based MCP (multi-chain planner) to choose a fixed number of research tools.
         
         The returned prompt embeds the provided research query and a JSON serialization of the available tools, and it asks the model to analyze those tools and select exactly `max_tools` items. The prompt requires the model to rank the selected tools, provide a per-tool relevance score and reasoning, and give an overall selection rationale in a specific JSON structure.
@@ -48,6 +53,15 @@ class PromptFamily:
             tools_info (List[Dict]): Metadata for available tools; must be JSON-serializable and should contain fields (e.g., name, description, capabilities) that help evaluate relevance.
             max_tools (int): The exact number of tools the prompt should require the model to select.
         
+=======
+        Generate prompt for LLM-based MCP tool selection.
+
+        Args:
+            query: The research query
+            tools_info: List of available tools with their metadata
+            max_tools: Maximum number of tools to select
+
+>>>>>>> newdev
         Returns:
             str: A prompt string suitable for sending to an LLM that requests selection of exactly `max_tools` tools and a JSON-formatted response detailing chosen tools and selection reasoning.
         """
@@ -85,8 +99,9 @@ Select exactly {max_tools} tools, ranked by relevance to the research query.
 """
 
     @staticmethod
-    def generate_mcp_research_prompt(query: str, selected_tools: List) -> str:
+    def generate_mcp_research_prompt(query: str, selected_tools: list) -> str:
         """
+<<<<<<< HEAD
         Generate a research-execution prompt for a multi-tool research agent.
         
         Returns a single string prompt instructing an assistant with access to specialized tools to research the provided query, use multiple tools as needed, handle tool failures, synthesize findings, and prioritize factual relevance.
@@ -95,13 +110,21 @@ Select exactly {max_tools} tools, ranked by relevance to the research query.
             query (str): The research question or query to investigate.
             selected_tools (List): Iterable of tools (either objects with a `name` attribute or strings) that the agent may use.
         
+=======
+        Generate prompt for MCP research execution with selected tools.
+
+        Args:
+            query: The research query
+            selected_tools: List of selected MCP tools
+
+>>>>>>> newdev
         Returns:
             str: A formatted prompt ready to send to an LLM or agent orchestrator.
         """
         # Handle cases where selected_tools might be strings or objects with .name attribute
         tool_names = []
         for tool in selected_tools:
-            if hasattr(tool, 'name'):
+            if hasattr(tool, "name"):
                 tool_names.append(tool.name)
             else:
                 tool_names.append(str(tool))
@@ -127,7 +150,7 @@ Please conduct thorough research and provide your findings. Use the tools strate
         parent_query: str,
         report_type: str,
         max_iterations: int = 3,
-        context: List[Dict[str, Any]] = [],
+        context: list[dict[str, Any]] = [],
     ):
         """Generates the search queries prompt for the given question.
         Args:
@@ -148,18 +171,22 @@ Please conduct thorough research and provide your findings. Use the tools strate
         else:
             task = question
 
-        context_prompt = f"""
+        context_prompt = (
+            f"""
 You are a seasoned research assistant tasked with generating search queries to find relevant information for the following task: "{task}".
 Context: {context}
 
 Use this context to inform and refine your search queries. The context provides real-time web information that can help you generate more specific and relevant queries. Consider any current events, recent developments, or specific details mentioned in the context that could enhance the search queries.
-""" if context else ""
+"""
+            if context
+            else ""
+        )
 
-        dynamic_example = ", ".join([f'"query {i+1}"' for i in range(max_iterations)])
+        dynamic_example = ", ".join([f'"query {i + 1}"' for i in range(max_iterations)])
 
         return f"""Write {max_iterations} google search queries to search online that form an objective opinion from the following task: "{task}"
 
-Assume the current date is {datetime.now(timezone.utc).strftime('%B %d, %Y')} if required.
+Assume the current date is {datetime.now(UTC).strftime("%B %d, %Y")} if required.
 
 {context_prompt}
 You must respond with a list of strings in the following format: [{dynamic_example}].
@@ -197,17 +224,23 @@ The response should contain ONLY the list.
         reference_prompt = ""
         if report_source == ReportSource.Web.value:
             reference_prompt = """
+<<<<<<< HEAD
 You MUST write all used source urls at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each.
+=======
+You MUST write all used source urls at the end of the report as references, each preceded by its id in square brackets (e.g., [1]).
+>>>>>>> newdev
 Every url should be hyperlinked: [url website](url)
-Additionally, you MUST include hyperlinks to the relevant URLs wherever they are referenced in the report:
-
-eg: Author, A. A. (Year, Month Date). Title of web page. Website Name. [url website](url)
+When citing within the report body, append the corresponding source id in brackets after the statement.
+eg: Author, A. A. (Year, Month Date). Title of web page. Website Name. [url website](url) [1]
 """
         else:
             reference_prompt = """
+<<<<<<< HEAD
 You MUST write all used source document names at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each."
+=======
+You MUST write all used source document names at the end of the report as references, each preceded by its id in square brackets. Do not add duplicated sources.
+>>>>>>> newdev
 """
-
         tone_prompt = f"Write the report in a {tone.value} tone." if tone else ""
 
         return f"""
@@ -271,7 +304,13 @@ The response MUST not contain any markdown format or additional text (like ```js
 
     @staticmethod
     def generate_resource_report_prompt(
-        question, context, report_source: str, report_format="apa", tone=None, total_words=1000, language="english"
+        question,
+        context,
+        report_source: str,
+        report_format="apa",
+        tone=None,
+        total_words=1000,
+        language="english",
     ):
         """
         Generate a Markdown-formatted "bibliography recommendation" resource report prompt based on a research context.
@@ -298,7 +337,11 @@ The response MUST not contain any markdown format or additional text (like ```js
             """
         else:
             reference_prompt = """
+<<<<<<< HEAD
             You MUST write all used source document names at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each."
+=======
+            You MUST write all used source document names at the end of the report as references, each preceded by its id in square brackets, and make sure to not add duplicated sources."
+>>>>>>> newdev
         """
 
         return (
@@ -318,13 +361,25 @@ The response MUST not contain any markdown format or additional text (like ```js
 
     @staticmethod
     def generate_custom_report_prompt(
-        query_prompt, context, report_source: str, report_format="apa", tone=None, total_words=1000, language: str = "english"
+        query_prompt,
+        context,
+        report_source: str,
+        report_format="apa",
+        tone=None,
+        total_words=1000,
+        language: str = "english",
     ):
         return f'"{context}"\n\n{query_prompt}'
 
     @staticmethod
     def generate_outline_report_prompt(
-        question, context, report_source: str, report_format="apa", tone=None,  total_words=1000, language: str = "english"
+        question,
+        context,
+        report_source: str,
+        report_format="apa",
+        tone=None,
+        total_words=1000,
+        language: str = "english",
     ):
         """Generates the outline report prompt for the given question and research summary.
         Args: question (str): The question to generate the outline report prompt for
@@ -349,7 +404,7 @@ The response MUST not contain any markdown format or additional text (like ```js
         report_format="apa",
         tone=None,
         total_words=2000,
-        language: str = "english"
+        language: str = "english",
     ):
         """
         Generate a detailed prompt for producing a hierarchical "deep research" report.
@@ -371,15 +426,22 @@ The response MUST not contain any markdown format or additional text (like ```js
         reference_prompt = ""
         if report_source == ReportSource.Web.value:
             reference_prompt = """
+<<<<<<< HEAD
 You MUST write all used source urls at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each.
+=======
+You MUST write all used source urls at the end of the report as references, each preceded by its id in square brackets (e.g., [1]).
+>>>>>>> newdev
 Every url should be hyperlinked: [url website](url)
-Additionally, you MUST include hyperlinks to the relevant URLs wherever they are referenced in the report:
-
-eg: Author, A. A. (Year, Month Date). Title of web page. Website Name. [url website](url)
+When citing within the report body, append the corresponding source id in brackets after the statement.
+eg: Author, A. A. (Year, Month Date). Title of web page. Website Name. [url website](url) [1]
 """
         else:
             reference_prompt = """
+<<<<<<< HEAD
 You MUST write all used source document names at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each."
+=======
+You MUST write all used source document names at the end of the report as references, each preceded by its id in square brackets, and make sure to not add duplicated sources."
+>>>>>>> newdev
 """
 
         tone_prompt = f"Write the report in a {tone.value} tone." if tone else ""
@@ -415,7 +477,7 @@ Additional requirements:
 {reference_prompt}
 
 Please write a thorough, well-researched report that synthesizes all the gathered information into a cohesive whole.
-Assume the current date is {datetime.now(timezone.utc).strftime('%B %d, %Y')}.
+Assume the current date is {datetime.now(UTC).strftime("%B %d, %Y")}.
 """
 
     @staticmethod
@@ -462,6 +524,7 @@ response:
 
     @staticmethod
     def pretty_print_docs(docs: list[Document], top_n: int | None = None) -> str:
+<<<<<<< HEAD
         """
         Format a list of Documents into a single context string.
         
@@ -477,6 +540,16 @@ response:
                           f"Content: {d.page_content}\n"
                           for i, d in enumerate(docs)
                           if top_n is None or i < top_n)
+=======
+        """Compress the list of documents into a context string"""
+        return "\n".join(
+            f"Source: {d.metadata.get('source')}\n"
+            f"Title: {d.metadata.get('title')}\n"
+            f"Content: {d.page_content}\n"
+            for i, d in enumerate(docs)
+            if top_n is None or i < top_n
+        )
+>>>>>>> newdev
 
     @staticmethod
     def join_local_web_documents(docs_context: str, web_context: str) -> str:
@@ -573,7 +646,7 @@ IMPORTANT:Content and Sections Uniqueness:
     While the previous section discussed [topic A], this section will explore [topic B]."
 
 "Date":
-Assume the current date is {datetime.now(timezone.utc).strftime('%B %d, %Y')} if required.
+Assume the current date is {datetime.now(UTC).strftime("%B %d, %Y")} if required.
 
 "IMPORTANT!":
 - You MUST write the report in the following language: {language}.
@@ -589,10 +662,7 @@ Do NOT add a conclusion section.
 
     @staticmethod
     def generate_draft_titles_prompt(
-        current_subtopic: str,
-        main_topic: str,
-        context: str,
-        max_subsections: int = 5
+        current_subtopic: str, main_topic: str, context: str, max_subsections: int = 5
     ) -> str:
         return f"""
 "Context":
@@ -622,20 +692,29 @@ Provide the draft headers in a list format using markdown syntax, for example:
 """
 
     @staticmethod
-    def generate_report_introduction(question: str, research_summary: str = "", language: str = "english", report_format: str = "apa") -> str:
+    def generate_report_introduction(
+        question: str,
+        research_summary: str = "",
+        language: str = "english",
+        report_format: str = "apa",
+    ) -> str:
         return f"""{research_summary}\n
 Using the above latest information, Prepare a detailed report introduction on the topic -- {question}.
 - The introduction should be succinct, well-structured, informative with markdown syntax.
 - As this introduction will be part of a larger report, do NOT include any other sections, which are generally present in a report.
 - The introduction should be preceded by an H1 heading with a suitable topic for the entire report.
 - You must use in-text citation references in {report_format.upper()} format and make it with markdown hyperlink placed at the end of the sentence or paragraph that references them like this: ([in-text citation](url)).
-Assume that the current date is {datetime.now(timezone.utc).strftime('%B %d, %Y')} if required.
+Assume that the current date is {datetime.now(UTC).strftime("%B %d, %Y")} if required.
 - The output must be in {language} language.
 """
 
-
     @staticmethod
-    def generate_report_conclusion(query: str, report_content: str, language: str = "english", report_format: str = "apa") -> str:
+    def generate_report_conclusion(
+        query: str,
+        report_content: str,
+        language: str = "english",
+        report_format: str = "apa",
+    ) -> str:
         """
         Generate a concise conclusion summarizing the main findings and implications of a research report.
 
@@ -674,7 +753,6 @@ Assume that the current date is {datetime.now(timezone.utc).strftime('%B %d, %Y'
 class GranitePromptFamily(PromptFamily):
     """Prompts for IBM's granite models"""
 
-
     def _get_granite_class(self) -> type[PromptFamily]:
         """Get the right granite prompt family based on the version number"""
         if "3.3" in self.cfg.smart_llm:
@@ -701,22 +779,28 @@ class Granite3PromptFamily(PromptFamily):
     def pretty_print_docs(cls, docs: list[Document], top_n: int | None = None) -> str:
         if not docs:
             return ""
-        all_documents = "\n\n".join([
-            f"Document {doc.metadata.get('source', i)}\n" + \
-            f"Title: {doc.metadata.get('title')}\n" + \
-            doc.page_content
-            for i, doc in enumerate(docs)
-            if top_n is None or i < top_n
-        ])
+        all_documents = "\n\n".join(
+            [
+                f"Document {doc.metadata.get('source', i)}\n"
+                + f"Title: {doc.metadata.get('title')}\n"
+                + doc.page_content
+                for i, doc in enumerate(docs)
+                if top_n is None or i < top_n
+            ]
+        )
         return "".join([cls._DOCUMENTS_PREFIX, all_documents, cls._DOCUMENTS_SUFFIX])
 
     @classmethod
-    def join_local_web_documents(cls, docs_context: str | list, web_context: str | list) -> str:
+    def join_local_web_documents(
+        cls, docs_context: str | list, web_context: str | list
+    ) -> str:
         """Joins local web documents using Granite's preferred format"""
-        if isinstance(docs_context, str) and docs_context.startswith(cls._DOCUMENTS_PREFIX):
-            docs_context = docs_context[len(cls._DOCUMENTS_PREFIX):]
+        if isinstance(docs_context, str) and docs_context.startswith(
+            cls._DOCUMENTS_PREFIX
+        ):
+            docs_context = docs_context[len(cls._DOCUMENTS_PREFIX) :]
         if isinstance(web_context, str) and web_context.endswith(cls._DOCUMENTS_SUFFIX):
-            web_context = web_context[:-len(cls._DOCUMENTS_SUFFIX)]
+            web_context = web_context[: -len(cls._DOCUMENTS_SUFFIX)]
         all_documents = "\n\n".join([docs_context, web_context])
         return "".join([cls._DOCUMENTS_PREFIX, all_documents, cls._DOCUMENTS_SUFFIX])
 
@@ -737,32 +821,37 @@ class Granite33PromptFamily(PromptFamily):
 
     @classmethod
     def pretty_print_docs(cls, docs: list[Document], top_n: int | None = None) -> str:
-        return "\n".join([
-            cls._DOCUMENT_TEMPLATE.format(
-                document_id=doc.metadata.get("source", i),
-                document_content=cls._get_content(doc),
-            )
-            for i, doc in enumerate(docs)
-            if top_n is None or i < top_n
-        ])
+        return "\n".join(
+            [
+                cls._DOCUMENT_TEMPLATE.format(
+                    document_id=doc.metadata.get("source", i),
+                    document_content=cls._get_content(doc),
+                )
+                for i, doc in enumerate(docs)
+                if top_n is None or i < top_n
+            ]
+        )
 
     @classmethod
-    def join_local_web_documents(cls, docs_context: str | list, web_context: str | list) -> str:
+    def join_local_web_documents(
+        cls, docs_context: str | list, web_context: str | list
+    ) -> str:
         """Joins local web documents using Granite's preferred format"""
         return "\n\n".join([docs_context, web_context])
+
 
 ## Factory ######################################################################
 
 # This is the function signature for the various prompt generator functions
 PROMPT_GENERATOR = Callable[
     [
-        str,        # question
-        str,        # context
-        str,        # report_source
-        str,        # report_format
-        str | None, # tone
-        int,        # total_words
-        str,        # language
+        str,  # question
+        str,  # context
+        str,  # report_source
+        str,  # report_format
+        str | None,  # tone
+        int,  # total_words
+        str,  # language
     ],
     str,
 ]
@@ -781,16 +870,20 @@ def get_prompt_by_report_type(
     report_type: str,
     prompt_family: type[PromptFamily] | PromptFamily,
 ):
-    prompt_by_type = getattr(prompt_family, report_type_mapping.get(report_type, ""), None)
+    prompt_by_type = getattr(
+        prompt_family, report_type_mapping.get(report_type, ""), None
+    )
     default_report_type = ReportType.ResearchReport.value
     if not prompt_by_type:
         warnings.warn(
             f"Invalid report type: {report_type}.\n"
-            f"Please use one of the following: {', '.join([enum_value for enum_value in report_type_mapping.keys()])}\n"
+            f"Please use one of the following: {', '.join(list(report_type_mapping))}\n"
             f"Using default report type: {default_report_type} prompt.",
-            UserWarning,
+            UserWarning, stacklevel=2,
         )
-        prompt_by_type = getattr(prompt_family, report_type_mapping.get(default_report_type))
+        prompt_by_type = getattr(
+            prompt_family, report_type_mapping.get(default_report_type)
+        )
     return prompt_by_type
 
 
@@ -805,7 +898,8 @@ prompt_family_mapping = {
 
 
 def get_prompt_family(
-    prompt_family_name: PromptFamilyEnum | str, config: Config,
+    prompt_family_name: PromptFamilyEnum | str,
+    config: Config,
 ) -> PromptFamily:
     """Get a prompt family by name or value."""
     if isinstance(prompt_family_name, PromptFamilyEnum):
@@ -814,8 +908,8 @@ def get_prompt_family(
         return prompt_family(config)
     warnings.warn(
         f"Invalid prompt family: {prompt_family_name}.\n"
-        f"Please use one of the following: {', '.join([enum_value for enum_value in prompt_family_mapping.keys()])}\n"
+        f"Please use one of the following: {', '.join(list(prompt_family_mapping))}\n"
         f"Using default prompt family: {PromptFamilyEnum.Default.value} prompt.",
-        UserWarning,
+        UserWarning, stacklevel=2,
     )
     return PromptFamily()

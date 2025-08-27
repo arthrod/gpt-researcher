@@ -1,15 +1,21 @@
 import asyncio
+<<<<<<< HEAD
 from typing import Dict, List
+=======
+import contextlib
+import logging
+>>>>>>> newdev
 
 from fastapi import WebSocket
 
-from backend.report_type import BasicReport, DetailedReport
 from backend.chat import ChatAgentWithMemory
-
+from backend.report_type import BasicReport, DetailedReport
+from backend.server.server_utils import CustomLogsHandler
+from gpt_researcher.actions import stream_output  # Import stream_output
 from gpt_researcher.utils.enum import ReportType, Tone
 from multi_agents.main import run_research_task
-from gpt_researcher.actions import stream_output  # Import stream_output
-from backend.server.server_utils import CustomLogsHandler
+
+logger = logging.getLogger(__name__)
 
 
 class WebSocketManager:
@@ -17,9 +23,9 @@ class WebSocketManager:
 
     def __init__(self):
         """Initialize the WebSocketManager class."""
-        self.active_connections: List[WebSocket] = []
-        self.sender_tasks: Dict[WebSocket, asyncio.Task] = {}
-        self.message_queues: Dict[WebSocket, asyncio.Queue] = {}
+        self.active_connections: list[WebSocket] = []
+        self.sender_tasks: dict[WebSocket, asyncio.Task] = {}
+        self.message_queues: dict[WebSocket, asyncio.Queue] = {}
         self.chat_agent = None
 
     async def start_sender(self, websocket: WebSocket):
@@ -62,7 +68,8 @@ class WebSocketManager:
             self.active_connections.append(websocket)
             self.message_queues[websocket] = asyncio.Queue()
             self.sender_tasks[websocket] = asyncio.create_task(
-                self.start_sender(websocket))
+                self.start_sender(websocket)
+            )
         except Exception as e:
             print(f"Error connecting websocket: {e}")
             if websocket in self.active_connections:
@@ -79,10 +86,12 @@ class WebSocketManager:
             if websocket in self.message_queues:
                 del self.message_queues[websocket]
             try:
-                await websocket.close()
-            except:
-                pass  # Connection might already be closed
+                with contextlib.suppress(Exception):
+                    await websocket.close()
+            except Exception as e:
+                logger.error(f"Error disconnecting websocket: {e}")
 
+<<<<<<< HEAD
     async def start_streaming(self, task, report_type, report_source, source_urls, document_urls, tone, websocket, headers=None, query_domains=[], mcp_enabled=False, mcp_strategy="fast", mcp_configs=[]):
         """
         Start a research run and stream its output, then initialize a chat agent with the produced report.
@@ -106,15 +115,53 @@ class WebSocketManager:
         Returns:
             str: Generated report content.
         """
+=======
+    async def start_streaming(
+        self,
+        task,
+        report_type,
+        report_source,
+        source_urls,
+        document_urls,
+        tone,
+        websocket,
+        headers=None,
+        query_domains=None,
+        mcp_enabled=False,
+        mcp_strategy="fast",
+        mcp_configs=None,
+    ):
+        """Start streaming the output."""
+        if mcp_configs is None:
+            mcp_configs = []
+        if query_domains is None:
+            query_domains = []
+>>>>>>> newdev
         tone = Tone[tone]
         # add customized JSON config file path here
         config_path = "default"
 
         # Pass MCP parameters to run_agent
         report = await run_agent(
+<<<<<<< HEAD
             task, report_type, report_source, source_urls, document_urls, tone, websocket,
             headers=headers, query_domains=query_domains, config_path=config_path,
             mcp_enabled=mcp_enabled, mcp_strategy=mcp_strategy, mcp_configs=mcp_configs
+=======
+            task,
+            report_type,
+            report_source,
+            source_urls,
+            document_urls,
+            tone,
+            websocket,
+            headers=headers,
+            query_domains=query_domains,
+            config_path=config_path,
+            mcp_enabled=mcp_enabled,
+            mcp_strategy=mcp_strategy,
+            mcp_configs=mcp_configs,
+>>>>>>> newdev
         )
 
         # Create new Chat Agent whenever a new report is written
@@ -133,8 +180,12 @@ class WebSocketManager:
         if self.chat_agent:
             await self.chat_agent.chat(message, websocket)
         else:
-            await websocket.send_json({"type": "chat", "content": "Knowledge empty, please run the research first to obtain knowledge"})
+            await websocket.send_json({
+                "type": "chat",
+                "content": "Knowledge empty, please run the research first to obtain knowledge",
+            })
 
+<<<<<<< HEAD
 async def run_agent(task, report_type, report_source, source_urls, document_urls, tone: Tone, websocket, stream_output=stream_output, headers=None, query_domains=[], config_path="", return_researcher=False, mcp_enabled=False, mcp_strategy="fast", mcp_configs=[]):
     """
     Run a research agent to produce a report (Basic, Detailed, or multi-agent) and stream progress to a websocket.
@@ -168,12 +219,38 @@ async def run_agent(task, report_type, report_source, source_urls, document_urls
     - Sends structured log messages to the provided websocket via CustomLogsHandler.
     - May modify environment variables "RETRIEVER" and "MCP_STRATEGY" when MCP is enabled.
     """
+=======
+
+async def run_agent(
+    task,
+    report_type,
+    report_source,
+    source_urls,
+    document_urls,
+    tone: Tone,
+    websocket,
+    stream_output=stream_output,
+    headers=None,
+    query_domains=None,
+    config_path="",
+    return_researcher=False,
+    mcp_enabled=False,
+    mcp_strategy="fast",
+    mcp_configs=None,
+):
+    """Run the agent."""
+>>>>>>> newdev
     # Create logs handler for this research task
+    if mcp_configs is None:
+        mcp_configs = []
+    if query_domains is None:
+        query_domains = []
     logs_handler = CustomLogsHandler(websocket, task)
 
     # Set up MCP configuration if enabled
     if mcp_enabled and mcp_configs:
         import os
+
         current_retriever = os.getenv("RETRIEVER", "tavily")
         if "mcp" not in current_retriever:
             # Add MCP to existing retrievers
@@ -182,11 +259,17 @@ async def run_agent(task, report_type, report_source, source_urls, document_urls
         # Set MCP strategy
         os.environ["MCP_STRATEGY"] = mcp_strategy
 
+<<<<<<< HEAD
         print(f"🔧 MCP enabled with strategy '{mcp_strategy}' and {len(mcp_configs)} server(s)")
+=======
+        print(
+            f"🔧 MCP enabled with strategy '{mcp_strategy}' and {len(mcp_configs)} server(s)"
+        )
+>>>>>>> newdev
         await logs_handler.send_json({
             "type": "logs",
             "content": "mcp_init",
-            "output": f"🔧 MCP enabled with strategy '{mcp_strategy}' and {len(mcp_configs)} server(s)"
+            "output": f"🔧 MCP enabled with strategy '{mcp_strategy}' and {len(mcp_configs)} server(s)",
         })
 
     # Initialize researcher based on report type
@@ -196,7 +279,11 @@ async def run_agent(task, report_type, report_source, source_urls, document_urls
             websocket=logs_handler,  # Use logs_handler instead of raw websocket
             stream_output=stream_output,
             tone=tone,
+<<<<<<< HEAD
             headers=headers
+=======
+            headers=headers,
+>>>>>>> newdev
         )
         report = report.get("report", "")
 

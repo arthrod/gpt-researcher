@@ -1,11 +1,14 @@
 """
 Enhanced batch research manager for multiple research iterations with improved error handling and parallel processing
 """
+
 import asyncio
-from typing import List, Dict, Any, Optional, Callable
+import logging
+
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
-import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -13,13 +16,14 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ResearchIteration:
     """Data class for research iteration results"""
+
     instruction: str
     context: Any
     urls: set
     iteration: int
     timestamp: datetime
     duration: float
-    error: Optional[str] = None
+    error: str | None = None
     success: bool = True
 
 
@@ -28,25 +32,42 @@ class BatchResearchManager:
 
     def __init__(self, researcher, max_concurrent: int = 3):
         """
+<<<<<<< HEAD
         Create a BatchResearchManager tied to a researcher and configure concurrency.
         
         Initializes internal storage for iteration results, collected contexts and URLs, sets the concurrency limit and associated asyncio.Semaphore, and prepares a placeholder for an optional progress callback. The `max_concurrent` value controls the maximum number of research iterations that may run concurrently.
+=======
+        Initialize the batch research manager.
+
+        Args:
+            researcher: The GPTResearcher instance
+            max_concurrent: Maximum number of concurrent research iterations
+>>>>>>> newdev
         """
         self.researcher = researcher
-        self.research_results: List[ResearchIteration] = []
+        self.research_results: list[ResearchIteration] = []
         self.all_contexts = []
         self.all_urls = set()
         self.max_concurrent = max_concurrent
         self.semaphore = asyncio.Semaphore(max_concurrent)
+<<<<<<< HEAD
         self.progress_callback: Optional[Callable] = None
 
     async def conduct_batch_research(
         self,
         research_instructions: List[str],
+=======
+        self.progress_callback: Callable | None = None
+
+    async def conduct_batch_research(
+        self,
+        research_instructions: list[str],
+>>>>>>> newdev
         parallel: bool = False,
-        on_progress: Optional[Callable] = None
-    ) -> Dict[str, Any]:
+        on_progress: Callable | None = None,
+    ) -> dict[str, Any]:
         """
+<<<<<<< HEAD
         Run a batch of research iterations and return aggregated results and metadata.
         
         If no instructions are provided, performs a single research run and returns its results.
@@ -59,6 +80,15 @@ class BatchResearchManager:
             parallel (bool): If True, execute iterations concurrently (respecting max_concurrent); otherwise run sequentially.
             on_progress (Optional[Callable]): Optional callback invoked for per-iteration progress (stored as self.progress_callback).
         
+=======
+        Conduct multiple research iterations with enhanced features.
+
+        Args:
+            research_instructions: List of research queries/instructions
+            parallel: Whether to run iterations in parallel (respecting max_concurrent)
+            on_progress: Optional callback for progress updates
+
+>>>>>>> newdev
         Returns:
             Dict[str, Any]: A formatted results dictionary containing per-iteration details and aggregated metadata (contexts, urls, combined_context, timing statistics, counts of successes/failures, and timestamp).
         """
@@ -76,7 +106,7 @@ class BatchResearchManager:
                 urls=set(self.researcher.visited_urls),
                 iteration=1,
                 timestamp=datetime.now(),
-                duration=duration
+                duration=duration,
             )
 
             return self._format_results([iteration], 1)
@@ -84,7 +114,7 @@ class BatchResearchManager:
         if self.researcher.verbose:
             await self._stream_output(
                 "batch_research_start",
-                f"🔄 Starting {'parallel' if parallel else 'sequential'} batch research with {len(research_instructions)} iterations"
+                f"🔄 Starting {'parallel' if parallel else 'sequential'} batch research with {len(research_instructions)} iterations",
             )
 
         if parallel:
@@ -104,11 +134,12 @@ class BatchResearchManager:
             await self._stream_output(
                 "batch_research_complete",
                 f"🎯 Batch research complete. Successful: {successful}/{len(results)}, "
-                f"Total URLs: {len(self.all_urls)}, Combined context: {len(str(combined_context))} chars"
+                f"Total URLs: {len(self.all_urls)}, Combined context: {len(str(combined_context))} chars",
             )
 
         return self._format_results(results, len(research_instructions))
 
+<<<<<<< HEAD
     async def _conduct_sequential_research(self, instructions: List[str]) -> List[ResearchIteration]:
         """
         Run each research instruction one after another and return their results.
@@ -117,10 +148,18 @@ class BatchResearchManager:
         
         Exceptions raised by the underlying _execute_single_research are propagated.
         """
+=======
+    async def _conduct_sequential_research(
+        self, instructions: list[str]
+    ) -> list[ResearchIteration]:
+        """Conduct research iterations sequentially."""
+>>>>>>> newdev
         results = []
 
         for i, instruction in enumerate(instructions, 1):
-            result = await self._execute_single_research(instruction, i, len(instructions))
+            result = await self._execute_single_research(
+                instruction, i, len(instructions)
+            )
             results.append(result)
 
             if self.progress_callback:
@@ -128,6 +167,7 @@ class BatchResearchManager:
 
         return results
 
+<<<<<<< HEAD
     async def _conduct_parallel_research(self, instructions: List[str]) -> List[ResearchIteration]:
         """
         Run multiple research instructions concurrently, respecting the manager's concurrency limit.
@@ -137,6 +177,12 @@ class BatchResearchManager:
         Returns:
             List[ResearchIteration]: Per-instruction results (successful iterations or failure records for exceptions), ordered to match `instructions`.
         """
+=======
+    async def _conduct_parallel_research(
+        self, instructions: list[str]
+    ) -> list[ResearchIteration]:
+        """Conduct research iterations in parallel with concurrency control."""
+>>>>>>> newdev
         tasks = []
 
         for i, instruction in enumerate(instructions, 1):
@@ -149,21 +195,24 @@ class BatchResearchManager:
         processed_results = []
         for i, result in enumerate(results):
             if isinstance(result, Exception):
-                processed_results.append(ResearchIteration(
-                    instruction=instructions[i],
-                    context="",
-                    urls=set(),
-                    iteration=i + 1,
-                    timestamp=datetime.now(),
-                    duration=0,
-                    error=str(result),
-                    success=False
-                ))
+                processed_results.append(
+                    ResearchIteration(
+                        instruction=instructions[i],
+                        context="",
+                        urls=set(),
+                        iteration=i + 1,
+                        timestamp=datetime.now(),
+                        duration=0,
+                        error=str(result),
+                        success=False,
+                    )
+                )
             else:
                 processed_results.append(result)
 
         return processed_results
 
+<<<<<<< HEAD
     async def _execute_with_semaphore(self, instruction: str, iteration: int, total: int) -> ResearchIteration:
         """
         Acquire the concurrency semaphore and run a single research iteration.
@@ -195,12 +244,25 @@ class BatchResearchManager:
         Returns:
             ResearchIteration: Result object summarizing the iteration. On failure `success` is False and `error` contains the failure reason.
         """
+=======
+    async def _execute_with_semaphore(
+        self, instruction: str, iteration: int, total: int
+    ) -> ResearchIteration:
+        """Execute research with semaphore for concurrency control."""
+        async with self.semaphore:
+            return await self._execute_single_research(instruction, iteration, total)
+
+    async def _execute_single_research(
+        self, instruction: str, iteration: int, total: int
+    ) -> ResearchIteration:
+        """Execute a single research iteration with comprehensive error handling."""
+>>>>>>> newdev
         start_time = datetime.now()
 
         if self.researcher.verbose:
             await self._stream_output(
                 "batch_iteration",
-                f"📚 Research iteration {iteration}/{total}: {instruction[:100]}..."
+                f"📚 Research iteration {iteration}/{total}: {instruction[:100]}...",
             )
 
         # Save original state
@@ -212,10 +274,9 @@ class BatchResearchManager:
             self.researcher.query = instruction
 
             # Conduct research with timeout
-            timeout = getattr(self.researcher.cfg, 'research_timeout', 120)
+            timeout = getattr(self.researcher.cfg, "research_timeout", 120)
             await asyncio.wait_for(
-                self.researcher.research_conductor.conduct_research(),
-                timeout=timeout
+                self.researcher.research_conductor.conduct_research(), timeout=timeout
             )
 
             # Calculate duration
@@ -228,7 +289,7 @@ class BatchResearchManager:
                 urls=set(self.researcher.visited_urls),
                 iteration=iteration,
                 timestamp=datetime.now(),
-                duration=duration
+                duration=duration,
             )
 
             # Update aggregated data
@@ -239,12 +300,16 @@ class BatchResearchManager:
                 await self._stream_output(
                     "iteration_complete",
                     f"✅ Iteration {iteration} complete in {duration:.1f}s. "
-                    f"Context: {len(str(self.researcher.context))} chars, URLs: {len(self.researcher.visited_urls)}"
+                    f"Context: {len(str(self.researcher.context))} chars, URLs: {len(self.researcher.visited_urls)}",
                 )
 
             return result
 
+<<<<<<< HEAD
         except asyncio.TimeoutError:
+=======
+        except TimeoutError:
+>>>>>>> newdev
             error_msg = f"Timeout after {timeout}s"
             logger.error(f"Research iteration {iteration} timed out: {error_msg}")
 
@@ -256,7 +321,7 @@ class BatchResearchManager:
                 timestamp=datetime.now(),
                 duration=(datetime.now() - start_time).total_seconds(),
                 error=error_msg,
-                success=False
+                success=False,
             )
 
         except Exception as e:
@@ -266,7 +331,7 @@ class BatchResearchManager:
             if self.researcher.verbose:
                 await self._stream_output(
                     "iteration_error",
-                    f"⚠️ Error in iteration {iteration}: {error_msg[:100]}"
+                    f"⚠️ Error in iteration {iteration}: {error_msg[:100]}",
                 )
 
             return ResearchIteration(
@@ -277,13 +342,14 @@ class BatchResearchManager:
                 timestamp=datetime.now(),
                 duration=(datetime.now() - start_time).total_seconds(),
                 error=error_msg,
-                success=False
+                success=False,
             )
 
         finally:
             # Always restore original query
             self.researcher.query = original_query
 
+<<<<<<< HEAD
     def _combine_contexts_intelligently(self, results: List[ResearchIteration]) -> str:
         """
         Combine successful iteration contexts into a single deduplicated context string.
@@ -293,6 +359,15 @@ class BatchResearchManager:
         - If all successful contexts are strings, each context is split into paragraphs on double-newlines ('\n\n'); paragraphs are stripped, de-duplicated while preserving first-seen order, and joined with a blank-line separator.
         - If contexts are heterogeneous (lists or other types), they are flattened by converting items to strings, stripping, de-duplicating by string value while preserving order, and joined with a blank-line separator.
         
+=======
+    def _combine_contexts_intelligently(self, results: list[ResearchIteration]) -> str:
+        """
+        Combine contexts with intelligent deduplication and organization.
+
+        Args:
+            results: List of research iteration results
+
+>>>>>>> newdev
         Returns:
             A combined, deduplicated context string (possibly empty).
         """
@@ -312,7 +387,7 @@ class BatchResearchManager:
             combined_parts = []
 
             for ctx in successful_contexts:
-                paragraphs = ctx.split('\n\n')
+                paragraphs = ctx.split("\n\n")
                 for para in paragraphs:
                     para_clean = para.strip()
                     if para_clean and para_clean not in seen_paragraphs:
@@ -340,6 +415,7 @@ class BatchResearchManager:
 
         return "\n\n".join(combined)
 
+<<<<<<< HEAD
     def _format_results(self, results: List[ResearchIteration], total_planned: int) -> Dict[str, Any]:
         """
         Build a structured summary of research iterations and aggregate metadata.
@@ -367,6 +443,12 @@ class BatchResearchManager:
                     total_unique_urls, failed_instructions (list of instruction strings),
                     and timestamp (ISO string when this summary was produced).
         """
+=======
+    def _format_results(
+        self, results: list[ResearchIteration], total_planned: int
+    ) -> dict[str, Any]:
+        """Format results with comprehensive metadata."""
+>>>>>>> newdev
         successful_results = [r for r in results if r.success]
         failed_results = [r for r in results if not r.success]
 
@@ -389,7 +471,7 @@ class BatchResearchManager:
                     "timestamp": r.timestamp.isoformat(),
                     "duration": r.duration,
                     "success": r.success,
-                    "error": r.error
+                    "error": r.error,
                 }
                 for r in results
             ],
@@ -399,8 +481,8 @@ class BatchResearchManager:
                 "average_duration": avg_duration,
                 "total_unique_urls": len(self.all_urls),
                 "failed_instructions": [r.instruction for r in failed_results],
-                "timestamp": datetime.now().isoformat()
-            }
+                "timestamp": datetime.now().isoformat(),
+            },
         }
 
     async def _stream_output(self, event_type: str, message: str):
@@ -421,6 +503,7 @@ class BatchResearchManager:
         """
         try:
             from ..actions.utils import stream_output
+
             await stream_output(
                 "logs",
                 event_type,
@@ -431,13 +514,18 @@ class BatchResearchManager:
             # Fallback if stream_output is not available
             logger.info(f"{event_type}: {message}")
 
+<<<<<<< HEAD
     def get_iteration_result(self, iteration: int) -> Optional[ResearchIteration]:
+=======
+    def get_iteration_result(self, iteration: int) -> ResearchIteration | None:
+>>>>>>> newdev
         """Get results from a specific iteration."""
         for result in self.research_results:
             if result.iteration == iteration:
                 return result
         return None
 
+<<<<<<< HEAD
     def get_successful_results(self) -> List[ResearchIteration]:
         """Get only successful research iterations."""
         return [r for r in self.research_results if r.success]
@@ -471,6 +559,18 @@ class BatchResearchManager:
                 - total_duration (float): Sum of durations (seconds) of all iterations.
                 - average_duration (float): Mean duration (seconds) per iteration.
         """
+=======
+    def get_successful_results(self) -> list[ResearchIteration]:
+        """Get only successful research iterations."""
+        return [r for r in self.research_results if r.success]
+
+    def get_failed_results(self) -> list[ResearchIteration]:
+        """Get only failed research iterations."""
+        return [r for r in self.research_results if not r.success]
+
+    def get_statistics(self) -> dict[str, Any]:
+        """Get comprehensive statistics about the batch research."""
+>>>>>>> newdev
         if not self.research_results:
             return {}
 
@@ -481,11 +581,19 @@ class BatchResearchManager:
             "total_iterations": len(self.research_results),
             "successful": len(successful),
             "failed": len(failed),
-            "success_rate": len(successful) / len(self.research_results) if self.research_results else 0,
+            "success_rate": len(successful) / len(self.research_results)
+            if self.research_results
+            else 0,
             "total_urls_discovered": len(self.all_urls),
-            "average_urls_per_iteration": len(self.all_urls) / len(successful) if successful else 0,
+            "average_urls_per_iteration": len(self.all_urls) / len(successful)
+            if successful
+            else 0,
             "total_context_size": sum(len(str(r.context)) for r in successful),
-            "average_context_size": sum(len(str(r.context)) for r in successful) / len(successful) if successful else 0,
+            "average_context_size": sum(len(str(r.context)) for r in successful)
+            / len(successful)
+            if successful
+            else 0,
             "total_duration": sum(r.duration for r in self.research_results),
-            "average_duration": sum(r.duration for r in self.research_results) / len(self.research_results)
+            "average_duration": sum(r.duration for r in self.research_results)
+            / len(self.research_results),
         }

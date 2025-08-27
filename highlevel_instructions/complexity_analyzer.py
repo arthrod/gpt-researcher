@@ -1,19 +1,29 @@
 """
 Enhanced complexity analyzer with multi-dimensional analysis and adaptive recommendations
 """
+
+import asyncio
 import json
 import logging
+<<<<<<< HEAD
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, asdict
 from enum import Enum
 import asyncio
+=======
+
+from dataclasses import asdict, dataclass
+>>>>>>> newdev
 from datetime import datetime
+from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
 class ComplexityDimension(Enum):
     """Enumeration of complexity dimensions"""
+
     CONTROVERSY = "controversy_level"
     PERSPECTIVES = "multiple_perspectives"
     LEGAL_CERTAINTY = "legal_certainty"
@@ -29,6 +39,7 @@ class ComplexityDimension(Enum):
 @dataclass
 class ComplexityMetrics:
     """Data class for complexity metrics"""
+
     controversy_level: float = 5.0
     multiple_perspectives: float = 5.0
     legal_certainty: float = 5.0
@@ -46,10 +57,11 @@ class ComplexityMetrics:
 @dataclass
 class ResearchRecommendations:
     """Data class for research recommendations"""
+
     recommended_min_words: int
     recommended_max_words: int
     suggested_iterations: int
-    special_attention_areas: List[str]
+    special_attention_areas: list[str]
     recommended_report_type: str
     research_depth: str
     source_diversity_needed: str
@@ -62,12 +74,19 @@ class ComplexityAnalyzer:
 
     def __init__(self, config):
         """
+<<<<<<< HEAD
         Create a ComplexityAnalyzer instance.
         
         Initializes the analyzer with the provided configuration, sets up an empty in-memory cache for results, and creates an analysis history list.
         
         Parameters:
             config: Configuration object containing analyzer settings (e.g., LLM provider configs, complexity_factors flags, and default word-counts) used by other methods in this class.
+=======
+        Initialize the complexity analyzer.
+
+        Args:
+            config: Configuration object
+>>>>>>> newdev
         """
         self.config = config
         self.cache = {}
@@ -76,11 +95,16 @@ class ComplexityAnalyzer:
     async def analyze_complexity(
         self,
         query: str,
+<<<<<<< HEAD
         context: Optional[List[str]] = None,
+=======
+        context: list[str] | None = None,
+>>>>>>> newdev
         force_analysis: bool = False,
-        include_comparative: bool = True
-    ) -> Dict[str, Any]:
+        include_comparative: bool = True,
+    ) -> dict[str, Any]:
         """
+<<<<<<< HEAD
         Perform a multi-stage complexity analysis of a research query, returning structured scores and adaptive recommendations.
         
         This orchestrates three asynchronous analyses (primary complexity scoring, optional domain-specific classification, and feasibility estimation), merges their outputs, caches the combined result, and records a history entry. If a cached result exists and force_analysis is False, the cached result is returned (it will include a 'from_cache' flag). If complexity analysis is disabled or an error occurs, a safe default complexity structure is returned.
@@ -91,6 +115,16 @@ class ComplexityAnalyzer:
             force_analysis (bool): When True, bypasses the cache and forces recomputation.
             include_comparative (bool): When True, runs domain-specific comparative analysis; otherwise a minimal domain skeleton is used.
         
+=======
+        Perform enhanced complexity analysis with caching and comparative analysis.
+
+        Args:
+            query: The research query
+            context: Optional research context
+            force_analysis: Force new analysis even if cached
+            include_comparative: Include comparative complexity analysis
+
+>>>>>>> newdev
         Returns:
             Dict[str, Any]: A merged analysis containing per-dimension scores, overall_complexity, confidence_score, adaptive ResearchRecommendations, domain_analysis, feasibility_analysis, metadata (including analysis_timestamp and analysis_version), and caching metadata ('from_cache' when applicable).
         """
@@ -98,7 +132,7 @@ class ComplexityAnalyzer:
         cache_key = self._generate_cache_key(query, context)
         if not force_analysis and cache_key in self.cache:
             cached_result = self.cache[cache_key]
-            cached_result['from_cache'] = True
+            cached_result["from_cache"] = True
             return cached_result
 
         # Check if complexity analysis is enabled
@@ -109,30 +143,41 @@ class ComplexityAnalyzer:
             # Perform parallel analyses for comprehensive assessment
             analyses = await asyncio.gather(
                 self._analyze_primary_complexity(query, context),
-                self._analyze_domain_specifics(query) if include_comparative else self._get_empty_domain_analysis(),
+                self._analyze_domain_specifics(query)
+                if include_comparative
+                else self._get_empty_domain_analysis(),
                 self._analyze_research_feasibility(query, context),
-                return_exceptions=True
+                return_exceptions=True,
             )
 
             # Process results
+<<<<<<< HEAD
             primary_analysis = analyses[0] if not isinstance(analyses[0], Exception) else {}
             domain_analysis = analyses[1] if not isinstance(analyses[1], Exception) else {}
             feasibility_analysis = analyses[2] if not isinstance(analyses[2], Exception) else {}
+=======
+            primary_analysis = (
+                analyses[0] if not isinstance(analyses[0], Exception) else {}
+            )
+            domain_analysis = (
+                analyses[1] if not isinstance(analyses[1], Exception) else {}
+            )
+            feasibility_analysis = (
+                analyses[2] if not isinstance(analyses[2], Exception) else {}
+            )
+>>>>>>> newdev
 
             # Combine analyses
             combined_result = self._combine_analyses(
-                primary_analysis,
-                domain_analysis,
-                feasibility_analysis,
-                query
+                primary_analysis, domain_analysis, feasibility_analysis, query
             )
 
             # Cache the result
             self.cache[cache_key] = combined_result
             self.analysis_history.append({
-                'query': query,
-                'timestamp': datetime.now().isoformat(),
-                'complexity': combined_result.get('overall_complexity', 5)
+                "query": query,
+                "timestamp": datetime.now().isoformat(),
+                "complexity": combined_result.get("overall_complexity", 5),
             })
 
             return combined_result
@@ -141,6 +186,7 @@ class ComplexityAnalyzer:
             logger.error(f"Error in enhanced complexity analysis: {e}")
             return self._get_default_complexity()
 
+<<<<<<< HEAD
     async def _analyze_primary_complexity(self, query: str, context: Optional[List[str]]) -> Dict[str, Any]:
         """
         Generate a validated primary complexity assessment for a given research query.
@@ -154,6 +200,12 @@ class ComplexityAnalyzer:
         Returns:
             A dict containing normalized complexity metrics, confidence, adaptive research recommendations, and metadata (timestamp/version). Returns an empty dict if the LLM call or parsing/validation fails (errors are logged rather than raised).
         """
+=======
+    async def _analyze_primary_complexity(
+        self, query: str, context: list[str] | None
+    ) -> dict[str, Any]:
+        """Analyze primary complexity dimensions."""
+>>>>>>> newdev
         try:
             from ..utils.llm import create_chat_completion
 
@@ -164,9 +216,13 @@ class ComplexityAnalyzer:
                 messages=[
                     {
                         "role": "system",
+<<<<<<< HEAD
                         "content": "You are an expert research analyst specializing in topic complexity assessment and research planning."
+=======
+                        "content": "You are an expert research analyst specializing in topic complexity assessment and research planning.",
+>>>>>>> newdev
                     },
-                    {"role": "user", "content": analysis_prompt}
+                    {"role": "user", "content": analysis_prompt},
                 ],
                 temperature=0.2,  # Lower temperature for more consistent analysis
                 llm_provider=self.config.smart_llm_provider,
@@ -182,6 +238,7 @@ class ComplexityAnalyzer:
             logger.error(f"Primary complexity analysis failed: {e}")
             return {}
 
+<<<<<<< HEAD
     async def _analyze_domain_specifics(self, query: str) -> Dict[str, Any]:
         """
         Analyze domain-specific complexity factors for a research topic and return a structured domain analysis.
@@ -199,6 +256,10 @@ class ComplexityAnalyzer:
         Returns:
             Dict[str, Any]: Parsed domain analysis matching the structure above. If the LLM call fails or returns invalid data, returns a safe empty domain analysis skeleton produced by _get_empty_domain_analysis().
         """
+=======
+    async def _analyze_domain_specifics(self, query: str) -> dict[str, Any]:
+        """Analyze domain-specific complexity factors."""
+>>>>>>> newdev
         try:
             from ..utils.llm import create_chat_completion
 
@@ -227,8 +288,11 @@ Respond in JSON format:
             response = await create_chat_completion(
                 model=self.config.fast_llm_model,  # Use faster model for domain analysis
                 messages=[
-                    {"role": "system", "content": "You are a domain classification expert."},
-                    {"role": "user", "content": domain_prompt}
+                    {
+                        "role": "system",
+                        "content": "You are a domain classification expert.",
+                    },
+                    {"role": "user", "content": domain_prompt},
                 ],
                 temperature=0.3,
                 llm_provider=self.config.fast_llm_provider,
@@ -242,6 +306,7 @@ Respond in JSON format:
             logger.error(f"Domain analysis failed: {e}")
             return self._get_empty_domain_analysis()
 
+<<<<<<< HEAD
     async def _analyze_research_feasibility(self, query: str, context: Optional[List[str]]) -> Dict[str, Any]:
         """
         Estimate research feasibility and approximate resource needs for a query.
@@ -276,20 +341,59 @@ Respond in JSON format:
             scope_score = min(10, query_length * 0.5 + (5 if has_specific_terms else 0))
             research_depth = 'deep' if has_specific_terms else 'standard'
             time_requirement = 'extended' if has_temporal else 'normal'
+=======
+    async def _analyze_research_feasibility(
+        self, query: str, context: list[str] | None
+    ) -> dict[str, Any]:
+        """Analyze research feasibility and resource requirements."""
+        try:
+            # Estimate based on query characteristics
+            query_length = len(query.split())
+            has_specific_terms = any(
+                term in query.lower()
+                for term in [
+                    "specific",
+                    "detailed",
+                    "comprehensive",
+                    "in-depth",
+                    "thorough",
+                ]
+            )
+            has_comparative = any(
+                term in query.lower()
+                for term in ["compare", "versus", "vs", "difference", "contrast"]
+            )
+            has_temporal = any(
+                term in query.lower()
+                for term in [
+                    "history",
+                    "evolution",
+                    "timeline",
+                    "development",
+                    "future",
+                ]
+            )
+
+            # Calculate feasibility scores
+            scope_score = min(10, query_length * 0.5 + (5 if has_specific_terms else 0))
+            research_depth = "deep" if has_specific_terms else "standard"
+            time_requirement = "extended" if has_temporal else "normal"
+>>>>>>> newdev
 
             return {
-                'scope_score': scope_score,
-                'research_depth': research_depth,
-                'time_requirement': time_requirement,
-                'requires_comparison': has_comparative,
-                'requires_historical': has_temporal,
-                'estimated_sources_needed': 10 + int(scope_score * 2)
+                "scope_score": scope_score,
+                "research_depth": research_depth,
+                "time_requirement": time_requirement,
+                "requires_comparison": has_comparative,
+                "requires_historical": has_temporal,
+                "estimated_sources_needed": 10 + int(scope_score * 2),
             }
 
         except Exception as e:
             logger.error(f"Feasibility analysis failed: {e}")
             return {}
 
+<<<<<<< HEAD
     def _create_enhanced_complexity_prompt(self, query: str, context: Optional[List[str]]) -> str:
         """
         Builds a deterministic, LLM-ready prompt asking the model to evaluate the research query across ten complexity dimensions and produce a strict JSON response.
@@ -303,6 +407,15 @@ Respond in JSON format:
         Note: the prompt enforces a strict JSON format to simplify parsing by downstream logic and uses the provided context truncated to five items for brevity.
         """
         context_text = "\n".join(context[:5]) if context else "No additional context provided."
+=======
+    def _create_enhanced_complexity_prompt(
+        self, query: str, context: list[str] | None
+    ) -> str:
+        """Create enhanced prompt for complexity analysis."""
+        context_text = (
+            "\n".join(context[:5]) if context else "No additional context provided."
+        )
+>>>>>>> newdev
 
         return f"""
 Analyze the complexity of this research topic comprehensively:
@@ -359,6 +472,7 @@ Respond in this exact JSON format:
 }}
 """
 
+<<<<<<< HEAD
     def _validate_and_enhance_complexity_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Validate, normalize, and enrich raw complexity output into a canonical analysis result.
@@ -387,6 +501,12 @@ Respond in this exact JSON format:
           - `confidence_score` is set to the fraction of known metric fields present in `data`.
           - Recommendations are produced by the analyzer's adaptive rule set and may incorporate overrides from `data`.
         """
+=======
+    def _validate_and_enhance_complexity_data(
+        self, data: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Validate, normalize, and enhance complexity data."""
+>>>>>>> newdev
         # Create metrics object
         metrics = ComplexityMetrics()
 
@@ -394,13 +514,13 @@ Respond in this exact JSON format:
         for field in metrics.__dataclass_fields__:
             if field in data:
                 value = data[field]
-                if isinstance(value, (int, float)):
+                if isinstance(value, int | float):
                     # Normalize to 0-10 range
                     normalized = max(0, min(10, value))
                     setattr(metrics, field, normalized)
 
         # Calculate overall complexity if not provided
-        if 'overall_complexity' not in data or data['overall_complexity'] == 5:
+        if "overall_complexity" not in data or data["overall_complexity"] == 5:
             metrics.overall_complexity = self._calculate_overall_complexity(metrics)
 
         # Calculate confidence score based on data completeness
@@ -416,8 +536,13 @@ Respond in this exact JSON format:
         result.update(asdict(recommendations))
 
         # Add additional metadata
+<<<<<<< HEAD
         result['analysis_timestamp'] = datetime.now().isoformat()
         result['analysis_version'] = '2.0'
+=======
+        result["analysis_timestamp"] = datetime.now().isoformat()
+        result["analysis_version"] = "2.0"
+>>>>>>> newdev
 
         return result
 
@@ -437,26 +562,27 @@ Respond in this exact JSON format:
             float: Weighted overall complexity score (0.0–10.0), rounded to one decimal place.
         """
         weights = {
-            'controversy_level': 0.15,
-            'multiple_perspectives': 0.15,
-            'technical_complexity': 0.20,
-            'scope_breadth': 0.10,
-            'data_availability': 0.10,  # Inverted - low availability = high complexity
-            'interdisciplinary_nature': 0.10,
-            'novelty': 0.10,
-            'regulatory_complexity': 0.10
+            "controversy_level": 0.15,
+            "multiple_perspectives": 0.15,
+            "technical_complexity": 0.20,
+            "scope_breadth": 0.10,
+            "data_availability": 0.10,  # Inverted - low availability = high complexity
+            "interdisciplinary_nature": 0.10,
+            "novelty": 0.10,
+            "regulatory_complexity": 0.10,
         }
 
         weighted_sum = 0
         for field, weight in weights.items():
             value = getattr(metrics, field, 5)
             # Invert data_availability (high availability = low complexity)
-            if field == 'data_availability':
+            if field == "data_availability":
                 value = 10 - value
             weighted_sum += value * weight
 
         return round(weighted_sum, 1)
 
+<<<<<<< HEAD
     def _generate_recommendations(self, metrics: ComplexityMetrics, raw_data: Dict) -> ResearchRecommendations:
         """
         Create adaptive, bounded research recommendations from computed complexity metrics.
@@ -485,6 +611,12 @@ Respond in this exact JSON format:
         - ResearchRecommendations: fully populated recommendation object with word ranges, iterations, attention areas, report type/depth,
           source diversity requirement, fact-checking rigor, and a textual rationale.
         """
+=======
+    def _generate_recommendations(
+        self, metrics: ComplexityMetrics, raw_data: dict
+    ) -> ResearchRecommendations:
+        """Generate adaptive recommendations based on complexity metrics."""
+>>>>>>> newdev
         overall = metrics.overall_complexity
 
         # Adaptive word count based on complexity
@@ -498,10 +630,19 @@ Respond in this exact JSON format:
             min_words, max_words = 4000, 8000
 
         # Override with provided values if valid
+<<<<<<< HEAD
         if 'recommended_min_words' in raw_data:
             min_words = max(500, min(10000, raw_data['recommended_min_words']))
         if 'recommended_max_words' in raw_data:
             max_words = max(min_words + 500, min(15000, raw_data['recommended_max_words']))
+=======
+        if "recommended_min_words" in raw_data:
+            min_words = max(500, min(10000, raw_data["recommended_min_words"]))
+        if "recommended_max_words" in raw_data:
+            max_words = max(
+                min_words + 500, min(15000, raw_data["recommended_max_words"])
+            )
+>>>>>>> newdev
 
         # Adaptive iterations based on complexity factors
         iterations = 1
@@ -511,38 +652,55 @@ Respond in this exact JSON format:
             iterations += 1
         if metrics.technical_complexity > 8:
             iterations += 1
+<<<<<<< HEAD
         iterations = min(5, max(1, raw_data.get('suggested_iterations', iterations)))
+=======
+        iterations = min(5, max(1, raw_data.get("suggested_iterations", iterations)))
+>>>>>>> newdev
 
         # Special attention areas
-        attention_areas = raw_data.get('special_attention_areas', [])
+        attention_areas = raw_data.get("special_attention_areas", [])
         if not attention_areas:
             attention_areas = self._identify_attention_areas(metrics)
 
         # Determine report type and depth
         if metrics.technical_complexity > 7:
-            report_type = 'technical_report'
-            research_depth = 'deep'
+            report_type = "technical_report"
+            research_depth = "deep"
         elif metrics.controversy_level > 7:
-            report_type = 'analytical_report'
-            research_depth = 'comprehensive'
+            report_type = "analytical_report"
+            research_depth = "comprehensive"
         else:
+<<<<<<< HEAD
             report_type = 'standard_report'
             research_depth = 'standard'
+=======
+            report_type = "standard_report"
+            research_depth = "standard"
+>>>>>>> newdev
 
         # Source diversity requirements
         if metrics.multiple_perspectives > 7:
-            source_diversity = 'maximum'
+            source_diversity = "maximum"
         elif metrics.multiple_perspectives > 5:
-            source_diversity = 'high'
+            source_diversity = "high"
         else:
+<<<<<<< HEAD
             source_diversity = 'standard'
+=======
+            source_diversity = "standard"
+>>>>>>> newdev
 
         # Fact-checking rigor
-        fact_checking = raw_data.get('fact_checking_rigor', 'standard')
+        fact_checking = raw_data.get("fact_checking_rigor", "standard")
         if metrics.controversy_level > 7 or metrics.regulatory_complexity > 7:
-            fact_checking = 'maximum'
+            fact_checking = "maximum"
         elif overall > 6:
+<<<<<<< HEAD
             fact_checking = 'enhanced'
+=======
+            fact_checking = "enhanced"
+>>>>>>> newdev
 
         return ResearchRecommendations(
             recommended_min_words=min_words,
@@ -553,9 +711,10 @@ Respond in this exact JSON format:
             research_depth=research_depth,
             source_diversity_needed=source_diversity,
             fact_checking_rigor=fact_checking,
-            rationale=raw_data.get('rationale', self._generate_rationale(metrics))
+            rationale=raw_data.get("rationale", self._generate_rationale(metrics)),
         )
 
+<<<<<<< HEAD
     def _identify_attention_areas(self, metrics: ComplexityMetrics) -> List[str]:
         """
         Return a prioritized list of up to five research or review focus areas that require special attention based on complexity metrics.
@@ -573,6 +732,10 @@ Respond in this exact JSON format:
         Returns:
             List[str]: Ordered attention-area descriptions (0–5 items) derived from `metrics`.
         """
+=======
+    def _identify_attention_areas(self, metrics: ComplexityMetrics) -> list[str]:
+        """Identify areas needing special attention based on metrics."""
+>>>>>>> newdev
         areas = []
 
         if metrics.controversy_level > 7:
@@ -593,6 +756,7 @@ Respond in this exact JSON format:
         return areas[:5]  # Limit to top 5 areas
 
     def _generate_rationale(self, metrics: ComplexityMetrics) -> str:
+<<<<<<< HEAD
         """
         Compose a concise, human-readable rationale for a complexity assessment.
         
@@ -607,6 +771,9 @@ Respond in this exact JSON format:
         Returns:
             str: A single-sentence rationale describing the complexity level, recommended approach, and any highlighted factors.
         """
+=======
+        """Generate explanation for the complexity assessment."""
+>>>>>>> newdev
         overall = metrics.overall_complexity
 
         if overall < 3:
@@ -635,6 +802,7 @@ Respond in this exact JSON format:
         return f"This topic exhibits {level}{factor_text}, requiring a {approach} with careful attention to accuracy and completeness."
 
     def _combine_analyses(
+<<<<<<< HEAD
         self,
         primary: Dict,
         domain: Dict,
@@ -655,16 +823,26 @@ Respond in this exact JSON format:
         Returns:
             A merged dictionary containing the combined analyses, any adjusted recommendation fields, and query metadata.
         """
+=======
+        self, primary: dict, domain: dict, feasibility: dict, query: str
+    ) -> dict[str, Any]:
+        """Combine multiple analyses into comprehensive result."""
+>>>>>>> newdev
         combined = primary.copy() if primary else self._get_default_complexity()
 
         # Enhance with domain analysis
         if domain:
+<<<<<<< HEAD
             combined['domain_analysis'] = domain
+=======
+            combined["domain_analysis"] = domain
+>>>>>>> newdev
 
         # Enhance with feasibility analysis
         if feasibility:
-            combined['feasibility_analysis'] = feasibility
+            combined["feasibility_analysis"] = feasibility
             # Adjust recommendations based on feasibility
+<<<<<<< HEAD
             if feasibility.get('requires_comparison'):
                 combined['suggested_iterations'] = max(2, combined.get('suggested_iterations', 1))
             if feasibility.get('requires_historical'):
@@ -673,11 +851,26 @@ Respond in this exact JSON format:
         # Add query metadata
         combined['query'] = query
         combined['query_word_count'] = len(query.split())
+=======
+            if feasibility.get("requires_comparison"):
+                combined["suggested_iterations"] = max(
+                    2, combined.get("suggested_iterations", 1)
+                )
+            if feasibility.get("requires_historical"):
+                combined["recommended_max_words"] = max(
+                    3000, combined.get("recommended_max_words", 2000)
+                )
+
+        # Add query metadata
+        combined["query"] = query
+        combined["query_word_count"] = len(query.split())
+>>>>>>> newdev
 
         return combined
 
     def _is_complexity_analysis_enabled(self) -> bool:
         """Check if complexity analysis is enabled in configuration."""
+<<<<<<< HEAD
         complexity_factors = getattr(self.config, 'complexity_factors', {})
         return complexity_factors.get('controversy_detection', False) or \
                complexity_factors.get('enable_complexity_analysis', False)
@@ -704,14 +897,29 @@ Respond in this exact JSON format:
         - data_availability (str): qualitative estimate of data availability (default "medium").
         - methodological_considerations (List[str]): recommended methodological notes (empty list by default).
         """
+=======
+        complexity_factors = getattr(self.config, "complexity_factors", {})
+        return complexity_factors.get(
+            "controversy_detection", False
+        ) or complexity_factors.get("enable_complexity_analysis", False)
+
+    def _generate_cache_key(self, query: str, context: list[str] | None) -> str:
+        """Generate cache key for complexity analysis."""
+        context_str = str(context[:3]) if context else ""
+        return f"{query}:{context_str}"
+
+    def _get_empty_domain_analysis(self) -> dict[str, Any]:
+        """Return empty domain analysis structure."""
+>>>>>>> newdev
         return {
             "domain_category": "general",
             "expertise_required": "intermediate",
             "domain_challenges": [],
             "data_availability": "medium",
-            "methodological_considerations": []
+            "methodological_considerations": [],
         }
 
+<<<<<<< HEAD
     def _get_default_complexity(self) -> Dict[str, Any]:
         """
         Return a default enhanced complexity analysis result used when analysis is disabled or fails.
@@ -726,21 +934,26 @@ Respond in this exact JSON format:
         Returns:
             Dict[str, Any]: A merged dictionary of metrics, recommendations, and metadata representing a safe default complexity analysis.
         """
+=======
+    def _get_default_complexity(self) -> dict[str, Any]:
+        """Return enhanced default complexity analysis."""
+>>>>>>> newdev
         metrics = ComplexityMetrics()
         recommendations = ResearchRecommendations(
-            recommended_min_words=getattr(self.config, 'total_words', 2000),
-            recommended_max_words=getattr(self.config, 'total_words', 2000) * 2,
+            recommended_min_words=getattr(self.config, "total_words", 2000),
+            recommended_max_words=getattr(self.config, "total_words", 2000) * 2,
             suggested_iterations=1,
             special_attention_areas=[],
-            recommended_report_type='standard_report',
-            research_depth='standard',
-            source_diversity_needed='standard',
-            fact_checking_rigor='standard',
-            rationale="Default complexity assessment - analysis disabled or failed"
+            recommended_report_type="standard_report",
+            research_depth="standard",
+            source_diversity_needed="standard",
+            fact_checking_rigor="standard",
+            rationale="Default complexity assessment - analysis disabled or failed",
         )
 
         result = asdict(metrics)
         result.update(asdict(recommendations))
+<<<<<<< HEAD
         result['analysis_timestamp'] = datetime.now().isoformat()
         result['analysis_version'] = '2.0'
         result['from_cache'] = False
@@ -753,6 +966,16 @@ Respond in this exact JSON format:
         
         Each entry is a dict recorded when an analysis completed (chronological order). Entries typically include keys such as `analysis_timestamp`, `overall_complexity`, and any metadata produced by the analyzer. The returned list is the internal history structure (mutable reference).
         """
+=======
+        result["analysis_timestamp"] = datetime.now().isoformat()
+        result["analysis_version"] = "2.0"
+        result["from_cache"] = False
+
+        return result
+
+    def get_complexity_history(self) -> list[dict]:
+        """Get history of complexity analyses performed."""
+>>>>>>> newdev
         return self.analysis_history
 
     def clear_cache(self):

@@ -10,20 +10,22 @@ exclude_packages = [
     "uvicorn",
     "jinja2",
     "gpt-researcher",
-    "langgraph"
+    "langgraph",
 ]
 
-with open(r"README.md", "r", encoding="utf-8") as f:
+with open(r"README.md", encoding="utf-8") as f:
     long_description = f.read()
 
-with open("requirements.txt", "r") as f:
-    reqs = [line.strip() for line in f if not any(pkg in line for pkg in exclude_packages)]
+with open("requirements.txt") as f:
+    reqs = [
+        line.strip() for line in f if not any(pkg in line for pkg in exclude_packages)
+    ]
 
 setup(
     name="gpt-researcher",
     version=LATEST_VERSION,
     description="GPT Researcher is an autonomous agent designed for comprehensive web research on any task",
-    package_dir={'gpt_researcher': 'gpt_researcher'},
+    package_dir={"gpt_researcher": "gpt_researcher"},
     packages=find_packages(exclude=exclude_packages),
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -40,8 +42,6 @@ setup(
         "Programming Language :: Python :: 3.12",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
-    python_requires='>=3.11',
+    python_requires=">=3.11",
     install_requires=reqs,
-
-
 )

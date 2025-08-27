@@ -1,7 +1,13 @@
+<<<<<<< HEAD
 import logging
+=======
+>>>>>>> newdev
 import asyncio
-from gpt_researcher import GPTResearcher
+import logging
+
 from backend.server.server_utils import CustomLogsHandler  # Update import
+from gpt_researcher import GPTResearcher
+
 
 async def run() -> None:
     """Run the research process and generate a report."""
@@ -19,7 +25,7 @@ async def run() -> None:
         report_source=report_source,
         tone=tone,
         config_path=config_path,
-        websocket=custom_logs_handler
+        websocket=custom_logs_handler,
     )
 
     await researcher.conduct_research()  # Conduct the research
@@ -27,6 +33,7 @@ async def run() -> None:
     logging.info("Report generated successfully.")  # Log report generation
 
     return report
+
 
 # Run the asynchronous function using asyncio
 if __name__ == "__main__":

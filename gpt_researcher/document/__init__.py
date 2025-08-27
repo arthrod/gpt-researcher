@@ -1,5 +1,9 @@
 from .document import DocumentLoader
-from .online_document import OnlineDocumentLoader
 from .langchain_document import LangChainDocumentLoader
+from .online_document import OnlineDocumentLoader
 
+<<<<<<< HEAD
 __all__ = ['DocumentLoader', 'LangChainDocumentLoader', 'OnlineDocumentLoader']
+=======
+__all__ = ["DocumentLoader", "LangChainDocumentLoader", "OnlineDocumentLoader"]
+>>>>>>> newdev

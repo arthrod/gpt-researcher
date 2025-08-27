@@ -15,21 +15,30 @@ logger = logging.getLogger(__name__)
 try:
     # Check if langchain-mcp-adapters is available
     from langchain_mcp_adapters.client import MultiServerMCPClient
+
     HAS_MCP_ADAPTERS = True
     logger.debug("langchain-mcp-adapters is available")
 
     # Import core MCP components
     from .client import MCPClientManager
-    from .tool_selector import MCPToolSelector
     from .research import MCPResearchSkill
     from .streaming import MCPStreamer
+<<<<<<< HEAD
+=======
+    from .tool_selector import MCPToolSelector
+>>>>>>> newdev
 
     __all__ = [
         "HAS_MCP_ADAPTERS",
         "MCPClientManager",
         "MCPResearchSkill",
         "MCPStreamer",
+<<<<<<< HEAD
         "MCPToolSelector"
+=======
+        "MCPToolSelector",
+        "MultiServerMCPClient",
+>>>>>>> newdev
     ]
 
 except ImportError as e:
@@ -40,4 +49,8 @@ except ImportError as e:
 except Exception as e:
     logger.error(f"Unexpected error importing MCP components: {e}")
     HAS_MCP_ADAPTERS = False
+<<<<<<< HEAD
     __all__ = ["HAS_MCP_ADAPTERS"]
+=======
+    __all__ = ["HAS_MCP_ADAPTERS"]
+>>>>>>> newdev

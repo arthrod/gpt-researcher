@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from contextlib import asynccontextmanager
 import math
 from pathlib import Path
@@ -7,17 +8,31 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from typing import Dict, Literal, cast, Tuple
 import requests
+=======
+>>>>>>> newdev
 import asyncio
 import logging
+import math
+import random
+import traceback
 
-from ..utils import get_relevant_images, extract_title, get_text_from_soup, clean_soup
+from contextlib import asynccontextmanager
+from pathlib import Path
+from typing import ClassVar, Literal, cast
+from urllib.parse import urlparse
+
+import requests
+
+from bs4 import BeautifulSoup
+
+from ..utils import clean_soup, extract_title, get_relevant_images, get_text_from_soup
 
 
 class NoDriverScraper:
     logger = logging.getLogger(__name__)
     max_browsers = 3
     browser_load_threshold = 5
-    browsers: set["NoDriverScraper.Browser"] = set()
+    browsers: ClassVar[set["NoDriverScraper.Browser"]] = set()
     browsers_lock = asyncio.Lock()
 
     @staticmethod
@@ -37,7 +52,7 @@ class NoDriverScraper:
             self.processing_count = 0
             self.has_blank_page = True
             self.allowed_requests_times = {}
-            self.domain_semaphores: Dict[str, asyncio.Semaphore] = {}
+            self.domain_semaphores: dict[str, asyncio.Semaphore] = {}
             self.tab_mode = True
             self.max_scroll_percent = 500
             self.stopping = False
@@ -91,7 +106,7 @@ class NoDriverScraper:
                 else:
                     timeout = math.ceil(timeout)
                     await page.wait_for_ready_state(until, timeout=timeout)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 NoDriverScraper.logger.debug(
                     f"timeout waiting for {until} after {timeout} seconds"
                 )
@@ -139,9 +154,13 @@ class NoDriverScraper:
 
             except Exception as e:
                 # Log error but don't block the request
+<<<<<<< HEAD
                 NoDriverScraper.logger.warning(
                     f"Rate limiting error for {url}: {e!s}"
                 )
+=======
+                NoDriverScraper.logger.warning(f"Rate limiting error for {url}: {e!s}")
+>>>>>>> newdev
 
         async def stop(self):
             """
@@ -209,6 +228,7 @@ class NoDriverScraper:
         self.session = session
         self.debug = False
 
+<<<<<<< HEAD
     async def scrape_async(self) -> Tuple[str, list[dict], str]:
         """
         Fetch the page at self.url using a headless browser and extract its main text, relevant image URLs, and title.
@@ -221,6 +241,10 @@ class NoDriverScraper:
                 - image_urls: a list of image metadata/dictionaries relevant to the page (empty on error).
                 - title: the extracted page title (empty on error).
         """
+=======
+    async def scrape_async(self) -> tuple[str, list[dict], str]:
+        """Returns tuple of (text, image_urls, title)"""
+>>>>>>> newdev
         if not self.url:
             return (
                 "A URL was not specified, cancelling request to browse website.",

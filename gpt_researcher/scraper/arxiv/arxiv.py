@@ -2,17 +2,22 @@ from langchain_community.retrievers import ArxivRetriever
 
 
 class ArxivScraper:
-
     def __init__(self, link, session=None):
         self.link = link
         self.session = session
 
     def scrape(self):
         """
+<<<<<<< HEAD
         Scrape an arXiv entry from self.link and return assembled context, images list, and the document title.
         
         Uses the last path segment of self.link as the arXiv query, retrieves up to two documents via ArxivRetriever, and builds a context string containing the published date, authors, and the first document's page content.
         
+=======
+        The function scrapes relevant documents from Arxiv based on a given link and returns the content
+        of the first document.
+
+>>>>>>> newdev
         Returns:
             tuple:
                 context (str): "Published: {Published}; Author: {Authors}; Content: {page_content}" built from the first retrieved document.

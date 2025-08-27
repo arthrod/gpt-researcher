@@ -1,8 +1,15 @@
 import asyncio
+<<<<<<< HEAD
 from typing import List, Dict, Set
+=======
+>>>>>>> newdev
 
-from ..context.compression import ContextCompressor, WrittenContentCompressor, VectorstoreCompressor
 from ..actions.utils import stream_output
+from ..context.compression import (
+    ContextCompressor,
+    VectorstoreCompressor,
+    WrittenContentCompressor,
+)
 
 
 class ContextManager:
@@ -24,7 +31,7 @@ class ContextManager:
             documents=pages,
             embeddings=self.researcher.memory.get_embeddings(),
             prompt_family=self.researcher.prompt_family,
-            **self.researcher.kwargs
+            **self.researcher.kwargs,
         )
         return await context_compressor.async_get_context(
             query=query, max_results=10, cost_callback=self.researcher.add_costs
@@ -37,24 +44,32 @@ class ContextManager:
                 "fetching_query_format",
                 f" Getting relevant content based on query: {query}...",
                 self.researcher.websocket,
-                )
+            )
         vectorstore_compressor = VectorstoreCompressor(
-            self.researcher.vector_store, filter=filter, prompt_family=self.researcher.prompt_family,
-            **self.researcher.kwargs
+            self.researcher.vector_store,
+            filter=filter,
+            prompt_family=self.researcher.prompt_family,
+            **self.researcher.kwargs,
         )
-        return await vectorstore_compressor.async_get_context(query=query, max_results=8)
+        return await vectorstore_compressor.async_get_context(
+            query=query, max_results=8
+        )
 
     async def get_similar_written_contents_by_draft_section_titles(
         self,
         current_subtopic: str,
-        draft_section_titles: List[str],
-        written_contents: List[Dict],
-        max_results: int = 10
-    ) -> List[str]:
-        all_queries = [current_subtopic] + draft_section_titles
+        draft_section_titles: list[str],
+        written_contents: list[dict],
+        max_results: int = 10,
+    ) -> list[str]:
+        all_queries = [current_subtopic, *draft_section_titles]
 
-        async def process_query(query: str) -> Set[str]:
-            return set(await self.__get_similar_written_contents_by_query(query, written_contents, **self.researcher.kwargs))
+        async def process_query(query: str) -> set[str]:
+            return set(
+                await self.__get_similar_written_contents_by_query(
+                    query, written_contents, **self.researcher.kwargs
+                )
+            )
 
         results = await asyncio.gather(*[process_query(query) for query in all_queries])
         relevant_contents = set().union(*results)
@@ -62,12 +77,13 @@ class ContextManager:
 
         return relevant_contents
 
-    async def __get_similar_written_contents_by_query(self,
-                                                      query: str,
-                                                      written_contents: List[Dict],
-                                                      similarity_threshold: float = 0.5,
-                                                      max_results: int = 10
-                                                      ) -> List[str]:
+    async def __get_similar_written_contents_by_query(
+        self,
+        query: str,
+        written_contents: list[dict],
+        similarity_threshold: float = 0.5,
+        max_results: int = 10,
+    ) -> list[str]:
         if self.researcher.verbose:
             await stream_output(
                 "logs",
@@ -80,8 +96,10 @@ class ContextManager:
             documents=written_contents,
             embeddings=self.researcher.memory.get_embeddings(),
             similarity_threshold=similarity_threshold,
-            **self.researcher.kwargs
+            **self.researcher.kwargs,
         )
         return await written_content_compressor.async_get_context(
-            query=query, max_results=max_results, cost_callback=self.researcher.add_costs
+            query=query,
+            max_results=max_results,
+            cost_callback=self.researcher.add_costs,
         )

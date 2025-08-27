@@ -1,14 +1,21 @@
-import os
 import json
-import requests
-from typing import List, Dict
+import os
+
 from urllib.parse import urljoin
 
+import requests
 
+<<<<<<< HEAD
+=======
+from ..utils import build_domain_query
+
+
+>>>>>>> newdev
 class SearxSearch:
     """
     SearxNG API Retriever
     """
+
     def __init__(self, query: str, query_domains=None):
         """
         Initializes the SearxSearch object
@@ -16,7 +23,7 @@ class SearxSearch:
             query: Search query string
         """
         self.query = query
-        self.query_domains = query_domains or None
+        self.query_domains = query_domains or []
         self.base_url = self.get_searxng_url()
 
     def get_searxng_url(self) -> str:
@@ -27,8 +34,8 @@ class SearxSearch:
         """
         try:
             base_url = os.environ["SEARX_URL"]
-            if not base_url.endswith('/'):
-                base_url += '/'
+            if not base_url.endswith("/"):
+                base_url += "/"
             return base_url
         except KeyError:
             raise Exception(
@@ -36,7 +43,7 @@ class SearxSearch:
                 "You can find public instances at https://searx.space/"
             )
 
-    def search(self, max_results: int = 10) -> List[Dict[str, str]]:
+    def search(self, max_results: int = 10) -> list[dict[str, str]]:
         """
         Perform the search query against a SearxNG instance and return normalized results.
         
@@ -54,30 +61,37 @@ class SearxSearch:
             Exception: If the HTTP request fails (network/HTTP error) or if the response cannot be decoded as JSON.
         """
         search_url = urljoin(self.base_url, "search")
-        # TODO: Add support for query domains
+        query = build_domain_query(self.query, self.query_domains)
         params = {
             # The search query.
+<<<<<<< HEAD
             'q': self.query,
+=======
+            "q": query,
+>>>>>>> newdev
             # Output format of results. Format needs to be activated in searxng config.
-            'format': 'json'
+            "format": "json",
         }
 
         try:
             response = requests.get(
-                search_url,
-                params=params,
-                headers={'Accept': 'application/json'}
+                search_url, params=params, headers={"Accept": "application/json"}
             )
             response.raise_for_status()
             results = response.json()
 
             # Normalize results to match the expected format
             search_response = []
-            for result in results.get('results', [])[:max_results]:
-                search_response.append({
-                    "href": result.get('url', ''),
-                    "body": result.get('content', '')
-                })
+            for idx, result in enumerate(
+                results.get("results", [])[:max_results], start=1
+            ):
+                search_response.append(
+                    {
+                        "id": idx,
+                        "href": result.get("url", ""),
+                        "body": result.get("content", ""),
+                    }
+                )
 
             return search_response
 

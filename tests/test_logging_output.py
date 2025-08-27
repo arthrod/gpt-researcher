@@ -1,12 +1,21 @@
+<<<<<<< HEAD
 import pytest
 from pathlib import Path
+=======
+>>>>>>> newdev
 import json
 import logging
-from fastapi import WebSocket
+
 from datetime import datetime
+from pathlib import Path
+
+import pytest
+
+from fastapi import WebSocket
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 class TestWebSocket(WebSocket):
     def __init__(self):
@@ -36,11 +45,15 @@ class TestWebSocket(WebSocket):
         logger.info(f"WebSocket received event: {event}")
         self.events.append(event)
 
+
 @pytest.mark.asyncio
 async def test_log_output_file():
     """Test to verify logs are properly written to output file"""
-    from gpt_researcher.agent import GPTResearcher
     from backend.server.server_utils import CustomLogsHandler
+<<<<<<< HEAD
+=======
+    from gpt_researcher.agent import GPTResearcher
+>>>>>>> newdev
 
     # 1. Setup like the main app
     websocket = TestWebSocket()
@@ -66,7 +79,11 @@ async def test_log_output_file():
 
     with open(output_files[-1]) as f:
         data = json.load(f)
+<<<<<<< HEAD
         assert len(data.get('events', [])) > 0, "No events in output file"
+=======
+        assert len(data.get("events", [])) > 0, "No events in output file"
+>>>>>>> newdev
 
     # Clean up the output files
     for output_file in output_files:

@@ -3,12 +3,15 @@ MCP Client Management Module
 
 Handles MCP client creation, configuration conversion, and connection management.
 """
+
 import asyncio
 import logging
-from typing import List, Dict, Any, Optional
+
+from typing import Any
 
 try:
     from langchain_mcp_adapters.client import MultiServerMCPClient
+
     HAS_MCP_ADAPTERS = True
 except ImportError:
     HAS_MCP_ADAPTERS = False
@@ -19,17 +22,17 @@ logger = logging.getLogger(__name__)
 class MCPClientManager:
     """
     Manages MCP client lifecycle and configuration.
-    
+
     Responsible for:
     - Converting GPT Researcher MCP configs to langchain format
     - Creating and managing MultiServerMCPClient instances
     - Handling client cleanup and resource management
     """
 
-    def __init__(self, mcp_configs: List[Dict[str, Any]]):
+    def __init__(self, mcp_configs: list[dict[str, Any]]):
         """
         Initialize the MCP client manager.
-        
+
         Args:
             mcp_configs: List of MCP server configurations from GPT Researcher
         """
@@ -37,8 +40,9 @@ class MCPClientManager:
         self._client = None
         self._client_lock = asyncio.Lock()
 
-    def convert_configs_to_langchain_format(self) -> Dict[str, Dict[str, Any]]:
+    def convert_configs_to_langchain_format(self) -> dict[str, dict[str, Any]]:
         """
+<<<<<<< HEAD
         Convert the stored GPT Researcher MCP server configurations into the format expected by langchain-mcp-adapters.
         
         This inspects each entry in self.mcp_configs and produces a per-server configuration mapping suitable for MultiServerMCPClient:
@@ -54,6 +58,10 @@ class MCPClientManager:
           - Includes "env" when provided.
         - If "connection_token" is present, includes it as "token".
         
+=======
+        Convert GPT Researcher MCP configs to langchain-mcp-adapters format.
+
+>>>>>>> newdev
         Returns:
             Dict[str, Dict[str, Any]]: Mapping of server names to server configuration dictionaries ready for MultiServerMCPClient.
         """
@@ -61,7 +69,11 @@ class MCPClientManager:
 
         for i, config in enumerate(self.mcp_configs):
             # Generate server name
+<<<<<<< HEAD
             server_name = config.get("name", f"mcp_server_{i+1}")
+=======
+            server_name = config.get("name", f"mcp_server_{i + 1}")
+>>>>>>> newdev
 
             # Build the server config
             server_config = {}
@@ -87,6 +99,7 @@ class MCPClientManager:
                 server_config["transport"] = connection_type
 
             # Handle stdio transport configuration
+<<<<<<< HEAD
             if server_config.get("transport") == "stdio":
                 if config.get("command"):
                     server_config["command"] = config["command"]
@@ -101,6 +114,21 @@ class MCPClientManager:
                     server_env = config.get("env", {})
                     if server_env:
                         server_config["env"] = server_env
+=======
+            if server_config.get("transport") == "stdio" and config.get("command"):
+                server_config["command"] = config["command"]
+
+                # Handle server_args
+                server_args = config.get("args", [])
+                if isinstance(server_args, str):
+                    server_args = server_args.split()
+                server_config["args"] = server_args
+
+                # Handle environment variables
+                server_env = config.get("env", {})
+                if server_env:
+                    server_config["env"] = server_env
+>>>>>>> newdev
 
             # Add authentication if provided
             if config.get("connection_token"):
@@ -110,12 +138,17 @@ class MCPClientManager:
 
         return server_configs
 
-    async def get_or_create_client(self) -> Optional[object]:
+    async def get_or_create_client(self) -> object | None:
         """
+<<<<<<< HEAD
         Get or create a MultiServerMCPClient and cache it on the manager.
         
         If a client already exists, it is returned. If the langchain-mcp-adapters are missing, no MCP configurations are provided, or client creation fails, this method returns None. On success the created client is stored in self._client for subsequent calls.
         
+=======
+        Get or create a MultiServerMCPClient with proper lifecycle management.
+
+>>>>>>> newdev
         Returns:
             Optional[object]: The existing or newly created MultiServerMCPClient instance, or None if unavailable or creation failed.
         """
@@ -162,14 +195,19 @@ class MCPClientManager:
                     # Always clear the reference
                     self._client = None
 
-    async def get_all_tools(self) -> List:
+    async def get_all_tools(self) -> list:
         """
+<<<<<<< HEAD
         Return a list of all tools exposed by the configured MCP servers.
         
         This coroutine obtains (or lazily creates) the MCP client and requests tools from all configured servers.
         If no client can be created, no tools are available, or an error occurs while fetching tools, an empty list
         is returned rather than raising.
         
+=======
+        Get all available tools from MCP servers.
+
+>>>>>>> newdev
         Returns:
             List: A list of tool objects provided by the MCP servers; empty if none are available or on error.
         """
@@ -190,4 +228,8 @@ class MCPClientManager:
 
         except Exception as e:
             logger.error(f"Error getting MCP tools: {e}")
+<<<<<<< HEAD
             return []
+=======
+            return []
+>>>>>>> newdev

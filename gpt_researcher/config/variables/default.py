@@ -31,11 +31,15 @@ DEFAULT_CONFIG: BaseConfig = {
     "LLM_KWARGS": {},
     "EMBEDDING_KWARGS": {},
     "VERBOSE": False,
+    "APPEND_SOURCES": False,
     # Deep research specific settings
     "DEEP_RESEARCH_BREADTH": 3,
     "DEEP_RESEARCH_DEPTH": 2,
     "DEEP_RESEARCH_CONCURRENCY": 4,
+<<<<<<< HEAD
 
+=======
+>>>>>>> newdev
     # MCP retriever specific settings
     "MCP_SERVERS": [],  # List of predefined MCP server configurations
     "MCP_AUTO_TOOL_SELECTION": True,  # Whether to automatically select the best tool for a query

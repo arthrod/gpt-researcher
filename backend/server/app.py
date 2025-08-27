@@ -1,6 +1,8 @@
-from fastapi import FastAPI, WebSocket
-from fastapi.middleware.cors import CORSMiddleware
 import logging
+
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+
 from backend.chat.chat import ChatAgentWithMemory
 
 logger = logging.getLogger(__name__)
@@ -16,14 +18,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 async def read_root():
     return {"message": "Welcome to GPT Researcher"}
 
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    chat_agent = ChatAgentWithMemory(report="Sample report", config_path="path/to/config", headers={})
+    chat_agent = ChatAgentWithMemory(
+        report="Sample report", config_path="path/to/config", headers={}
+    )
     try:
         while True:
             data = await websocket.receive_text()

@@ -1,4 +1,5 @@
 import json_repair
+
 from langchain_community.adapters.openai import convert_openai_messages
 from langchain_core.utils.json import parse_json_markdown
 from loguru import logger
@@ -12,7 +13,6 @@ async def call_model(
     model: str,
     response_format: str | None = None,
 ):
-
     cfg = Config()
     lc_messages = convert_openai_messages(prompt)
 

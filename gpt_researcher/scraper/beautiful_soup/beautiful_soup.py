@@ -1,19 +1,25 @@
 from bs4 import BeautifulSoup
 
-from ..utils import get_relevant_images, extract_title, get_text_from_soup, clean_soup
+from ..utils import clean_soup, extract_title, get_relevant_images, get_text_from_soup
+
 
 class BeautifulSoupScraper:
-
     def __init__(self, link, session=None):
         self.link = link
         self.session = session
 
     def scrape(self):
         """
+<<<<<<< HEAD
         Scrape the webpage at self.link and return its cleaned text, relevant image URLs, and title.
         
         Performs an HTTP GET for the stored URL, parses the HTML with BeautifulSoup, applies cleaning, and extracts the page text, a list of relevant image URLs, and the page title.
         
+=======
+        This function scrapes content from a webpage by making a GET request, parsing the HTML using
+        BeautifulSoup, and extracting script and style elements before returning the cleaned content.
+
+>>>>>>> newdev
         Returns:
             tuple:
                 content (str): Cleaned text content of the page (empty string on failure).

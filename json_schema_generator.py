@@ -1,6 +1,9 @@
 import json
-from typing import Dict, Any
+
+from typing import Any
+
 from pydantic import BaseModel
+
 
 class UserSchema(BaseModel):
     id: int
@@ -9,8 +12,10 @@ class UserSchema(BaseModel):
     age: int
     is_active: bool
 
-def generate_structured_json(schema: BaseModel, data: Dict[str, Any]) -> str:
+
+def generate_structured_json(schema: BaseModel, data: dict[str, Any]) -> str:
     """
+<<<<<<< HEAD
     Generate a JSON string from a Pydantic schema class and input data.
     
     Attempts to instantiate the given Pydantic model class with `data` and returns a pretty-printed JSON string of the resulting model's dict. On failure returns a string beginning with "Error generating JSON: " followed by the exception message.
@@ -19,6 +24,14 @@ def generate_structured_json(schema: BaseModel, data: Dict[str, Any]) -> str:
         schema: A Pydantic model class (subclass of BaseModel), not an instance.
         data: Mapping of field names to values to pass to the model constructor.
     
+=======
+    Generate structured JSON output based on provided schema
+
+    Args:
+        schema: Pydantic model defining the schema structure
+        data: Dictionary containing the data to be structured
+
+>>>>>>> newdev
     Returns:
         A JSON-formatted string of the structured data, or an error string if instantiation/serialization fails.
     """
@@ -29,6 +42,10 @@ def generate_structured_json(schema: BaseModel, data: Dict[str, Any]) -> str:
         return json.dumps(structured_data.dict(), indent=2)
     except Exception as e:
         return f"Error generating JSON: {e!s}"
+<<<<<<< HEAD
+=======
+
+>>>>>>> newdev
 
 # Example usage
 if __name__ == "__main__":
@@ -37,7 +54,7 @@ if __name__ == "__main__":
         "name": "John Doe",
         "email": "john@example.com",
         "age": 30,
-        "is_active": True
+        "is_active": True,
     }
 
     json_output = generate_structured_json(UserSchema, sample_data)

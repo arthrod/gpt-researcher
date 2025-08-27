@@ -4,6 +4,7 @@ MCP Retriever Module
 This module contains only the MCP retriever implementation.
 The core MCP functionality has been moved to gpt_researcher.mcp module.
 """
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,12 +12,14 @@ logger = logging.getLogger(__name__)
 try:
     # Check if langchain-mcp-adapters is available
     from langchain_mcp_adapters.client import MultiServerMCPClient
+
     HAS_MCP_ADAPTERS = True
     logger.debug("langchain-mcp-adapters is available")
 
     # Import the retriever
     from .retriever import MCPRetriever
-    __all__ = ["MCPRetriever"]
+
+    __all__ = ["MCPRetriever", "MultiServerMCPClient"]
     logger.debug("MCPRetriever imported successfully")
 
 except ImportError as e:
@@ -29,4 +32,8 @@ except Exception as e:
     # Catch any other exception that might occur
     logger.error(f"Unexpected error importing MCPRetriever: {e}")
     MCPRetriever = None
+<<<<<<< HEAD
     __all__ = []
+=======
+    __all__ = []
+>>>>>>> newdev

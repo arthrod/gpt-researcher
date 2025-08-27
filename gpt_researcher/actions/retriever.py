@@ -57,6 +57,10 @@ def get_retriever(retriever: str):
             from gpt_researcher.retrievers import PubMedCentralSearch
 
             return PubMedCentralSearch
+        case "jina":
+            from gpt_researcher.retrievers import JinaSearch
+
+            return JinaSearch
         case "custom":
             from gpt_researcher.retrievers import CustomRetriever
 
@@ -107,7 +111,13 @@ def get_retrievers(headers: dict[str, str], cfg):
 
     # Convert retriever names to actual retriever classes
     # Use get_default_retriever() as a fallback for any invalid retriever names
+<<<<<<< HEAD
     retriever_classes = [get_retriever(r) or get_default_retriever() for r in retrievers]
+=======
+    retriever_classes = [
+        get_retriever(r) or get_default_retriever() for r in retrievers
+    ]
+>>>>>>> newdev
 
     return retriever_classes
 

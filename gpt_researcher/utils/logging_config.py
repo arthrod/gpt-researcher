@@ -1,7 +1,12 @@
-import logging
 import json
+<<<<<<< HEAD
+=======
+import logging
+
+>>>>>>> newdev
 from datetime import datetime
 from pathlib import Path
+
 
 class JSONResearchHandler:
     def __init__(self, json_file):
@@ -14,16 +19,14 @@ class JSONResearchHandler:
                 "sources": [],
                 "context": [],
                 "report": "",
-                "costs": 0.0
-            }
+                "costs": 0.0,
+            },
         }
 
     def log_event(self, event_type: str, data: dict):
-        self.research_data["events"].append({
-            "timestamp": datetime.now().isoformat(),
-            "type": event_type,
-            "data": data
-        })
+        self.research_data["events"].append(
+            {"timestamp": datetime.now().isoformat(), "type": event_type, "data": data}
+        )
         self._save_json()
 
     def update_content(self, key: str, value):
@@ -31,8 +34,9 @@ class JSONResearchHandler:
         self._save_json()
 
     def _save_json(self):
-        with open(self.json_file, 'w') as f:
+        with open(self.json_file, "w") as f:
             json.dump(self.research_data, f, indent=2)
+
 
 def setup_research_logging():
     # Create logs directory if it doesn't exist
@@ -60,10 +64,16 @@ def setup_research_logging():
     # Configure file handler for research logs
     file_handler = logging.FileHandler(log_file)
     file_handler.setLevel(logging.INFO)
+<<<<<<< HEAD
     file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+=======
+    file_handler.setFormatter(
+        logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    )
+>>>>>>> newdev
 
     # Get research logger and configure it
-    research_logger = logging.getLogger('research')
+    research_logger = logging.getLogger("research")
     research_logger.setLevel(logging.INFO)
 
     # Remove any existing handlers to avoid duplicates
@@ -74,7 +84,9 @@ def setup_research_logging():
 
     # Add stream handler for console output
     console_handler = logging.StreamHandler()
-    console_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    console_handler.setFormatter(
+        logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    )
     research_logger.addHandler(console_handler)
 
     # Prevent propagation to root logger to avoid duplicate logs
@@ -85,7 +97,9 @@ def setup_research_logging():
 
     return str(log_file), str(json_file), research_logger, json_handler
 
+
 def get_research_logger():
+<<<<<<< HEAD
     """
     Return the logger named 'research'.
     
@@ -97,6 +111,10 @@ def get_research_logger():
         logging.Logger: The logger instance for research-related logging.
     """
     return logging.getLogger('research')
+=======
+    return logging.getLogger("research")
+
+>>>>>>> newdev
 
 def get_json_handler():
-    return getattr(logging.getLogger('research'), 'json_handler', None)
+    return getattr(logging.getLogger("research"), "json_handler", None)

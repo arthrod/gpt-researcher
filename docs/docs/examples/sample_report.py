@@ -1,10 +1,13 @@
-import nest_asyncio  # required for notebooks
+import asyncio
+
+import nest_asyncio
+
+from gpt_researcher import GPTResearcher
 
 nest_asyncio.apply()
 
-from gpt_researcher import GPTResearcher
-import asyncio
 
+<<<<<<< HEAD
 
 async def get_report(query: str, report_type: str, custom_prompt: str = None):
     """
@@ -30,6 +33,11 @@ async def get_report(query: str, report_type: str, custom_prompt: str = None):
     """
     researcher = GPTResearcher(query, report_type)
     research_result = await researcher.conduct_research()
+=======
+async def get_report(query: str, report_type: str, custom_prompt: str | None = None):
+    researcher = GPTResearcher(query, report_type)
+    _research_result = await researcher.conduct_research()
+>>>>>>> newdev
 
     # Generate report with optional custom prompt
     report = await researcher.write_report(custom_prompt=custom_prompt)
@@ -48,14 +56,22 @@ if __name__ == "__main__":
     report_type = "research_report"
 
     # Standard report
-    report, context, costs, images, sources = asyncio.run(get_report(query, report_type))
+    report, context, costs, images, sources = asyncio.run(
+        get_report(query, report_type)
+    )
 
     print("Standard Report:")
     print(report)
 
     # Custom report with specific formatting requirements
     custom_prompt = "Answer in short, 2 paragraphs max without citations. Focus on the most important facts for investors."
+<<<<<<< HEAD
     custom_report, _, _, _, _ = asyncio.run(get_report(query, report_type, custom_prompt))
+=======
+    custom_report, _, _, _, _ = asyncio.run(
+        get_report(query, report_type, custom_prompt)
+    )
+>>>>>>> newdev
 
     print("\nCustomized Short Report:")
     print(custom_report)
