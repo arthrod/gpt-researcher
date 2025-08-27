@@ -1,4 +1,3 @@
-
 from langchain.callbacks.manager import CallbackManagerForRetrieverRun
 from langchain.schema import Document
 from langchain.schema.retriever import BaseRetriever

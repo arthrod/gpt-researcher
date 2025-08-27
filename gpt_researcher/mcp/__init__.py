@@ -26,7 +26,6 @@ try:
 
     __all__ = [
         "HAS_MCP_ADAPTERS",
-        "HAS_MCP_ADAPTERS",
         "MCPClientManager",
         "MCPResearchSkill",
         "MCPStreamer",

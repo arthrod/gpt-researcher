@@ -30,7 +30,20 @@ def generate_structured_json(schema: BaseModel, data: dict[str, Any]) -> str:
         # Convert to JSON string
         return json.dumps(structured_data.dict(), indent=2)
     except Exception as e:
-        return f"Error generating JSON: {e!s}"
+import json
+from typing import Any
+from pydantic import BaseModel
+
+def generate_structured_json(schema: type[BaseModel], data: dict[str, Any]) -> str:
+    try:
+        structured_data = schema(**data)
+        # Pydantic v2: model_dump; fallback to dict() if v1
+        to_dict = getattr(structured_data, "model_dump", None)
+        payload = to_dict() if callable(to_dict) else structured_data.dict()
+        return json.dumps(payload, indent=2)
+    except Exception as e:
+        raise ValueError(f"Error generating JSON: {e!s}") from e
+
 
 # Example usage
 if __name__ == "__main__":

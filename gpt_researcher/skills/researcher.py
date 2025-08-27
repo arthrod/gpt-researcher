@@ -8,7 +8,6 @@ from ..actions.query_processing import get_search_results, plan_research_outline
 from ..actions.utils import stream_output
 from ..document import DocumentLoader, LangChainDocumentLoader, OnlineDocumentLoader
 from ..retrievers.utils import jina_rerank
-from ..utils.constants import MCP_SENTINEL_URL
 from ..utils.enum import ReportSource
 from ..utils.logging_config import get_json_handler
 
@@ -778,9 +777,7 @@ class ResearchConductor:
 
                 if content and content.strip():
                     # Create a well-formatted context entry
-                    # Normalize URL for comparison to handle casing/formatting variations
-                    normalized_url = str(url).strip().lower() if url else ""
-                    if normalized_url and normalized_url != MCP_SENTINEL_URL.lower():
+                    if url and url != "mcp://llm_analysis":
                         citation = f"\n\n*Source: {title} ({url})*"
                     else:
                         citation = f"\n\n*Source: {title}*"

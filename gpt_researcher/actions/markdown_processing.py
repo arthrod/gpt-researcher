@@ -55,6 +55,8 @@ def extract_sections(markdown_text: str) -> list[dict[str, str]]:
     parsed_md = markdown.markdown(markdown_text)
 
     pattern = r"<h\d>(.*?)</h\d>(.*?)(?=<h\d>|$)"
+
+    pattern = r'<h\d>(.*?)</h\d>(.*?)(?=<h\d>|$)'
     matches = re.findall(pattern, parsed_md, re.DOTALL)
 
     for title, content in matches:

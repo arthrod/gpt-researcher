@@ -1,4 +1,3 @@
-
 from .utils.llms import call_model
 from .utils.views import print_agent_output
 
@@ -52,6 +51,7 @@ You MUST return nothing but a JSON in the following format:
         return response
 
     async def run(self, draft_state: dict):
+        print_agent_output("Rewriting draft based on feedback...", agent="REVISOR")
         print_agent_output("Rewriting draft based on feedback...", agent="REVISOR")
         revision = await self.revise_draft(draft_state)
 

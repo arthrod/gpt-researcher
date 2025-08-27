@@ -77,19 +77,20 @@ class MCPClientManager:
                 server_config["transport"] = connection_type
 
             # Handle stdio transport configuration
-            if server_config.get("transport") == "stdio" and config.get("command"):
-                server_config["command"] = config["command"]
+            if server_config.get("transport") == "stdio":
+                if config.get("command"):
+                    server_config["command"] = config["command"]
 
-                # Handle server_args
-                server_args = config.get("args", [])
-                if isinstance(server_args, str):
-                    server_args = server_args.split()
-                server_config["args"] = server_args
+                    # Handle server_args
+                    server_args = config.get("args", [])
+                    if isinstance(server_args, str):
+                        server_args = server_args.split()
+                    server_config["args"] = server_args
 
-                # Handle environment variables
-                server_env = config.get("env", {})
-                if server_env:
-                    server_config["env"] = server_env
+                    # Handle environment variables
+                    server_env = config.get("env", {})
+                    if server_env:
+                        server_config["env"] = server_env
 
             # Add authentication if provided
             if config.get("connection_token"):

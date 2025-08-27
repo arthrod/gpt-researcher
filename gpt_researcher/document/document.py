@@ -27,8 +27,8 @@ class DocumentLoader:
                     file_extension = file_extension_with_dot.strip(".").lower()
                     tasks.append(self._load_document(file_path, file_extension))
 
-        elif isinstance(self.path, str | bytes | os.PathLike):
-            for root, _dirs, files in os.walk(self.path):
+        elif isinstance(self.path, (str, bytes, os.PathLike)):
+            for root, dirs, files in os.walk(self.path):
                 for file in files:
                     file_path = os.path.join(root, file)
                     file_name, file_extension_with_dot = os.path.splitext(file)

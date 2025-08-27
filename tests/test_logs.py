@@ -10,7 +10,8 @@ project_root = Path(__file__).parent.parent
 sys.path.append(str(project_root))
 
 
-def test_logs_creation():
+@pytest.mark.asyncio
+async def test_logs_creation():
     # Print current working directory
     print(f"Current working directory: {os.getcwd()}")
 
@@ -41,6 +42,7 @@ def test_logs_creation():
         print("✓ Added test log entry")
 
     except Exception as e:
+        print(f"❌ Error: {e!s}")
         print(f"❌ Error: {e!s}")
         print(f"Error type: {type(e)}")
         import traceback

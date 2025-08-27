@@ -2,7 +2,6 @@
 Wrapper for langchain vector store
 """
 
-
 from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import VectorStore

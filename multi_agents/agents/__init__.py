@@ -14,6 +14,7 @@ __all__ = [
     "EditorAgent",
     "HumanAgent",
     "HumanAgent",
+    "HumanAgent",
     "PublisherAgent",
     "ResearchAgent",
     "ReviewerAgent",

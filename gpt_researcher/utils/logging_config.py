@@ -21,9 +21,11 @@ class JSONResearchHandler:
         }
 
     def log_event(self, event_type: str, data: dict):
-        self.research_data["events"].append(
-            {"timestamp": datetime.now().isoformat(), "type": event_type, "data": data}
-        )
+        self.research_data["events"].append({
+            "timestamp": datetime.now().isoformat(),
+            "type": event_type,
+            "data": data,
+        })
         self._save_json()
 
     def update_content(self, key: str, value):
