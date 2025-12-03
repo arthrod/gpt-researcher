@@ -59,6 +59,39 @@ class GPTResearcher:
         mcp_configs: list[dict] | None = None,
         mcp_max_iterations: int | None = None,
         mcp_strategy: str | None = None,
+        # Config options
+        retriever: str | None = None,
+        embedding: str | None = None,
+        similarity_threshold: float | None = None,
+        fast_llm: str | None = None,
+        smart_llm: str | None = None,
+        strategic_llm: str | None = None,
+        fast_token_limit: int | None = None,
+        smart_token_limit: int | None = None,
+        strategic_token_limit: int | None = None,
+        browse_chunk_max_length: int | None = None,
+        summary_token_limit: int | None = None,
+        temperature: float | None = None,
+        user_agent: str | None = None,
+        max_search_results_per_query: int | None = None,
+        memory_backend: str | None = None,
+        total_words: int | None = None,
+        curate_sources: bool | None = None,
+        max_iterations: int | None = None,
+        language: str | None = None,
+        scraper: str | None = None,
+        max_scraper_workers: int | None = None,
+        scraper_rate_limit_delay: float | None = None,
+        doc_path: str | None = None,
+        llm_kwargs: dict | None = None,
+        embedding_kwargs: dict | None = None,
+        deep_research_concurrency: int | None = None,
+        deep_research_depth: int | None = None,
+        deep_research_breadth: int | None = None,
+        mcp_auto_tool_selection: bool | None = None,
+        mcp_use_llm_args: bool | None = None,
+        mcp_allowed_root_paths: list[str] | None = None,
+        reasoning_effort: str | None = None,
         **kwargs
     ):
         """
@@ -91,44 +124,19 @@ class GPTResearcher:
             log_handler: Handler for logging events.
             prompt_family: Family of prompts to use.
             mcp_configs (list[dict], optional): List of MCP server configurations.
-                Each dictionary can contain:
-                - name (str): Name of the MCP server
-                - command (str): Command to start the server
-                - args (list[str]): Arguments for the server command
-                - tool_name (str): Specific tool to use on the MCP server
-                - env (dict): Environment variables for the server
-                - connection_url (str): URL for WebSocket or HTTP connection
-                - connection_type (str): Connection type (stdio, websocket, http)
-                - connection_token (str): Authentication token for remote connections
-                
-                Example:
-                ```python
-                mcp_configs=[{
-                    "command": "python",
-                    "args": ["my_mcp_server.py"],
-                    "name": "search"
-                }]
-                ```
-            mcp_strategy (str, optional): MCP execution strategy. Options:
-                - "fast" (default): Run MCP once with original query for best performance
-                - "deep": Run MCP for all sub-queries for maximum thoroughness  
-                - "disabled": Skip MCP entirely, use only web retrievers
+            mcp_max_iterations (int, optional): Legacy MCP parameter.
+            mcp_strategy (str, optional): MCP execution strategy.
+            **kwargs: Additional arguments to pass to the Config class.
         """
-        self.kwargs = kwargs
         self.query = query
         self.report_type = report_type
-        self.cfg = Config(config_path)
-        self.cfg.set_verbose(verbose)
-        self.report_source = report_source if report_source else getattr(self.cfg, 'report_source', None)
         self.report_format = report_format
-        self.max_subtopics = max_subtopics
+        self.report_source = report_source
         self.tone = tone if isinstance(tone, Tone) else Tone.Objective
         self.source_urls = source_urls
         self.document_urls = document_urls
         self.complement_source_urls = complement_source_urls
         self.query_domains = query_domains or []
-        self.research_sources = []  # The list of scraped sources including title, content and images
-        self.research_images = []  # The list of selected research images
         self.documents = documents
         self.vector_store = VectorStoreWrapper(vector_store) if vector_store else None
         self.vector_store_filter = vector_store_filter
@@ -141,10 +149,75 @@ class GPTResearcher:
         self.verbose = verbose
         self.context = context or []
         self.headers = headers or {}
-        self.research_costs = 0.0
         self.log_handler = log_handler
-        self.prompt_family = get_prompt_family(prompt_family or self.cfg.prompt_family, self.cfg)
+        self.research_sources = []
+        self.research_images = []
+        self.research_costs = 0.0
+
+        # Create config with all possible overrides
+        # We explicitly pass arguments that were provided (not None)
+        config_overrides = {k: v for k, v in kwargs.items()}
+
+        # Add explicit arguments to overrides if they are not None
+        explicit_args = {
+            "retriever": retriever,
+            "embedding": embedding,
+            "similarity_threshold": similarity_threshold,
+            "fast_llm": fast_llm,
+            "smart_llm": smart_llm,
+            "strategic_llm": strategic_llm,
+            "fast_token_limit": fast_token_limit,
+            "smart_token_limit": smart_token_limit,
+            "strategic_token_limit": strategic_token_limit,
+            "browse_chunk_max_length": browse_chunk_max_length,
+            "summary_token_limit": summary_token_limit,
+            "temperature": temperature,
+            "user_agent": user_agent,
+            "max_search_results_per_query": max_search_results_per_query,
+            "memory_backend": memory_backend,
+            "total_words": total_words,
+            "curate_sources": curate_sources,
+            "max_iterations": max_iterations,
+            "language": language,
+            "scraper": scraper,
+            "max_scraper_workers": max_scraper_workers,
+            "scraper_rate_limit_delay": scraper_rate_limit_delay,
+            "doc_path": doc_path,
+            "llm_kwargs": llm_kwargs,
+            "embedding_kwargs": embedding_kwargs,
+            "deep_research_concurrency": deep_research_concurrency,
+            "deep_research_depth": deep_research_depth,
+            "deep_research_breadth": deep_research_breadth,
+            "mcp_auto_tool_selection": mcp_auto_tool_selection,
+            "mcp_use_llm_args": mcp_use_llm_args,
+            "mcp_allowed_root_paths": mcp_allowed_root_paths,
+            "reasoning_effort": reasoning_effort,
+            "report_format": report_format,
+            "report_source": report_source,
+            "max_subtopics": max_subtopics,
+            "prompt_family": prompt_family,
+            "mcp_strategy": mcp_strategy,
+            "agent_role": role # mapping role to agent_role config
+        }
+
+        for k, v in explicit_args.items():
+            if v is not None:
+                config_overrides[k] = v
+
+        # Filter out encoding from kwargs if it exists (it was in original code)
+        self.encoding = config_overrides.pop('encoding', 'utf-8')
         
+        # Initialize Config with overrides
+        self.cfg = Config(config_path, **config_overrides)
+        self.cfg.set_verbose(verbose)
+
+        # Update self.kwargs to reflect remaining kwargs
+        self.kwargs = kwargs
+
+        # Re-assign variables that depend on config
+        self.max_subtopics = max_subtopics
+        self.prompt_family = get_prompt_family(prompt_family or self.cfg.prompt_family, self.cfg)
+
         # Process MCP configurations if provided
         self.mcp_configs = mcp_configs
         if mcp_configs:
@@ -154,10 +227,6 @@ class GPTResearcher:
         self.memory = Memory(
             self.cfg.embedding_provider, self.cfg.embedding_model, **self.cfg.embedding_kwargs
         )
-        
-        # Set default encoding to utf-8
-        self.encoding = kwargs.get('encoding', 'utf-8')
-        self.kwargs.pop('encoding', None)  # Remove encoding from kwargs to avoid passing it to LLM calls
 
         # Initialize components
         self.research_conductor: ResearchConductor = ResearchConductor(self)
@@ -251,7 +320,10 @@ class GPTResearcher:
         # Check if user explicitly set RETRIEVER environment variable
         user_set_retriever = os.getenv("RETRIEVER") is not None
         
-        if not user_set_retriever:
+        # Also check if retriever was set in config (via kwargs override)
+        config_retriever_set = self.cfg.retriever != "tavily" and self.cfg.retriever != os.getenv("RETRIEVER")
+
+        if not user_set_retriever and not config_retriever_set:
             # Only auto-add MCP if user hasn't explicitly set retrievers
             if hasattr(self.cfg, 'retrievers') and self.cfg.retrievers:
                 # If retrievers is set in config (but not via env var)
