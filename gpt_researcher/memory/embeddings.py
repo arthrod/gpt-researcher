@@ -24,6 +24,7 @@ _SUPPORTED_PROVIDERS = {
     "bedrock",
     "aimlapi",
     "netmind",
+    "fastembed",
 }
 
 
@@ -136,6 +137,10 @@ class Memory:
                     openai_api_base=os.getenv("AIMLAPI_BASE_URL", "https://api.aimlapi.com/v1"),
                     **embedding_kwargs,
                 )
+            case "fastembed":
+                from langchain_community.embeddings import FastEmbedEmbeddings
+
+                _embeddings = FastEmbedEmbeddings(model_name=model, **embedding_kwargs)
             case _:
                 raise Exception("Embedding not found.")
 
