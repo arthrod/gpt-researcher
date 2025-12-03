@@ -739,7 +739,8 @@ class ResearchConductor:
                 
             try:
                 # Instantiate the retriever with the sub-query
-                retriever = retriever_class(query, query_domains=query_domains)
+                # Pass kwargs from researcher config to retriever
+                retriever = retriever_class(query, query_domains=query_domains, **self.researcher.kwargs)
 
                 # Perform the search using the current retriever
                 search_results = await asyncio.to_thread(
@@ -808,12 +809,14 @@ class ResearchConductor:
         
         try:
             # Instantiate the retriever
+            # Pass kwargs from researcher config to retriever
             retriever_instance = retriever(
                 query=query, 
                 headers=self.researcher.headers,
                 query_domains=self.researcher.query_domains,
                 websocket=self.researcher.websocket if is_mcp_retriever else None,
-                researcher=self.researcher if is_mcp_retriever else None
+                researcher=self.researcher if is_mcp_retriever else None,
+                **self.researcher.kwargs
             )
             
             # Log MCP server configurations if using MCP retriever
@@ -963,4 +966,3 @@ class ResearchConductor:
                     "progress": progress
                 }
             )
-

@@ -10,13 +10,14 @@ class SearchApiSearch():
     """
     SearchApi Retriever
     """
-    def __init__(self, query, query_domains=None):
+    def __init__(self, query, query_domains=None, **kwargs):
         """
         Initializes the SearchApiSearch object
         Args:
             query:
         """
         self.query = query
+        self.kwargs = kwargs
         self.api_key = self.get_api_key()
 
     def get_api_key(self):
@@ -25,6 +26,9 @@ class SearchApiSearch():
         Returns:
 
         """
+        if self.kwargs.get("searchapi_api_key"):
+            return self.kwargs["searchapi_api_key"]
+
         try:
             api_key = os.environ["SEARCHAPI_API_KEY"]
         except:

@@ -99,8 +99,12 @@ class GenericLLMProvider:
             from langchain_openai import ChatOpenAI
 
             # Support custom OpenAI-compatible APIs via OPENAI_BASE_URL
-            if "openai_api_base" not in kwargs and os.environ.get("OPENAI_BASE_URL"):
-                kwargs["openai_api_base"] = os.environ["OPENAI_BASE_URL"]
+            if "openai_api_base" not in kwargs:
+                 # Check kwargs first (passed from config), then fallback to env
+                 if "openai_api_base" in kwargs:
+                     pass # already set
+                 elif os.environ.get("OPENAI_BASE_URL"):
+                     kwargs["openai_api_base"] = os.environ["OPENAI_BASE_URL"]
 
             llm = ChatOpenAI(**kwargs)
         elif provider == "anthropic":
@@ -142,7 +146,12 @@ class GenericLLMProvider:
             _check_pkg("langchain_ollama")
             from langchain_ollama import ChatOllama
 
-            llm = ChatOllama(base_url=os.environ["OLLAMA_BASE_URL"], **kwargs)
+            # Prefer kwargs, fallback to env
+            base_url = kwargs.pop("base_url", os.environ.get("OLLAMA_BASE_URL"))
+            if base_url:
+                kwargs["base_url"] = base_url
+
+            llm = ChatOllama(**kwargs)
         elif provider == "together":
             _check_pkg("langchain_together")
             from langchain_together import ChatTogether
@@ -178,8 +187,10 @@ class GenericLLMProvider:
             _check_pkg("langchain_openai")
             from langchain_openai import ChatOpenAI
 
+            api_key = kwargs.pop("openai_api_key", os.environ.get("DASHSCOPE_API_KEY"))
+
             llm = ChatOpenAI(openai_api_base='https://dashscope.aliyuncs.com/compatible-mode/v1',
-                     openai_api_key=os.environ["DASHSCOPE_API_KEY"],
+                     openai_api_key=api_key,
                      **kwargs
                 )
         elif provider == "xai":
@@ -191,8 +202,10 @@ class GenericLLMProvider:
             _check_pkg("langchain_openai")
             from langchain_openai import ChatOpenAI
 
+            api_key = kwargs.pop("openai_api_key", os.environ.get("DEEPSEEK_API_KEY"))
+
             llm = ChatOpenAI(openai_api_base='https://api.deepseek.com',
-                     openai_api_key=os.environ["DEEPSEEK_API_KEY"],
+                     openai_api_key=api_key,
                      **kwargs
                 )
         elif provider == "litellm":
@@ -211,7 +224,9 @@ class GenericLLMProvider:
             from langchain_openai import ChatOpenAI
             from langchain_core.rate_limiters import InMemoryRateLimiter
 
-            rps = float(os.environ["OPENROUTER_LIMIT_RPS"]) if "OPENROUTER_LIMIT_RPS" in os.environ else 1.0
+            # Prefer kwargs, fallback to env
+            rps_val = kwargs.pop("openrouter_limit_rps", os.environ.get("OPENROUTER_LIMIT_RPS"))
+            rps = float(rps_val) if rps_val else 1.0
 
             rate_limiter = InMemoryRateLimiter(
                 requests_per_second=rps,
@@ -219,25 +234,33 @@ class GenericLLMProvider:
                 max_bucket_size=10,
             )
 
+            api_key = kwargs.pop("openai_api_key", os.environ.get("OPENROUTER_API_KEY"))
+
             llm = ChatOpenAI(openai_api_base='https://openrouter.ai/api/v1',
-                     openai_api_key=os.environ["OPENROUTER_API_KEY"],
+                     openai_api_key=api_key,
                      rate_limiter=rate_limiter,
                      **kwargs
                 )
         elif provider == "vllm_openai":
             _check_pkg("langchain_openai")
             from langchain_openai import ChatOpenAI
+
+            api_key = kwargs.pop("openai_api_key", os.environ.get("VLLM_OPENAI_API_KEY"))
+            api_base = kwargs.pop("openai_api_base", os.environ.get("VLLM_OPENAI_API_BASE"))
+
             llm = ChatOpenAI(
-                openai_api_key=os.environ["VLLM_OPENAI_API_KEY"],
-                openai_api_base=os.environ["VLLM_OPENAI_API_BASE"],
+                openai_api_key=api_key,
+                openai_api_base=api_base,
                 **kwargs
             )
         elif provider == "aimlapi":
             _check_pkg("langchain_openai")
             from langchain_openai import ChatOpenAI
 
+            api_key = kwargs.pop("openai_api_key", os.environ.get("AIMLAPI_API_KEY"))
+
             llm = ChatOpenAI(openai_api_base='https://api.aimlapi.com/v1',
-                             openai_api_key=os.environ["AIMLAPI_API_KEY"],
+                             openai_api_key=api_key,
                              **kwargs
                              )
         elif provider == 'netmind':

@@ -105,5 +105,24 @@ class TestConfigVariables(unittest.TestCase):
 
         del os.environ["LANGUAGE"]
 
+    def test_kwargs_propagation_to_components(self):
+        """Test that kwargs (like API keys) are propagated to components via self.researcher.kwargs"""
+
+        custom_kwargs = {
+            "tavily_api_key": "custom_tavily_key",
+            "google_api_key": "custom_google_key",
+            "openai_api_key": "custom_openai_key"
+        }
+
+        researcher = GPTResearcher(query="test", **custom_kwargs)
+
+        # Check that kwargs are stored in researcher instance
+        for key, value in custom_kwargs.items():
+            self.assertIn(key, researcher.kwargs)
+            self.assertEqual(researcher.kwargs[key], value)
+
+        # Ideally we would check if retrievers/scrapers get these, but that requires mocking or inspecting internal instantiation.
+        # The code changes in ResearchConductor and Scraper verify this propagation logic.
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,6 +1,8 @@
 import os
 from typing import Any
 
+# Use standard config if available, otherwise fallback to env or default
+# This constant is used in config.py, so we should keep it compatible
 OPENAI_EMBEDDING_MODEL = os.environ.get(
     "OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"
 )
@@ -34,12 +36,14 @@ class Memory:
             case "custom":
                 from langchain_openai import OpenAIEmbeddings
 
+                # Allow overrides via embedding_kwargs
+                api_key = embedding_kwargs.pop("openai_api_key", os.getenv("OPENAI_API_KEY", "custom"))
+                api_base = embedding_kwargs.pop("openai_api_base", os.getenv("OPENAI_BASE_URL", "http://localhost:1234/v1"))
+
                 _embeddings = OpenAIEmbeddings(
                     model=model,
-                    openai_api_key=os.getenv("OPENAI_API_KEY", "custom"),
-                    openai_api_base=os.getenv(
-                        "OPENAI_BASE_URL", "http://localhost:1234/v1"
-                    ),  # default for lmstudio
+                    openai_api_key=api_key,
+                    openai_api_base=api_base,
                     check_embedding_ctx_length=False,
                     **embedding_kwargs,
                 )  # quick fix for lmstudio
@@ -47,18 +51,23 @@ class Memory:
                 from langchain_openai import OpenAIEmbeddings
 
                 # Support custom OpenAI-compatible APIs via OPENAI_BASE_URL
-                if "openai_api_base" not in embedding_kwargs and os.environ.get("OPENAI_BASE_URL"):
-                    embedding_kwargs["openai_api_base"] = os.environ["OPENAI_BASE_URL"]
+                if "openai_api_base" not in embedding_kwargs:
+                    if os.environ.get("OPENAI_BASE_URL"):
+                         embedding_kwargs["openai_api_base"] = os.environ["OPENAI_BASE_URL"]
 
                 _embeddings = OpenAIEmbeddings(model=model, **embedding_kwargs)
             case "azure_openai":
                 from langchain_openai import AzureOpenAIEmbeddings
 
+                azure_endpoint = embedding_kwargs.pop("azure_endpoint", os.environ.get("AZURE_OPENAI_ENDPOINT"))
+                api_key = embedding_kwargs.pop("openai_api_key", os.environ.get("AZURE_OPENAI_API_KEY"))
+                api_version = embedding_kwargs.pop("openai_api_version", os.environ.get("AZURE_OPENAI_API_VERSION"))
+
                 _embeddings = AzureOpenAIEmbeddings(
                     model=model,
-                    azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-                    openai_api_key=os.environ["AZURE_OPENAI_API_KEY"],
-                    openai_api_version=os.environ["AZURE_OPENAI_API_VERSION"],
+                    azure_endpoint=azure_endpoint,
+                    openai_api_key=api_key,
+                    openai_api_version=api_version,
                     **embedding_kwargs,
                 )
             case "cohere":
@@ -86,9 +95,11 @@ class Memory:
             case "ollama":
                 from langchain_ollama import OllamaEmbeddings
 
+                base_url = embedding_kwargs.pop("base_url", os.environ.get("OLLAMA_BASE_URL"))
+
                 _embeddings = OllamaEmbeddings(
                     model=model,
-                    base_url=os.environ["OLLAMA_BASE_URL"],
+                    base_url=base_url,
                     **embedding_kwargs,
                 )
             case "together":
@@ -114,8 +125,10 @@ class Memory:
             case "voyageai":
                 from langchain_voyageai import VoyageAIEmbeddings
 
+                voyage_api_key = embedding_kwargs.pop("voyage_api_key", os.environ.get("VOYAGE_API_KEY"))
+
                 _embeddings = VoyageAIEmbeddings(
-                    voyage_api_key=os.environ["VOYAGE_API_KEY"],
+                    voyage_api_key=voyage_api_key,
                     model=model,
                     **embedding_kwargs,
                 )
@@ -130,10 +143,13 @@ class Memory:
             case "aimlapi":
                 from langchain_openai import OpenAIEmbeddings
 
+                api_key = embedding_kwargs.pop("openai_api_key", os.environ.get("AIMLAPI_API_KEY"))
+                api_base = embedding_kwargs.pop("openai_api_base", os.environ.get("AIMLAPI_BASE_URL", "https://api.aimlapi.com/v1"))
+
                 _embeddings = OpenAIEmbeddings(
                     model=model,
-                    openai_api_key=os.getenv("AIMLAPI_API_KEY"),
-                    openai_api_base=os.getenv("AIMLAPI_BASE_URL", "https://api.aimlapi.com/v1"),
+                    openai_api_key=api_key,
+                    openai_api_base=api_base,
                     **embedding_kwargs,
                 )
             case _:

@@ -10,7 +10,7 @@ class SerpApiSearch():
     """
     SerpApi Retriever
     """
-    def __init__(self, query, query_domains=None):
+    def __init__(self, query, query_domains=None, **kwargs):
         """
         Initializes the SerpApiSearch object
         Args:
@@ -18,6 +18,7 @@ class SerpApiSearch():
         """
         self.query = query
         self.query_domains = query_domains or None
+        self.kwargs = kwargs
         self.api_key = self.get_api_key()
 
     def get_api_key(self):
@@ -26,6 +27,9 @@ class SerpApiSearch():
         Returns:
 
         """
+        if self.kwargs.get("serpapi_api_key"):
+            return self.kwargs["serpapi_api_key"]
+
         try:
             api_key = os.environ["SERPAPI_API_KEY"]
         except:

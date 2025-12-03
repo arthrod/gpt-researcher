@@ -7,7 +7,7 @@ class ExaSearch:
     Exa API Retriever
     """
 
-    def __init__(self, query, query_domains=None):
+    def __init__(self, query, query_domains=None, **kwargs):
         """
         Initializes the ExaSearch object.
         Args:
@@ -17,6 +17,7 @@ class ExaSearch:
         check_pkg("exa_py")
         from exa_py import Exa
         self.query = query
+        self.kwargs = kwargs
         self.api_key = self._retrieve_api_key()
         self.client = Exa(api_key=self.api_key)
         self.query_domains = query_domains or None
@@ -29,6 +30,9 @@ class ExaSearch:
         Raises:
             Exception: If the API key is not found.
         """
+        if self.kwargs.get("exa_api_key"):
+            return self.kwargs["exa_api_key"]
+
         try:
             api_key = os.environ["EXA_API_KEY"]
         except KeyError:

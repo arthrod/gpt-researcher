@@ -9,17 +9,19 @@ class PubMedCentralSearch:
     PubMed Central Full-Text Search
     """
 
-    def __init__(self, query: str, query_domains=None):
+    def __init__(self, query: str, query_domains=None, **kwargs):
         self.base_search_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
         self.base_fetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
         
+        self.kwargs = kwargs
+
         # Get API key from environment
-        self.api_key = os.getenv('NCBI_API_KEY')
+        self.api_key = self.kwargs.get("ncbi_api_key") or os.getenv('NCBI_API_KEY')
         if not self.api_key:
             print("Warning: NCBI_API_KEY not set. Requests will be rate-limited.")
         
         self.query = query
-        self.db_type = os.getenv('PUBMED_DB', 'pmc')  # Default to PMC for full text
+        self.db_type = self.kwargs.get("pubmed_db") or os.getenv('PUBMED_DB', 'pmc')  # Default to PMC for full text
         
         # Optional parameters from environment
         self.params = self._populate_params()
@@ -34,6 +36,13 @@ class PubMedCentralSearch:
             if key.startswith('PUBMED_ARG_')
         }
         
+        # Override with kwargs if present (assuming pubmed_arg_ prefix in kwargs for consistency, or just direct args)
+        # However, to avoid complexity, we stick to the pattern requested or established.
+        # If kwargs are passed with pubmed_arg_ prefix, we can use them too.
+        for key, value in self.kwargs.items():
+            if key.startswith("pubmed_arg_"):
+                params[key[len("pubmed_arg_"):]] = value
+
         # Set defaults if not provided
         params.setdefault('sort', 'relevance')
         params.setdefault('retmode', 'json')

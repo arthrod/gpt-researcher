@@ -12,7 +12,7 @@ class BingSearch():
     Bing Search Retriever
     """
 
-    def __init__(self, query, query_domains=None):
+    def __init__(self, query, query_domains=None, **kwargs):
         """
         Initializes the BingSearch object
         Args:
@@ -20,6 +20,7 @@ class BingSearch():
         """
         self.query = query
         self.query_domains = query_domains or None
+        self.kwargs = kwargs
         self.api_key = self.get_api_key()
         self.logger = logging.getLogger(__name__)
 
@@ -29,6 +30,9 @@ class BingSearch():
         Returns:
 
         """
+        if self.kwargs.get("bing_api_key"):
+            return self.kwargs["bing_api_key"]
+
         try:
             api_key = os.environ["BING_API_KEY"]
         except:
