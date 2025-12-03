@@ -45,6 +45,10 @@ def get_retriever(retriever: str):
             from gpt_researcher.retrievers import TavilySearch
 
             return TavilySearch
+        case "jina":
+            from gpt_researcher.retrievers import JinaSearch
+
+            return JinaSearch
         case "exa":
             from gpt_researcher.retrievers import ExaSearch
 

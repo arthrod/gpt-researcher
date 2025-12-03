@@ -24,6 +24,7 @@ _SUPPORTED_PROVIDERS = {
     "bedrock",
     "aimlapi",
     "netmind",
+    "jina",
 }
 
 
@@ -134,6 +135,14 @@ class Memory:
                     model=model,
                     openai_api_key=os.getenv("AIMLAPI_API_KEY"),
                     openai_api_base=os.getenv("AIMLAPI_BASE_URL", "https://api.aimlapi.com/v1"),
+                    **embedding_kwargs,
+                )
+            case "jina":
+                from langchain_community.embeddings import JinaEmbeddings
+
+                _embeddings = JinaEmbeddings(
+                    model_name=model,
+                    jina_api_key=os.getenv("JINA_API_KEY"),
                     **embedding_kwargs,
                 )
             case _:
