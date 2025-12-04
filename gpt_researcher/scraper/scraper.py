@@ -26,7 +26,7 @@ class Scraper:
     Scraper class to extract the content from the links
     """
 
-    def __init__(self, urls, user_agent, scraper, worker_pool: WorkerPool):
+    def __init__(self, urls, user_agent, scraper, worker_pool: WorkerPool, **kwargs):
         """
         Initialize the Scraper class.
         Args:
@@ -36,6 +36,7 @@ class Scraper:
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": user_agent})
         self.scraper = scraper
+        self.kwargs = kwargs
         if self.scraper == "tavily_extract":
             self._check_pkg(self.scraper)
         if self.scraper == "firecrawl":
@@ -94,7 +95,8 @@ class Scraper:
         async with self.worker_pool.throttle():
             try:
                 Scraper = self.get_scraper(link)
-                scraper = Scraper(link, session)
+                # Pass kwargs to scraper class
+                scraper = Scraper(link, session, **self.kwargs)
 
                 # Get scraper name
                 scraper_name = scraper.__class__.__name__

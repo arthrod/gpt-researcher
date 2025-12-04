@@ -9,13 +9,14 @@ class SearxSearch():
     """
     SearxNG API Retriever
     """
-    def __init__(self, query: str, query_domains=None):
+    def __init__(self, query: str, query_domains=None, **kwargs):
         """
         Initializes the SearxSearch object
         Args:
             query: Search query string
         """
         self.query = query
+        self.kwargs = kwargs
         self.query_domains = query_domains or None
         self.base_url = self.get_searxng_url()
 
@@ -25,16 +26,20 @@ class SearxSearch():
         Returns:
             str: Base URL of SearxNG instance
         """
-        try:
-            base_url = os.environ["SEARX_URL"]
-            if not base_url.endswith('/'):
-                base_url += '/'
-            return base_url
-        except KeyError:
-            raise Exception(
-                "SearxNG URL not found. Please set the SEARX_URL environment variable. "
-                "You can find public instances at https://searx.space/"
-            )
+        if self.kwargs.get("searx_url"):
+            base_url = self.kwargs["searx_url"]
+        else:
+            try:
+                base_url = os.environ["SEARX_URL"]
+            except KeyError:
+                raise Exception(
+                    "SearxNG URL not found. Please set the SEARX_URL environment variable. "
+                    "You can find public instances at https://searx.space/"
+                )
+
+        if not base_url.endswith('/'):
+            base_url += '/'
+        return base_url
 
     def search(self, max_results: int = 10) -> List[Dict[str, str]]:
         """

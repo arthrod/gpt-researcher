@@ -4,9 +4,10 @@ from ..utils import get_relevant_images, extract_title
 
 class TavilyExtract:
 
-    def __init__(self, link, session=None):
+    def __init__(self, link, session=None, **kwargs):
         self.link = link
         self.session = session
+        self.kwargs = kwargs
         from tavily import TavilyClient
         self.tavily_client = TavilyClient(api_key=self.get_api_key())
 
@@ -16,6 +17,9 @@ class TavilyExtract:
         Returns:
         Api key (str)
         """
+        if self.kwargs.get("tavily_api_key"):
+            return self.kwargs["tavily_api_key"]
+
         try:
             api_key = os.environ["TAVILY_API_KEY"]
         except KeyError:

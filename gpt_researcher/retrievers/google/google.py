@@ -10,7 +10,7 @@ class GoogleSearch:
     """
     Google API Retriever
     """
-    def __init__(self, query, headers=None, query_domains=None):
+    def __init__(self, query, headers=None, query_domains=None, **kwargs):
         """
         Initializes the GoogleSearch object
         Args:
@@ -18,6 +18,7 @@ class GoogleSearch:
         """
         self.query = query
         self.headers = headers or {}
+        self.kwargs = kwargs
         self.query_domains = query_domains or None
         self.api_key = self.headers.get("google_api_key") or self.get_api_key()  # Use the passed api_key or fallback to environment variable
         self.cx_key = self.headers.get("google_cx_key") or self.get_cx_key()  # Use the passed cx_key or fallback to environment variable
@@ -28,6 +29,9 @@ class GoogleSearch:
         Returns:
 
         """
+        if self.kwargs.get("google_api_key"):
+            return self.kwargs["google_api_key"]
+
         # Get the API key
         try:
             api_key = os.environ["GOOGLE_API_KEY"]
@@ -42,6 +46,9 @@ class GoogleSearch:
         Returns:
 
         """
+        if self.kwargs.get("google_cx_key"):
+            return self.kwargs["google_cx_key"]
+
         # Get the API key
         try:
             api_key = os.environ["GOOGLE_CX_KEY"]

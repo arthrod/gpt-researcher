@@ -10,7 +10,7 @@ class SerperSearch():
     """
     Google Serper Retriever with support for country, language, and date filtering
     """
-    def __init__(self, query, query_domains=None, country=None, language=None, time_range=None, exclude_sites=None):
+    def __init__(self, query, query_domains=None, country=None, language=None, time_range=None, exclude_sites=None, **kwargs):
         """
         Initializes the SerperSearch object
         Args:
@@ -23,9 +23,11 @@ class SerperSearch():
         """
         self.query = query
         self.query_domains = query_domains or None
-        self.country = country or os.getenv("SERPER_REGION")
-        self.language = language or os.getenv("SERPER_LANGUAGE")
-        self.time_range = time_range or os.getenv("SERPER_TIME_RANGE")
+        self.kwargs = kwargs
+
+        self.country = country or self.kwargs.get("serper_region") or os.getenv("SERPER_REGION")
+        self.language = language or self.kwargs.get("serper_language") or os.getenv("SERPER_LANGUAGE")
+        self.time_range = time_range or self.kwargs.get("serper_time_range") or os.getenv("SERPER_TIME_RANGE")
         self.exclude_sites = exclude_sites or self._get_exclude_sites_from_env()
         self.api_key = self.get_api_key()
 
@@ -35,7 +37,7 @@ class SerperSearch():
         Returns:
             list: List of sites to exclude
         """
-        exclude_sites_env = os.getenv("SERPER_EXCLUDE_SITES", "")
+        exclude_sites_env = self.kwargs.get("serper_exclude_sites") or os.getenv("SERPER_EXCLUDE_SITES", "")
         if exclude_sites_env:
             # Split by comma and strip whitespace
             return [site.strip() for site in exclude_sites_env.split(",") if site.strip()]
@@ -47,6 +49,9 @@ class SerperSearch():
         Returns:
 
         """
+        if self.kwargs.get("serper_api_key"):
+            return self.kwargs["serper_api_key"]
+
         try:
             api_key = os.environ["SERPER_API_KEY"]
         except:

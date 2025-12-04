@@ -12,7 +12,7 @@ class TavilySearch:
     Tavily API Retriever
     """
 
-    def __init__(self, query, headers=None, topic="general", query_domains=None):
+    def __init__(self, query, headers=None, topic="general", query_domains=None, **kwargs):
         """
         Initializes the TavilySearch object.
 
@@ -25,9 +25,12 @@ class TavilySearch:
         self.query = query
         self.headers = headers or {}
         self.topic = topic
+        self.kwargs = kwargs
         self.base_url = "https://api.tavily.com/search"
         self.api_key = self.get_api_key()
-        self.headers = {
+        # Ensure we don't overwrite the passed headers completely if they contained useful info
+        # But here we are setting Content-Type which is necessary
+        self.request_headers = {
             "Content-Type": "application/json",
         }
         self.query_domains = query_domains or None
@@ -38,6 +41,9 @@ class TavilySearch:
         Returns:
 
         """
+        if self.kwargs.get("tavily_api_key"):
+            return self.kwargs["tavily_api_key"]
+
         api_key = self.headers.get("tavily_api_key")
         if not api_key:
             try:
@@ -84,7 +90,7 @@ class TavilySearch:
         }
 
         response = requests.post(
-            self.base_url, data=json.dumps(data), headers=self.headers, timeout=100
+            self.base_url, data=json.dumps(data), headers=self.request_headers, timeout=100
         )
 
         if response.status_code == 200:

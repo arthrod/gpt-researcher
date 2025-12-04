@@ -13,44 +13,66 @@ class Config:
 
     CONFIG_DIR = os.path.join(os.path.dirname(__file__), "variables")
 
-    def __init__(self, config_path: str | None = None):
+    def __init__(self, config_path: str | None = None, **kwargs):
         """Initialize the config class."""
         self.config_path = config_path
         self.llm_kwargs: Dict[str, Any] = {}
         self.embedding_kwargs: Dict[str, Any] = {}
 
+        # Load default config or custom file config
         config_to_use = self.load_config(config_path)
-        self._set_attributes(config_to_use)
+
+        # Set attributes with priority: kwargs > env vars (only if not in kwargs) > file config
+        self._set_attributes(config_to_use, kwargs)
+
+        # Handle retrievers update if overridden or set
+        if hasattr(self, 'retriever'):
+            try:
+                self.retrievers = self.parse_retrievers(self.retriever)
+            except ValueError as e:
+                print(f"Warning: {str(e)}. Defaulting to 'tavily' retriever.")
+                self.retrievers = ["tavily"]
+
         self._set_embedding_attributes()
         self._set_llm_attributes()
         self._handle_deprecated_attributes()
-        if config_to_use['REPORT_SOURCE'] != 'web':
-          self._set_doc_path(config_to_use)
+
+        if hasattr(self, 'report_source') and self.report_source != 'web':
+            self.validate_doc_path()
 
         # MCP support configuration
-        self.mcp_servers = []  # List of MCP server configurations
-        self.mcp_allowed_root_paths = []  # Allowed root paths for MCP servers
+        # Ensure lists are initialized if not present (although _set_attributes should set them if in config)
+        if not hasattr(self, 'mcp_servers'):
+            self.mcp_servers = []
+        if not hasattr(self, 'mcp_allowed_root_paths'):
+            self.mcp_allowed_root_paths = []
 
-        # Read from config
-        if hasattr(self, 'mcp_servers'):
-            self.mcp_servers = self.mcp_servers
-        if hasattr(self, 'mcp_allowed_root_paths'):
-            self.mcp_allowed_root_paths = self.mcp_allowed_root_paths
-
-    def _set_attributes(self, config: Dict[str, Any]) -> None:
+    def _set_attributes(self, config: Dict[str, Any], kwargs: Dict[str, Any]) -> None:
+        """
+        Set attributes based on priority:
+        1. kwargs (passed directly to constructor)
+        2. Environment variables (only if not in kwargs and env var exists)
+        3. Config file/defaults
+        """
         for key, value in config.items():
-            env_value = os.getenv(key)
-            if env_value is not None:
-                value = self.convert_env_value(key, env_value, BaseConfig.__annotations__[key])
-            setattr(self, key.lower(), value)
+            # Check if key is present in kwargs (case-insensitive check)
+            kwarg_val = None
+            for k, v in kwargs.items():
+                if k.lower() == key.lower():
+                    kwarg_val = v
+                    break
 
-        # Handle RETRIEVER with default value
-        retriever_env = os.environ.get("RETRIEVER", config.get("RETRIEVER", "tavily"))
-        try:
-            self.retrievers = self.parse_retrievers(retriever_env)
-        except ValueError as e:
-            print(f"Warning: {str(e)}. Defaulting to 'tavily' retriever.")
-            self.retrievers = ["tavily"]
+            if kwarg_val is not None:
+                # 1. Use kwarg if present
+                setattr(self, key.lower(), kwarg_val)
+            else:
+                # 2. Check environment variable
+                env_value = os.getenv(key)
+                if env_value is not None:
+                    value = self.convert_env_value(key, env_value, BaseConfig.__annotations__[key])
+
+                # 3. Use config value (which might be default or from file, or env var if found)
+                setattr(self, key.lower(), value)
 
     def _set_embedding_attributes(self) -> None:
         self.embedding_provider, self.embedding_model = self.parse_embedding(
@@ -61,7 +83,11 @@ class Config:
         self.fast_llm_provider, self.fast_llm_model = self.parse_llm(self.fast_llm)
         self.smart_llm_provider, self.smart_llm_model = self.parse_llm(self.smart_llm)
         self.strategic_llm_provider, self.strategic_llm_model = self.parse_llm(self.strategic_llm)
-        self.reasoning_effort = self.parse_reasoning_effort(os.getenv("REASONING_EFFORT"))
+
+        # Handle REASONING_EFFORT override from env or kwargs
+        # It is already set in _set_attributes if in env or kwargs (via generic loop)
+        # But we need to ensure it's valid
+        self.reasoning_effort = self.parse_reasoning_effort(getattr(self, 'reasoning_effort', None))
 
     def _handle_deprecated_attributes(self) -> None:
         if os.getenv("EMBEDDING_PROVIDER") is not None:
@@ -111,14 +137,16 @@ class Config:
             warnings.warn(_deprecation_warning, FutureWarning, stacklevel=2)
             self.smart_llm_model = os.environ["SMART_LLM_MODEL"] or self.smart_llm_model
 
-    def _set_doc_path(self, config: Dict[str, Any]) -> None:
-        self.doc_path = config['DOC_PATH']
+    def validate_doc_path(self):
+        """Ensure that the folder exists at the doc path"""
         if self.doc_path:
             try:
-                self.validate_doc_path()
+                os.makedirs(self.doc_path, exist_ok=True)
             except Exception as e:
                 print(f"Warning: Error validating doc_path: {str(e)}. Using default doc_path.")
                 self.doc_path = DEFAULT_CONFIG['DOC_PATH']
+                os.makedirs(self.doc_path, exist_ok=True)
+
 
     @classmethod
     def load_config(cls, config_path: str | None) -> Dict[str, Any]:
@@ -214,10 +242,6 @@ class Config:
                 "Set EMBEDDING = '<embedding_provider>:<embedding_model>' "
                 "Eg 'openai:text-embedding-3-large'"
             )
-
-    def validate_doc_path(self):
-        """Ensure that the folder exists at the doc path"""
-        os.makedirs(self.doc_path, exist_ok=True)
 
     @staticmethod
     def convert_env_value(key: str, env_value: str, type_hint: Type) -> Any:

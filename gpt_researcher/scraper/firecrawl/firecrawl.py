@@ -4,9 +4,10 @@ from ..utils import get_relevant_images
 
 class FireCrawl:
 
-    def __init__(self, link, session=None):
+    def __init__(self, link, session=None, **kwargs):
         self.link = link
         self.session = session
+        self.kwargs = kwargs
         from firecrawl import FirecrawlApp
         self.firecrawl = FirecrawlApp(api_key=self.get_api_key(), api_url=self.get_server_url())
 
@@ -16,6 +17,9 @@ class FireCrawl:
         Returns:
         Api key (str)
         """
+        if self.kwargs.get("firecrawl_api_key"):
+            return self.kwargs["firecrawl_api_key"]
+
         try:
             api_key = os.environ["FIRECRAWL_API_KEY"]
         except KeyError:
@@ -30,6 +34,9 @@ class FireCrawl:
         Returns:
         server url (str)
         """
+        if self.kwargs.get("firecrawl_server_url"):
+            return self.kwargs["firecrawl_server_url"]
+
         try:
             server_url = os.environ["FIRECRAWL_SERVER_URL"]
         except KeyError:
