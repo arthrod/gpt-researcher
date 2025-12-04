@@ -147,9 +147,14 @@ class ResearchConductor:
             research_data = self.researcher.prompt_family.join_local_web_documents(docs_context, web_context)
         elif self.researcher.report_source == ReportSource.Azure.value:
             from ..document.azure_document_loader import AzureDocumentLoader
+
+            # Use configuration or kwargs for Azure credentials
+            container_name = self.researcher.kwargs.get("azure_container_name") or os.getenv("AZURE_CONTAINER_NAME")
+            connection_string = self.researcher.kwargs.get("azure_connection_string") or os.getenv("AZURE_CONNECTION_STRING")
+
             azure_loader = AzureDocumentLoader(
-                container_name=os.getenv("AZURE_CONTAINER_NAME"),
-                connection_string=os.getenv("AZURE_CONNECTION_STRING")
+                container_name=container_name,
+                connection_string=connection_string
             )
             azure_files = await azure_loader.load()
             document_data = await DocumentLoader(azure_files).load()  # Reuse existing loader

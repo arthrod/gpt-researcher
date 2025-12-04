@@ -19,13 +19,11 @@ class Config:
         self.llm_kwargs: Dict[str, Any] = {}
         self.embedding_kwargs: Dict[str, Any] = {}
 
+        # Load default config or custom file config
         config_to_use = self.load_config(config_path)
-        self._set_attributes(config_to_use)
 
-        # Override with kwargs
-        for key, value in kwargs.items():
-            if value is not None:
-                setattr(self, key.lower(), value)
+        # Set attributes with priority: kwargs > env vars (only if not in kwargs) > file config
+        self._set_attributes(config_to_use, kwargs)
 
         # Handle retrievers update if overridden or set
         if hasattr(self, 'retriever'):
@@ -49,12 +47,32 @@ class Config:
         if not hasattr(self, 'mcp_allowed_root_paths'):
             self.mcp_allowed_root_paths = []
 
-    def _set_attributes(self, config: Dict[str, Any]) -> None:
+    def _set_attributes(self, config: Dict[str, Any], kwargs: Dict[str, Any]) -> None:
+        """
+        Set attributes based on priority:
+        1. kwargs (passed directly to constructor)
+        2. Environment variables (only if not in kwargs and env var exists)
+        3. Config file/defaults
+        """
         for key, value in config.items():
-            env_value = os.getenv(key)
-            if env_value is not None:
-                value = self.convert_env_value(key, env_value, BaseConfig.__annotations__[key])
-            setattr(self, key.lower(), value)
+            # Check if key is present in kwargs (case-insensitive check)
+            kwarg_val = None
+            for k, v in kwargs.items():
+                if k.lower() == key.lower():
+                    kwarg_val = v
+                    break
+
+            if kwarg_val is not None:
+                # 1. Use kwarg if present
+                setattr(self, key.lower(), kwarg_val)
+            else:
+                # 2. Check environment variable
+                env_value = os.getenv(key)
+                if env_value is not None:
+                    value = self.convert_env_value(key, env_value, BaseConfig.__annotations__[key])
+
+                # 3. Use config value (which might be default or from file, or env var if found)
+                setattr(self, key.lower(), value)
 
     def _set_embedding_attributes(self) -> None:
         self.embedding_provider, self.embedding_model = self.parse_embedding(

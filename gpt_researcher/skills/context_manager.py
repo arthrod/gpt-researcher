@@ -20,11 +20,19 @@ class ContextManager:
                 self.researcher.websocket,
             )
 
+        # Pass similarity_threshold from researcher config to compressor
+        similarity_threshold = self.researcher.cfg.similarity_threshold
+
+        # Merge researcher kwargs with specific args
+        compressor_kwargs = self.researcher.kwargs.copy()
+        if similarity_threshold is not None:
+            compressor_kwargs["similarity_threshold"] = similarity_threshold
+
         context_compressor = ContextCompressor(
             documents=pages,
             embeddings=self.researcher.memory.get_embeddings(),
             prompt_family=self.researcher.prompt_family,
-            **self.researcher.kwargs
+            **compressor_kwargs
         )
         return await context_compressor.async_get_context(
             query=query, max_results=10, cost_callback=self.researcher.add_costs
@@ -66,7 +74,8 @@ class ContextManager:
                                                       query: str,
                                                       written_contents: List[Dict],
                                                       similarity_threshold: float = 0.5,
-                                                      max_results: int = 10
+                                                      max_results: int = 10,
+                                                      **kwargs # Allow catching extra kwargs
                                                       ) -> List[str]:
         if self.researcher.verbose:
             await stream_output(
@@ -76,10 +85,13 @@ class ContextManager:
                 self.researcher.websocket,
             )
 
+        # Use provided similarity_threshold or from config if available in kwargs
+        threshold = kwargs.get("similarity_threshold", similarity_threshold)
+
         written_content_compressor = WrittenContentCompressor(
             documents=written_contents,
             embeddings=self.researcher.memory.get_embeddings(),
-            similarity_threshold=similarity_threshold,
+            similarity_threshold=threshold,
             **self.researcher.kwargs
         )
         return await written_content_compressor.async_get_context(
