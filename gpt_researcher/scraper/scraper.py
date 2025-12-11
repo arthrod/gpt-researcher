@@ -17,6 +17,7 @@ from . import (
     BrowserScraper,
     NoDriverScraper,
     TavilyExtract,
+    JinaExtract,
     FireCrawl,
 )
 
@@ -40,6 +41,8 @@ class Scraper:
             self._check_pkg(self.scraper)
         if self.scraper == "firecrawl":
             self._check_pkg(self.scraper)
+        if self.scraper == "jina_extract":
+             pass # No specific package needed, uses requests
         self.logger = logging.getLogger(__name__)
         self.worker_pool = worker_pool
 
@@ -175,6 +178,7 @@ class Scraper:
             "browser": BrowserScraper,
             "nodriver": NoDriverScraper,
             "tavily_extract": TavilyExtract,
+            "jina_extract": JinaExtract,
             "firecrawl": FireCrawl,
         }
 
