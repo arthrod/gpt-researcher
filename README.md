@@ -13,6 +13,7 @@
 ![GitHub Release](https://img.shields.io/github/v/release/assafelovic/gpt-researcher?style=flat&logo=github)
 [![Open In Colab](https://img.shields.io/static/v1?message=Open%20in%20Colab&logo=googlecolab&labelColor=grey&color=yellow&label=%20&style=flat&logoSize=40)](https://colab.research.google.com/github/assafelovic/gpt-researcher/blob/master/docs/docs/examples/pip-run.ipynb)
 [![Docker Image Version](https://img.shields.io/docker/v/elestio/gpt-researcher/latest?arch=amd64&style=flat&logo=docker&logoColor=white&color=1D63ED)](https://hub.docker.com/r/gptresearcher/gpt-researcher)
+[![Claude Skill](https://img.shields.io/badge/Claude%20Skill-skills.sh-blueviolet?style=flat&logo=anthropic&logoColor=white)](https://skills.sh)
 [![Twitter Follow](https://img.shields.io/twitter/follow/assaf_elovic?style=social)](https://twitter.com/assaf_elovic)
 
 [English](README.md) | [中文](README-zh_CN.md) | [日本語](README-ja_JP.md) | [한국어](README-ko_KR.md)
@@ -40,6 +41,15 @@ The agent produces detailed, factual, and unbiased research reports with citatio
   <img src="https://github.com/user-attachments/assets/ac2ec55f-b487-4b3f-ae6f-b8743ad296e4" alt="Demo video" width="800" target="_blank" />
 </a>
 
+## 🛠️ Install as Claude Skill
+
+Extend Claude's research capabilities by installing GPT Researcher as a [Claude Skill](https://skills.sh):
+
+```bash
+npx skills add assafelovic/gpt-researcher
+```
+
+Once installed, Claude can leverage GPT Researcher's deep research capabilities directly within your conversations.
 
 ## Architecture
 
@@ -65,7 +75,7 @@ Steps:
 
 - 📝 Generate detailed research reports using web and local documents.
 - 🖼️ Smart image scraping and filtering for reports.
-- 🎨 **AI-generated inline images** using Google Gemini for visual illustrations.
+- 🍌 **AI-generated inline images** using Google Gemini (Nano Banana) for visual illustrations.
 - 📜 Generate detailed reports exceeding 2,000 words.
 - 🌐 Aggregate over 20 sources for objective conclusions.
 - 🖥️ Frontend available in lightweight (HTML/CSS/JS) and production-ready (NextJS + Tailwind) versions.
@@ -180,9 +190,9 @@ async def mcp_research_example():
 
 > For comprehensive MCP documentation and advanced examples, visit the [MCP Integration Guide](https://docs.gptr.dev/docs/gpt-researcher/retrievers/mcp-configs).
 
-## 🎨 Inline Image Generation
+## 🍌 Inline Image Generation
 
-GPT Researcher can automatically generate and embed AI-created illustrations in your research reports using Google's Gemini models.
+GPT Researcher can automatically generate and embed AI-created illustrations in your research reports using Google's Gemini models (Nano Banana).
 
 ```bash
 # Enable in your .env file
