@@ -33,8 +33,8 @@ class GPTResearcher:
         self,
         query: str,
         report_type: str = ReportType.ResearchReport.value,
-        report_format: str = "markdown",
-        report_source: str = ReportSource.Web.value,
+        report_format: str | None = None,
+        report_source: str | None = None,
         tone: Tone = Tone.Objective,
         source_urls: list[str] | None = None,
         document_urls: list[str] | None = None,
@@ -53,7 +53,7 @@ class GPTResearcher:
         verbose: bool = True,
         context=None,
         headers: dict | None = None,
-        max_subtopics: int = 5,
+        max_subtopics: int | None = None,
         log_handler=None,
         prompt_family: str | None = None,
         mcp_configs: list[dict] | None = None,
@@ -130,8 +130,6 @@ class GPTResearcher:
         """
         self.query = query
         self.report_type = report_type
-        self.report_format = report_format
-        self.report_source = report_source
         self.tone = tone if isinstance(tone, Tone) else Tone.Objective
         self.source_urls = source_urls
         self.document_urls = document_urls
@@ -215,7 +213,9 @@ class GPTResearcher:
         self.kwargs = kwargs
 
         # Re-assign variables that depend on config
-        self.max_subtopics = max_subtopics
+        self.report_format = report_format if report_format is not None else self.cfg.report_format
+        self.report_source = report_source if report_source is not None else self.cfg.report_source
+        self.max_subtopics = max_subtopics if max_subtopics is not None else self.cfg.max_subtopics
         self.prompt_family = get_prompt_family(prompt_family or self.cfg.prompt_family, self.cfg)
 
         # Process MCP configurations if provided
