@@ -33,6 +33,7 @@ _SUPPORTED_PROVIDERS = {
     "vllm_openai",
     "aimlapi",
     "netmind",
+    "cerebras",
 }
 
 NO_SUPPORT_TEMPERATURE_MODELS = [
@@ -246,6 +247,24 @@ class GenericLLMProvider:
             from langchain_netmind import ChatNetmind
 
             llm = ChatNetmind(**kwargs)
+        elif provider == "cerebras":
+            _check_pkg("cerebras_cloud_sdk")
+            _check_pkg("langchain_openai")
+            from langchain_openai import ChatOpenAI
+
+            # Cerebras is OpenAI compatible
+            # https://inference-docs.cerebras.ai/resources/openai
+            if "openai_api_base" not in kwargs:
+                kwargs["openai_api_base"] = "https://api.cerebras.ai/v1"
+
+            # Ensure model defaults to GLM 4.6 if not provided, or if user specifies generic names
+            if "model" not in kwargs:
+                kwargs["model"] = "zai-glm-4.6"
+
+            llm = ChatOpenAI(
+                openai_api_key=os.environ["CEREBRAS_API_KEY"],
+                **kwargs
+            )
         else:
             supported = ", ".join(_SUPPORTED_PROVIDERS)
             raise ValueError(
