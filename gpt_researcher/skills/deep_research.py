@@ -98,13 +98,19 @@ class DeepResearchSkill:
 
     async def generate_research_plan(self, query: str, num_questions: int = 3) -> List[str]:
         """Generate follow-up questions to clarify research direction"""
-        # Get initial search results to inform query generation
-        # Pass the researcher so MCP retriever receives cfg and mcp_configs
-        search_results = await get_search_results(
-            query,
-            self.researcher.retrievers[0],
-            researcher=self.researcher
-        )
+        # Get initial search results from all retrievers to inform query generation
+        all_search_results = []
+        for retriever in self.researcher.retrievers:
+            try:
+                results = await get_search_results(
+                    query,
+                    retriever,
+                    researcher=self.researcher
+                )
+                all_search_results.extend(results)
+            except Exception as e:
+                logger.warning(f"Error with retriever {retriever.__name__}: {e}")
+        search_results = all_search_results
         logger.info(f"Initial web knowledge obtained: {len(search_results)} results")
 
         # Get current time for context
@@ -303,7 +309,14 @@ Format each question on a new line starting with 'Question: '"""}
             all_visited_urls.update(result['visited_urls'])
             all_citations.update(result['citations'])
             if result['context']:
-                all_context.append(result['context'])
+                # Use extend, not append: when CURATE_SOURCES=True, result['context'] is
+                # a List[dict]. append() nests it as a single item, which causes
+                # "\n".join() to crash later with "expected str instance, dict found".
+                ctx = result['context']
+                if isinstance(ctx, list):
+                    all_context.extend(ctx)
+                else:
+                    all_context.append(ctx)
             if result['sources']:
                 all_sources.extend(result['sources'])
 
@@ -404,7 +417,12 @@ Format each question on a new line starting with 'Question: '"""}
         final_context = trim_context_to_word_limit(context_with_citations)
         
         # Set enhanced context and visited URLs
-        self.researcher.context = "\n".join(final_context)
+        self.researcher.context = "\n".join(
+            item if isinstance(item, str)
+            else item.get("Content", str(item)) if isinstance(item, dict)
+            else str(item)
+            for item in final_context
+        )
         self.researcher.visited_urls = results['visited_urls']
 
         # Set research sources
